@@ -3,9 +3,12 @@ import { db } from "./config/db.js";
 import { ENV } from "./config/env.js";
 import { dataTable } from "./db/schema.js";
 import { and, eq } from "drizzle-orm";
+import job from "./config/cron.js";
 
 const app = express();
 const PORT = ENV.PORT;
+
+if (ENV.NODE_ENV === "production") job.start();
 
 app.use(express.json());
 
@@ -40,7 +43,10 @@ app.get("/api/data/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const userData = await db.select().from(dataTable).where(eq(dataTable.userId, userId))
+    const userData = await db
+      .select()
+      .from(dataTable)
+      .where(eq(dataTable.userId, userId));
 
     res.status(200).json(userData);
   } catch (error) {

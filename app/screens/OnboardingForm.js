@@ -3,15 +3,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect } from "react";
 import {
   SafeAreaView,
-  StyleSheet,
   Text,
   View,
   TouchableOpacity,
   TextInput,
   ImageBackground,
 } from "react-native";
+import {onboardingformStyles} from "../styles/onboardingform.styles"
+import backgroundimage from "../../assets/image_33.jpg";
 
-import backgroundimage from "../assets/image_33.jpg";
 
 export default function OnboardingForm({ navigation }) {
   const [zip, setZip] = useState(0);
@@ -48,22 +48,22 @@ export default function OnboardingForm({ navigation }) {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={onboardingformStyles.container}>
       <ImageBackground
         source={backgroundimage}
         resizeMode="stretch"
-        style={styles.backgroundimage}
+        style={onboardingformStyles.backgroundimage}
       >
         <StatusBar style="light" />
 
-        <Text style={styles.title}>Setup</Text>
-        <Text style={styles.currentzip}>ZIPCODE</Text>
+        <Text style={onboardingformStyles.title}>Setup</Text>
+        <Text style={onboardingformStyles.currentzip}>ZIPCODE</Text>
 
-        <TextInput maxLength={5} style={styles.input} onChangeText={storeZip} />
+        <TextInput maxLength={5} style={onboardingformStyles.input} onChangeText={storeZip} />
 
         <View style={{ flex: 1, marginBottom: 80, justifyContent: "flex-end" }}>
           <TouchableOpacity
-            style={styles.finishbutton}
+            style={onboardingformStyles.finishbutton}
             onPress={() => finishPressed()}
           >
             <Text style={{ color: "black", fontSize: 30 }}>FINISH</Text>
@@ -73,65 +73,3 @@ export default function OnboardingForm({ navigation }) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#3e3e3e",
-    paddingTop: StatusBar.currentHeight,
-  },
-
-  input: {
-    marginTop: 10,
-    marginLeft: 20,
-    marginRight: 20,
-    color: "black",
-    fontSize: 50,
-    backgroundColor: "white",
-    minHeight: 100,
-    maxHeight: 100,
-    textAlign: "center",
-    borderWidth: 2,
-  },
-
-  clearbutton: {
-    borderRadius: 5,
-    backgroundColor: "lightgray",
-    width: 250,
-    height: 60,
-    marginBottom: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "center",
-  },
-
-  finishbutton: {
-    borderRadius: 5,
-    backgroundColor: "lightgray",
-    width: 250,
-    height: 60,
-    justifyContent: "center",
-    alignItems: "center",
-    alignSelf: "center",
-  },
-
-  title: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 40,
-    paddingBottom: 10,
-    textAlign: "center",
-  },
-
-  currentzip: {
-    color: "white",
-    fontSize: 30,
-    paddingTop: 50,
-    textAlign: "center",
-  },
-
-  backgroundimage: {
-    flex: 1,
-    justifyContent: "center",
-  },
-});

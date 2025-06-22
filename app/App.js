@@ -2,7 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import OnboardingForm from "./onboarding/OnboardingForm.js";
+import OnboardingForm from "./screens/OnboardingForm.js";
 import HomeScreen from "./screens/HomeScreen.js";
 import SosScreen from "./screens/SosScreen.js";
 import RequestsScreen from "./screens/RequestsScreen.js";

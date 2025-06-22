@@ -1,14 +1,12 @@
 {
-  "name": "kingdomunitedapp",
+  "name": "mobile",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "app/index.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web",
-    "dev": "nodemon src/server.js",
-    "server": "node src/server.js"
+    "web": "expo start --web"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

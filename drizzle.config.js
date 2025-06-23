@@ -1,4 +1,4 @@
-import { ENV } from "./src/config/env.js";
+import { ENV } from "./db/config/env.js";
 
 export default {
   schema: "./src/db/schema.js",

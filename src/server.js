@@ -15,9 +15,9 @@ app.use(express.json());
 // POST new prayer
 app.post("/data", async (req, res) => {
   try {
-    const { userId, zip, prayer } = req.body;
+    const { userId, zip, prayerText } = req.body;
 
-    if (!userId || !zip || !prayer) {
+    if (!userId || !zip || !prayerText) {
       return res.status(400).json({ error: "Missing Required Fields" });
     }
     const newPrayer = await db
@@ -25,7 +25,7 @@ app.post("/data", async (req, res) => {
       .values({
         userId,
         zip,
-        prayer,
+        prayerText,
       })
       .returning();
 

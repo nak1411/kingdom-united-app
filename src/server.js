@@ -67,7 +67,7 @@ app.get("/data/:userId", async (req, res) => {
 });
 
 // GET prayers by zip code
-app.get('/data/zip/:zip', async (req, res) => {
+app.get('/data/:zip', async (req, res) => {
   try {
     const { zip } = req.params;
     const zipData = await db.select()

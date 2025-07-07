@@ -54,12 +54,12 @@ app.get("/data", async (req, res) => {
 app.get("/data/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
-    const userPrayers = await db
+    const userData = await db
       .select()
-      .from(prayers)
-      .where(eq(prayers.userId, userId))
-      .orderBy(desc(prayers.createdAt));
-    res.json(userPrayers);
+      .from(dataTable)
+      .where(eq(dataTable.userId, userId))
+      .orderBy(desc(dataTable.createdAt));
+    res.json(userData);
   } catch (error) {
     console.error("Error fetching user prayers:", error);
     res.status(500).json({ error: "Failed to fetch user prayers" });

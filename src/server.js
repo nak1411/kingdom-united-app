@@ -12,12 +12,7 @@ if (ENV.NODE_ENV === "production") job.start();
 
 app.use(express.json());
 
-// Get health
-app.get("/api/health", (req, res) => {
-  res.status(200).json({ success: true });
-});
-
-// Post 
+// POST new prayer
 app.post("/api/data", async (req, res) => {
   try {
     const { userId, zip, prayer } = req.body;
@@ -36,24 +31,38 @@ app.post("/api/data", async (req, res) => {
 
     res.status(201).json(newPrayer[0]);
   } catch (error) {
-    console.log("Error adding prayer");
-    res.status(500).json({ error: "Something Went Wrong" });
+    console.log("Error adding prayer", error);
+    res.status(500).json({ error: "Failed to create prayer" });
   }
 });
 
-app.get("/api/data/:userId", async (req, res) => {
+// GET all prayers
+app.get("/api/data", async (req, res) => {
   try {
-    const { userId } = req.params;
-
     const userData = await db
       .select()
       .from(dataTable)
-      .where(eq(dataTable.userId, userId));
-
-    res.status(200).json(userData);
+      .orderBy(desc(dataTable.createdAt));
+    res.json(userData);
   } catch (error) {
-    console.log("Error fetching data", error);
-    res.status(500).json({ error: "Something Went Wrong" });
+    console.error("Error fetching prayers", error);
+    res.status(500).json({ error: "Failed to fetch prayers" });
+  }
+});
+
+// GET prayer by userID
+app.get("/api/data/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const userPrayers = await db
+      .select()
+      .from(prayers)
+      .where(eq(prayers.userId, userId))
+      .orderBy(desc(prayers.createdAt));
+    res.json(userPrayers);
+  } catch (error) {
+    console.error("Error fetching user prayers:", error);
+    res.status(500).json({ error: "Failed to fetch user prayers" });
   }
 });
 
@@ -72,6 +81,22 @@ app.delete("/api/data/:userId/:zip", async (req, res) => {
     console.log("Error removing zip", error);
     res.status(500).json({ error: "Something Went Wrong" });
   }
+});
+
+// Get health check
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", timestamp: new Date().toISOString() });
+});
+
+// Error handling
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: "Something went wrong!" });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
 });
 
 app.listen(PORT, () => {

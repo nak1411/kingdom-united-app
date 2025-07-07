@@ -137,20 +137,27 @@ app.put("/data/:id", async (req, res) => {
   }
 });
 
-app.delete("/data/:userId/:zip", async (req, res) => {
+// DELETE prayer
+app.delete("/data/:id", async (req, res) => {
   try {
-    const { userId, zip } = req.params;
+    const { id } = req.params;
 
-    await db
+    const deletedPrayer = await db
       .delete(dataTable)
-      .where(
-        and(eq(dataTable.userId, userId), eq(dataTable.zip, parseInt(zip)))
-      );
+      .where(eq(dataTable.id, parseInt(id)))
+      .returning();
 
-    res.status(200).json({ message: "Zip Removed" });
+    if (deletedPrayer.length === 0) {
+      return res.status(404).json({ error: "Prayer not found" });
+    }
+
+    res.json({
+      message: "Prayer deleted successfully",
+      prayer: deletedPrayer[0],
+    });
   } catch (error) {
-    console.log("Error removing zip", error);
-    res.status(500).json({ error: "Something Went Wrong" });
+    console.error("Error deleting prayer:", error);
+    res.status(500).json({ error: "Failed to delete prayer" });
   }
 });
 

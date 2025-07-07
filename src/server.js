@@ -83,22 +83,57 @@ app.get("/data/zip/:zip", async (req, res) => {
 });
 
 // GET single prayer by ID
-app.get('/data/:id', async (req, res) => {
+app.get("/data/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const prayer = await db.select()
+    const prayer = await db
+      .select()
       .from(dataTable)
       .where(eq(dataTable.id, parseInt(id)))
       .limit(1);
-    
+
     if (prayer.length === 0) {
-      return res.status(404).json({ error: 'Prayer not found' });
+      return res.status(404).json({ error: "Prayer not found" });
     }
-    
+
     res.json(prayer[0]);
   } catch (error) {
-    console.error('Error fetching prayer:', error);
-    res.status(500).json({ error: 'Failed to fetch prayer' });
+    console.error("Error fetching prayer:", error);
+    res.status(500).json({ error: "Failed to fetch prayer" });
+  }
+});
+
+// PUT update prayer
+app.put("/data/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, zip, prayerText } = req.body;
+
+    // Check if prayer exists
+    const existingPrayer = await db
+      .select()
+      .from(dataTable)
+      .where(eq(dataTable.id, parseInt(id)))
+      .limit(1);
+
+    if (existingPrayer.length === 0) {
+      return res.status(404).json({ error: "Prayer not found" });
+    }
+
+    const updatedPrayer = await db
+      .update(dataTable)
+      .set({
+        userId: userId || existingPrayer[0].userId,
+        zip: zip || existingPrayer[0].zip,
+        prayerText: prayerText || existingPrayer[0].prayerText,
+      })
+      .where(eq(dataTable.id, parseInt(id)))
+      .returning();
+
+    res.json(updatedPrayer[0]);
+  } catch (error) {
+    console.error("Error updating prayer:", error);
+    res.status(500).json({ error: "Failed to update prayer" });
   }
 });
 

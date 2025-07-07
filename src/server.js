@@ -12,10 +12,12 @@ if (ENV.NODE_ENV === "production") job.start();
 
 app.use(express.json());
 
+// Get health
 app.get("/api/health", (req, res) => {
   res.status(200).json({ success: true });
 });
 
+// Post 
 app.post("/api/data", async (req, res) => {
   try {
     const { userId, zip, prayer } = req.body;

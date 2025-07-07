@@ -4,6 +4,6 @@ export const dataTable = pgTable("data", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull(),
   zip: integer("zip").notNull(),
-  prayer: text("prayer").notNull(),
+  prayerText: text("prayer").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });

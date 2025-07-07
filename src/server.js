@@ -174,6 +174,43 @@ app.put("/data/:id/text", async (req, res) => {
   }
 });
 
+// PUT update zip only
+app.put("/data/:id/zip", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { zip } = req.body;
+
+    // Validation
+    if (!zip) {
+      return res.status(400).json({ error: "zip is required" });
+    }
+
+    // Check if prayer exists
+    const existingPrayer = await db
+      .select()
+      .from(dataTable)
+      .where(eq(dataTable.id, parseInt(id)))
+      .limit(1);
+
+    if (existingPrayer.length === 0) {
+      return res.status(404).json({ error: "Prayer not found" });
+    }
+
+    const updatedPrayer = await db
+      .update(dataTable)
+      .set({
+        zip,
+      })
+      .where(eq(dataTable.id, parseInt(id)))
+      .returning();
+
+    res.json(updatedPrayer[0]);
+  } catch (error) {
+    console.error("Error updating zip:", error);
+    res.status(500).json({ error: "Failed to update zip" });
+  }
+});
+
 // DELETE prayer
 app.delete("/data/:id", async (req, res) => {
   try {

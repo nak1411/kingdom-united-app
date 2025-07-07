@@ -2,7 +2,7 @@ import express from "express";
 import { db } from "./config/db.js";
 import { ENV } from "./config/env.js";
 import { dataTable } from "./db/schema.js";
-import { and, eq } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 import job from "./config/cron.js";
 
 const app = express();

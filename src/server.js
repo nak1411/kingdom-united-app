@@ -66,6 +66,21 @@ app.get("/data/:userId", async (req, res) => {
   }
 });
 
+// GET prayers by zip code
+app.get('/data/zip/:zip', async (req, res) => {
+  try {
+    const { zip } = req.params;
+    const zipData = await db.select()
+      .from(dataTable)
+      .where(eq(dataTable.zip, zip))
+      .orderBy(desc(dataTable.createdAt));
+    res.json(zipData);
+  } catch (error) {
+    console.error('Error fetching prayers by zip:', error);
+    res.status(500).json({ error: 'Failed to fetch prayers by zip code' });
+  }
+});
+
 app.delete("/data/:userId/:zip", async (req, res) => {
   try {
     const { userId, zip } = req.params;

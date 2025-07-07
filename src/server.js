@@ -103,7 +103,7 @@ app.get("/data/:id", async (req, res) => {
   }
 });
 
-// PUT update prayer
+// PUT update prayer all fields
 app.put("/data/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -134,6 +134,43 @@ app.put("/data/:id", async (req, res) => {
   } catch (error) {
     console.error("Error updating prayer:", error);
     res.status(500).json({ error: "Failed to update prayer" });
+  }
+});
+
+// PUT update prayer text only
+app.put("/data/:id/text", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { prayerText } = req.body;
+
+    // Validation
+    if (!prayerText) {
+      return res.status(400).json({ error: "prayerText is required" });
+    }
+
+    // Check if prayer exists
+    const existingPrayer = await db
+      .select()
+      .from(dataTable)
+      .where(eq(dataTable.id, parseInt(id)))
+      .limit(1);
+
+    if (existingPrayer.length === 0) {
+      return res.status(404).json({ error: "Prayer not found" });
+    }
+
+    const updatedPrayer = await db
+      .update(dataTable)
+      .set({
+        prayerText,
+      })
+      .where(eq(dataTable.id, parseInt(id)))
+      .returning();
+
+    res.json(updatedPrayer[0]);
+  } catch (error) {
+    console.error("Error updating prayer text:", error);
+    res.status(500).json({ error: "Failed to update prayer text" });
   }
 });
 

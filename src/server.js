@@ -13,7 +13,7 @@ if (ENV.NODE_ENV === "production") job.start();
 app.use(express.json());
 
 // POST new prayer
-app.post("/api/data", async (req, res) => {
+app.post("/data", async (req, res) => {
   try {
     const { userId, zip, prayer } = req.body;
 
@@ -37,7 +37,7 @@ app.post("/api/data", async (req, res) => {
 });
 
 // GET all prayers
-app.get("/api/data", async (req, res) => {
+app.get("/data", async (req, res) => {
   try {
     const userData = await db
       .select()
@@ -51,7 +51,7 @@ app.get("/api/data", async (req, res) => {
 });
 
 // GET prayer by userID
-app.get("/api/data/:userId", async (req, res) => {
+app.get("/data/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
     const userPrayers = await db
@@ -66,7 +66,7 @@ app.get("/api/data/:userId", async (req, res) => {
   }
 });
 
-app.delete("/api/data/:userId/:zip", async (req, res) => {
+app.delete("/data/:userId/:zip", async (req, res) => {
   try {
     const { userId, zip } = req.params;
 
@@ -84,7 +84,7 @@ app.delete("/api/data/:userId/:zip", async (req, res) => {
 });
 
 // Get health check
-app.get("/api/health", (req, res) => {
+app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 

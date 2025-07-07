@@ -82,6 +82,26 @@ app.get("/data/zip/:zip", async (req, res) => {
   }
 });
 
+// GET single prayer by ID
+app.get('/data/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const prayer = await db.select()
+      .from(dataTable)
+      .where(eq(dataTable.id, parseInt(id)))
+      .limit(1);
+    
+    if (prayer.length === 0) {
+      return res.status(404).json({ error: 'Prayer not found' });
+    }
+    
+    res.json(prayer[0]);
+  } catch (error) {
+    console.error('Error fetching prayer:', error);
+    res.status(500).json({ error: 'Failed to fetch prayer' });
+  }
+});
+
 app.delete("/data/:userId/:zip", async (req, res) => {
   try {
     const { userId, zip } = req.params;

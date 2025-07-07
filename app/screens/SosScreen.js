@@ -23,6 +23,7 @@ export default function SosScreen({ navigation }) {
     } catch (error) {}
   };
 
+  //Read prayer
   const readPrayer = async () => {
     try {
       const prayer = await AsyncStorage.getItem("prayer");

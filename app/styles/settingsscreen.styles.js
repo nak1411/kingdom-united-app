@@ -1,86 +1,12 @@
-// app/styles/settingsscreen.styles.js
-import { StatusBar, StyleSheet, Dimensions } from "react-native";
-
-const { width } = Dimensions.get('window');
-
-// Define theme values inline
-const colors = {
-  primary500: '#0ea5e9',
-  primary50: '#f0f9ff',
-  emergency500: '#ef4444',
-  emergency600: '#dc2626',
-  emergency50: '#fef2f2',
-  success500: '#22c55e',
-  success600: '#16a34a',
-  neutral300: '#d4d4d4',
-  neutral500: '#737373',
-  textInverse: '#ffffff',
-  textLight: 'rgba(255, 255, 255, 0.9)',
-  textPrimary: '#111827',
-  textSecondary: '#6b7280',
-  textDisabled: '#d1d5db',
-  backgroundDarker: '#111827',
-  backgroundPrimary: '#ffffff',
-  backgroundSecondary: '#f9fafb',
-  borderLight: '#e5e7eb',
-};
-
-const spacing = {
-  1: 4,
-  2: 8,
-  3: 12,
-  4: 16,
-  5: 20,
-  6: 24,
-  8: 32,
-  12: 48,
-};
-
-const shadows = {
-  sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  base: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-};
+// app/styles/settingsscreen.styles.js - Updated with Unified Theme
+import { StatusBar, StyleSheet } from "react-native";
+import { theme, commonStyles } from './theme';
 
 export const settingsscreenStyles = StyleSheet.create({
+  // Base container
   container: {
-    flex: 1,
-    backgroundColor: '#000000',
+    ...commonStyles.container,
     paddingTop: StatusBar.currentHeight,
-  },
-
-  backgroundimage: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-
-  overlay: {
-    display: 'none',
   },
 
   scrollView: {
@@ -88,243 +14,189 @@ export const settingsscreenStyles = StyleSheet.create({
   },
 
   scrollContent: {
-    padding: spacing[6],
-    paddingBottom: spacing[4],
+    padding: theme.spacing[6],
+    paddingBottom: theme.spacing[4],
   },
 
   // Loading state
   loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    ...commonStyles.loadingContainer,
+    backgroundColor: theme.colors.background.overlayDark,
   },
 
   loadingText: {
-    color: colors.textInverse,
-    fontSize: 18,
-    fontWeight: '500',
-    marginTop: spacing[4],
+    ...commonStyles.loadingText,
   },
 
   // Header section
   header: {
-    alignItems: 'center',
-    marginBottom: spacing[12],
-    paddingTop: spacing[6],
+    ...commonStyles.header,
+    marginBottom: theme.spacing[12],
+    paddingTop: theme.spacing[6],
   },
 
   title: {
-    color: colors.textInverse,
-    fontWeight: 'bold',
-    fontSize: 36,
-    marginBottom: spacing[3],
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    ...commonStyles.headerTitle,
+    fontSize: theme.typography.fontSizes['5xl'],
+    marginBottom: theme.spacing[3],
   },
 
   subtitle: {
-    color: colors.textLight,
-    fontSize: 18,
-    textAlign: "center",
-    lineHeight: 26,
-    fontWeight: '500',
+    ...commonStyles.headerSubtitle,
+    lineHeight: theme.typography.lineHeights.relaxed,
   },
 
   // Section containers
   section: {
-    marginBottom: spacing[8],
+    ...commonStyles.section,
   },
 
   sectionTitle: {
-    color: colors.textInverse,
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: spacing[5],
-    paddingHorizontal: spacing[2],
+    ...commonStyles.sectionTitle,
   },
 
   // Current location card
   currentLocationCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 16,
-    padding: spacing[8],
+    ...commonStyles.card,
     alignItems: 'center',
-    ...shadows.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: theme.borderRadius.lg,
   },
 
   currentLocationLabel: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '600',
-    letterSpacing: 2,
-    marginBottom: spacing[2],
+    ...commonStyles.cardSubtitle,
+    fontSize: theme.typography.fontSizes.sm,
+    letterSpacing: theme.typography.letterSpacing.wider,
+    marginBottom: theme.spacing[2],
+    textAlign: 'center',
   },
 
   currentLocationValue: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-    marginBottom: spacing[3],
-    letterSpacing: 2,
+    fontSize: theme.typography.fontSizes['5xl'],
+    fontWeight: theme.typography.fontWeights.bold,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing[3],
+    letterSpacing: theme.typography.letterSpacing.wide,
   },
 
   currentLocationNote: {
-    fontSize: 16,
-    color: colors.textSecondary,
+    ...commonStyles.cardSubtitle,
     textAlign: 'center',
     fontStyle: 'italic',
-    lineHeight: 24,
+    lineHeight: theme.typography.lineHeights.normal,
   },
 
   // Input card for updating location
   inputCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 16,
-    padding: spacing[8],
-    ...shadows.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    ...commonStyles.card,
   },
 
   inputLabel: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    fontWeight: '600',
-    letterSpacing: 2,
-    marginBottom: spacing[4],
+    ...commonStyles.cardSubtitle,
+    fontSize: theme.typography.fontSizes.base,
+    letterSpacing: theme.typography.letterSpacing.wider,
+    marginBottom: theme.spacing[4],
     textAlign: 'center',
   },
 
-  // Modern input styling
+  // Input styling
   input: {
-    backgroundColor: colors.backgroundSecondary,
-    fontSize: 30,
-    fontWeight: 'bold',
-    textAlign: "center",
-    paddingVertical: spacing[5],
-    paddingHorizontal: spacing[6],
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: colors.borderLight,
-    marginBottom: spacing[3],
-    ...shadows.sm,
-    letterSpacing: 2,
+    ...commonStyles.input,
+    fontSize: theme.typography.fontSizes['3xl'],
+    fontWeight: theme.typography.fontWeights.bold,
+    textAlign: 'center',
+    paddingVertical: theme.spacing[5],
+    paddingHorizontal: theme.spacing[6],
+    marginBottom: theme.spacing[3],
+    letterSpacing: theme.typography.letterSpacing.wide,
   },
 
   inputFocused: {
-    borderColor: colors.primary500,
-    backgroundColor: colors.backgroundPrimary,
-    ...shadows.base,
+    ...commonStyles.inputFocused,
   },
 
   inputError: {
-    borderColor: colors.emergency500,
-    backgroundColor: colors.emergency50,
+    ...commonStyles.inputError,
   },
 
   inputChanged: {
-    borderColor: colors.primary500,
-    backgroundColor: colors.primary50,
+    ...commonStyles.inputSuccess,
   },
 
   // Helper text
   errorText: {
-    color: colors.emergency600,
-    fontSize: 16,
-    textAlign: "center",
-    marginTop: spacing[2],
-    fontWeight: '500',
+    ...commonStyles.textError,
+    textAlign: 'center',
+    marginTop: theme.spacing[2],
   },
 
   helperText: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    textAlign: "center",
-    marginTop: spacing[2],
-    fontWeight: '500',
+    ...commonStyles.textHelper,
+    textAlign: 'center',
+    marginTop: theme.spacing[2],
   },
 
   changedText: {
-    color: colors.success600,
-    fontSize: 16,
-    textAlign: "center",
-    marginTop: spacing[2],
-    fontWeight: '600',
+    ...commonStyles.textSuccess,
+    textAlign: 'center',
+    marginTop: theme.spacing[2],
   },
 
   // Zip code action buttons
   zipActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: spacing[5],
-    gap: spacing[3],
+    marginTop: theme.spacing[5],
+    gap: theme.spacing[3],
   },
 
   cancelButton: {
     flex: 1,
-    backgroundColor: colors.neutral500,
-    paddingVertical: spacing[4],
-    borderRadius: 12,
-    alignItems: 'center',
-    ...shadows.base,
+    ...commonStyles.button,
+    backgroundColor: theme.colors.neutral[500],
   },
 
   cancelButtonText: {
-    color: colors.textInverse,
-    fontSize: 16,
-    fontWeight: '600',
+    ...commonStyles.buttonText,
+    ...commonStyles.buttonTextPrimary,
   },
 
   saveButton: {
     flex: 1,
-    backgroundColor: colors.primary500,
-    paddingVertical: spacing[4],
-    borderRadius: 12,
-    alignItems: 'center',
-    ...shadows.base,
+    ...commonStyles.button,
+    ...commonStyles.buttonPrimary,
   },
 
   saveButtonText: {
-    color: colors.textInverse,
-    fontSize: 16,
-    fontWeight: '600',
+    ...commonStyles.buttonText,
+    ...commonStyles.buttonTextPrimary,
   },
 
-  saveButtonDisabled: {
-    backgroundColor: colors.neutral300,
-    ...shadows.sm,
+  buttonDisabled: {
+    ...commonStyles.buttonDisabled,
   },
 
-  saveButtonTextDisabled: {
-    color: colors.textDisabled,
+  buttonTextDisabled: {
+    ...commonStyles.buttonTextDisabled,
   },
 
   // Action cards for app management
   actionCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 16,
-    padding: spacing[6],
-    marginBottom: spacing[4],
+    ...commonStyles.card,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    ...shadows.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    marginBottom: theme.spacing[4],
+    padding: theme.spacing[6],
   },
 
   actionCardPressed: {
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: theme.colors.background.secondary,
     transform: [{ scale: 0.98 }],
   },
 
   dangerCard: {
     borderLeftWidth: 4,
-    borderLeftColor: colors.emergency500,
+    borderLeftColor: theme.colors.emergency[500],
   },
 
   actionContent: {
@@ -332,155 +204,163 @@ export const settingsscreenStyles = StyleSheet.create({
   },
 
   actionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: spacing[1],
+    ...commonStyles.cardTitle,
+    marginBottom: theme.spacing[1],
   },
 
   actionDescription: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    lineHeight: 24,
+    ...commonStyles.cardSubtitle,
+    lineHeight: theme.typography.lineHeights.normal,
   },
 
   actionArrow: {
-    fontSize: 24,
-    color: colors.textSecondary,
-    marginLeft: spacing[4],
+    fontSize: theme.typography.fontSizes['2xl'],
+    color: theme.colors.text.secondary,
+    marginLeft: theme.spacing[4],
   },
 
   // Info section
   infoSection: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 16,
-    padding: spacing[6],
-    marginBottom: spacing[6],
+    backgroundColor: theme.colors.background.glassDark,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing[6],
+    marginBottom: theme.spacing[6],
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: theme.colors.border.inverse,
   },
 
   infoText: {
-    color: colors.textLight,
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 24,
-    fontWeight: '500',
+    ...commonStyles.textLight,
+    textAlign: 'center',
+    lineHeight: theme.typography.lineHeights.normal,
   },
 
   // Bottom section
   bottomSection: {
-    padding: spacing[6],
-    paddingTop: spacing[4],
+    ...commonStyles.bottomSection,
   },
 
   backButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    paddingVertical: spacing[5],
-    paddingHorizontal: spacing[8],
-    borderRadius: 12,
-    alignItems: 'center',
-    ...shadows.base,
+    ...commonStyles.backButton,
   },
 
   backButtonText: {
-    color: colors.textLight,
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: 1,
+    ...commonStyles.backButtonText,
   },
 
   // Status indicators
   statusSection: {
-    backgroundColor: 'rgba(14, 165, 233, 0.15)',
-    borderRadius: 12,
-    padding: spacing[5],
-    marginBottom: spacing[6],
+    backgroundColor: `${theme.colors.primary[500]}20`,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing[5],
+    marginBottom: theme.spacing[6],
     borderLeftWidth: 4,
-    borderLeftColor: colors.primary500,
+    borderLeftColor: theme.colors.primary[500],
   },
 
   statusTitle: {
-    color: colors.textInverse,
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: spacing[3],
+    color: theme.colors.text.inverse,
+    fontSize: theme.typography.fontSizes.lg,
+    fontWeight: theme.typography.fontWeights.semibold,
+    marginBottom: theme.spacing[3],
   },
 
   statusItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: spacing[2],
+    paddingVertical: theme.spacing[2],
   },
 
   statusLabel: {
-    color: colors.textLight,
-    fontSize: 16,
-    fontWeight: '500',
+    ...commonStyles.textLight,
+    fontWeight: theme.typography.fontWeights.medium,
   },
 
   statusValue: {
-    color: colors.textInverse,
-    fontSize: 16,
-    fontWeight: '600',
+    color: theme.colors.text.inverse,
+    fontSize: theme.typography.fontSizes.base,
+    fontWeight: theme.typography.fontWeights.semibold,
   },
 
-  // Toggle switches (if needed)
+  // Toggle switches
   toggleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 12,
-    padding: spacing[5],
-    marginBottom: spacing[3],
-    ...shadows.sm,
+    ...commonStyles.card,
+    padding: theme.spacing[5],
+    marginBottom: theme.spacing[3],
   },
 
   toggleLabel: {
-    color: colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '500',
+    ...commonStyles.textPrimary,
+    fontWeight: theme.typography.fontWeights.medium,
     flex: 1,
   },
 
   toggleDescription: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    marginTop: spacing[1],
+    ...commonStyles.textSecondary,
+    marginTop: theme.spacing[1],
   },
 
-  // Reset button style
+  // Legacy compatibility styles
   resetbutton: {
-    marginBottom: 20,
-    borderRadius: 15,
+    ...commonStyles.button,
+    backgroundColor: theme.colors.emergency[500],
+    marginBottom: theme.spacing[5],
+    borderRadius: theme.borderRadius.md,
     borderWidth: 2,
-    borderColor: "gray",
-    backgroundColor: "#004060",
+    borderColor: theme.colors.emergency[600],
     width: 250,
     height: 60,
-    justifyContent: "center",
-    alignSelf: "center",
+    alignSelf: 'center',
   },
 
   backbutton: {
-    borderRadius: 15,
+    ...commonStyles.backButton,
+    borderRadius: theme.borderRadius.md,
     borderWidth: 2,
-    borderColor: "gray",
-    backgroundColor: "#004060",
+    borderColor: theme.colors.border.inverse,
     width: 250,
     height: 60,
-    justifyContent: "center",
-    alignSelf: "center",
+    alignSelf: 'center',
   },
 
   currentzip: {
-    color: "black",
-    fontSize: 30,
-    paddingTop: 50,
-    textAlign: "center",
+    color: theme.colors.text.primary,
+    fontSize: theme.typography.fontSizes['3xl'],
+    paddingTop: theme.spacing[12],
+    textAlign: 'center',
+    fontWeight: theme.typography.fontWeights.bold,
   },
+
+  // Responsive adjustments
+  ...(theme.dimensions.isSmallScreen && {
+    scrollContent: {
+      padding: theme.spacing[4],
+    },
+    
+    header: {
+      paddingTop: theme.spacing[4],
+      marginBottom: theme.spacing[10],
+    },
+    
+    title: {
+      fontSize: theme.typography.fontSizes['4xl'],
+    },
+    
+    currentLocationValue: {
+      fontSize: theme.typography.fontSizes['4xl'],
+    },
+    
+    input: {
+      fontSize: theme.typography.fontSizes['2xl'],
+      paddingVertical: theme.spacing[4],
+    },
+    
+    actionCard: {
+      padding: theme.spacing[4],
+    },
+  }),
 });

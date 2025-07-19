@@ -1,334 +1,241 @@
-// app/styles/onboardingform.styles.js
-import { StatusBar, StyleSheet, Dimensions } from "react-native";
-
-const { width, height } = Dimensions.get('window');
-
-// Define theme values inline
-const colors = {
-  primary500: '#0ea5e9',
-  emergency500: '#ef4444',
-  emergency600: '#dc2626',
-  emergency50: '#fef2f2',
-  success500: '#22c55e',
-  success600: '#16a34a',
-  success50: '#f0fdf4',
-  neutral400: '#a3a3a3',
-  textInverse: '#ffffff',
-  textLight: 'rgba(255, 255, 255, 0.9)',
-  textPrimary: '#111827',
-  textSecondary: '#6b7280',
-  textDisabled: '#d1d5db',
-  backgroundDarker: '#111827',
-  backgroundPrimary: '#ffffff',
-  backgroundSecondary: '#f9fafb',
-  borderLight: '#e5e7eb',
-};
-
-const spacing = {
-  1: 4,
-  2: 8,
-  3: 12,
-  4: 16,
-  5: 20,
-  6: 24,
-  8: 32,
-  10: 40,
-  12: 48,
-  16: 64,
-};
-
-const shadows = {
-  base: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  xl: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 16,
-  },
-};
+// app/styles/onboardingform.styles.js - Updated with Unified Theme
+import { StatusBar, StyleSheet } from "react-native";
+import { theme, commonStyles } from './theme';
 
 export const onboardingformStyles = StyleSheet.create({
+  // Base container
   container: {
-    flex: 1,
-    backgroundColor: '#000000',
+    ...commonStyles.container,
     paddingTop: StatusBar.currentHeight,
   },
 
   backgroundimage: {
     flex: 1,
     justifyContent: "center",
-    backgroundColor: '#000000',
-  },
-
-  overlay: {
-    display: 'none',
+    backgroundColor: theme.colors.background.dark,
   },
 
   content: {
     flex: 1,
-    paddingHorizontal: spacing[6],
-    paddingTop: spacing[16],
-    paddingBottom: spacing[10],
+    paddingHorizontal: theme.spacing[6],
+    paddingTop: theme.spacing[16],
+    paddingBottom: theme.spacing[10],
     justifyContent: 'space-between',
   },
 
   // Header section
   header: {
-    alignItems: 'center',
-    marginBottom: spacing[16],
+    ...commonStyles.header,
+    marginBottom: theme.spacing[16],
   },
 
   title: {
-    color: colors.textInverse,
-    fontWeight: 'bold',
-    fontSize: 48,
-    marginBottom: spacing[4],
-    textAlign: "center",
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    ...commonStyles.headerTitle,
+    fontSize: theme.typography.fontSizes['6xl'],
+    marginBottom: theme.spacing[4],
+    textShadowColor: theme.colors.background.overlay,
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
 
   subtitle: {
-    color: colors.textLight,
-    fontSize: 20,
-    textAlign: "center",
-    paddingHorizontal: spacing[6],
-    lineHeight: 28,
-    fontWeight: '500',
+    ...commonStyles.headerSubtitle,
+    fontSize: theme.typography.fontSizes.xl,
+    paddingHorizontal: theme.spacing[6],
+    lineHeight: theme.typography.lineHeights.relaxed,
   },
 
   // Welcome animation container
   welcomeContainer: {
     alignItems: 'center',
-    marginBottom: spacing[8],
+    marginBottom: theme.spacing[8],
   },
 
   welcomeIcon: {
     fontSize: 80,
-    marginBottom: spacing[4],
+    marginBottom: theme.spacing[4],
   },
 
   // Input section with modern glass morphism
   inputSection: {
-    marginBottom: spacing[10],
+    marginBottom: theme.spacing[10],
   },
 
   inputCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 24,
-    padding: spacing[8],
-    ...shadows.xl,
+    ...commonStyles.card,
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing[8],
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: theme.colors.border.inverse,
   },
 
   inputLabel: {
-    color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: spacing[4],
+    ...commonStyles.cardTitle,
     textAlign: "center",
-    letterSpacing: 2,
+    letterSpacing: theme.typography.letterSpacing.wider,
+    marginBottom: theme.spacing[4],
   },
 
   // Modern input with enhanced styling
   input: {
-    backgroundColor: colors.backgroundSecondary,
-    fontSize: 30,
-    fontWeight: 'bold',
+    ...commonStyles.input,
+    fontSize: theme.typography.fontSizes['3xl'],
+    fontWeight: theme.typography.fontWeights.bold,
     textAlign: "center",
-    paddingVertical: spacing[6],
-    paddingHorizontal: spacing[6],
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: colors.borderLight,
-    ...shadows.base,
-    letterSpacing: 4,
+    paddingVertical: theme.spacing[6],
+    paddingHorizontal: theme.spacing[6],
+    borderRadius: theme.borderRadius.lg,
+    letterSpacing: theme.typography.letterSpacing.widest,
   },
 
   inputFocused: {
-    borderColor: colors.primary500,
-    backgroundColor: colors.backgroundPrimary,
-    ...shadows.lg,
+    ...commonStyles.inputFocused,
   },
 
   inputError: {
-    borderColor: colors.emergency500,
-    backgroundColor: colors.emergency50,
+    ...commonStyles.inputError,
   },
 
   inputChanged: {
-    borderColor: colors.success500,
-    backgroundColor: colors.success50,
+    ...commonStyles.inputSuccess,
   },
 
   // Helper text
   errorText: {
-    color: colors.emergency600,
-    fontSize: 16,
+    ...commonStyles.textError,
     textAlign: "center",
-    marginTop: spacing[3],
-    fontWeight: '500',
+    marginTop: theme.spacing[3],
   },
 
   helperText: {
-    color: colors.textSecondary,
-    fontSize: 16,
+    ...commonStyles.textHelper,
     textAlign: "center",
-    marginTop: spacing[3],
-    fontWeight: '500',
+    marginTop: theme.spacing[3],
   },
 
   changedText: {
-    color: colors.success600,
-    fontSize: 16,
+    ...commonStyles.textSuccess,
     textAlign: "center",
-    marginTop: spacing[3],
-    fontWeight: '600',
+    marginTop: theme.spacing[3],
   },
 
   // Progress indicator
   progressSection: {
     alignItems: 'center',
-    marginBottom: spacing[6],
+    marginBottom: theme.spacing[6],
   },
 
   progressContainer: {
-    width: width * 0.6,
+    width: theme.dimensions.width * 0.6,
     height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: theme.colors.background.glassLight,
     borderRadius: 3,
     overflow: 'hidden',
   },
 
   progressBar: {
     height: '100%',
-    backgroundColor: colors.primary500,
+    backgroundColor: theme.colors.primary[500],
     borderRadius: 3,
   },
 
   progressText: {
-    color: colors.textLight,
-    fontSize: 14,
-    marginTop: spacing[2],
-    fontWeight: '500',
+    ...commonStyles.textLight,
+    marginTop: theme.spacing[2],
+    fontWeight: theme.typography.fontWeights.medium,
   },
 
   // Info section with enhanced styling
   infoSection: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 16,
-    padding: spacing[6],
-    marginBottom: spacing[8],
+    backgroundColor: theme.colors.background.glassDark,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing[6],
+    marginBottom: theme.spacing[8],
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: theme.colors.border.inverse,
   },
 
   infoText: {
-    color: colors.textLight,
-    fontSize: 16,
+    ...commonStyles.textLight,
     textAlign: "center",
-    lineHeight: 24,
-    fontWeight: '500',
+    lineHeight: theme.typography.lineHeights.normal,
+    fontWeight: theme.typography.fontWeights.medium,
   },
 
   // Button section
   buttonSection: {
-    gap: spacing[4],
+    gap: theme.spacing[4],
     alignItems: 'center',
   },
 
   // Modern finish button
   finishButton: {
-    backgroundColor: colors.success500,
-    paddingVertical: spacing[6],
-    paddingHorizontal: spacing[12],
-    borderRadius: 16,
-    minWidth: width * 0.8,
-    alignItems: "center",
-    ...shadows.xl,
+    ...commonStyles.button,
+    ...commonStyles.buttonSuccess,
+    paddingVertical: theme.spacing[6],
+    paddingHorizontal: theme.spacing[12],
+    borderRadius: theme.borderRadius.lg,
+    minWidth: theme.dimensions.width * 0.8,
     position: 'relative',
     overflow: 'hidden',
   },
 
   finishButtonDisabled: {
-    backgroundColor: colors.neutral400,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    ...commonStyles.buttonDisabled,
   },
 
   finishButtonText: {
-    color: colors.textInverse,
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: 2,
+    ...commonStyles.buttonTextLarge,
+    ...commonStyles.buttonTextPrimary,
+    letterSpacing: theme.typography.letterSpacing.wider,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
 
   finishButtonTextDisabled: {
-    color: colors.textDisabled,
+    ...commonStyles.buttonTextDisabled,
   },
 
   // Skip button (modern ghost button)
   skipButton: {
-    paddingVertical: spacing[4],
-    paddingHorizontal: spacing[6],
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    ...commonStyles.button,
+    ...commonStyles.buttonGhost,
+    paddingVertical: theme.spacing[4],
+    paddingHorizontal: theme.spacing[6],
+    backgroundColor: theme.colors.background.glassLight,
   },
 
   skipButtonText: {
-    color: colors.textLight,
-    fontSize: 16,
-    fontWeight: '500',
+    ...commonStyles.buttonText,
+    ...commonStyles.buttonTextSecondary,
     textDecorationLine: "underline",
   },
 
   // Feature highlights
   featuresSection: {
-    marginBottom: spacing[8],
+    marginBottom: theme.spacing[8],
   },
 
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: spacing[4],
-    marginBottom: spacing[3],
+    backgroundColor: theme.colors.background.glassLight,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing[4],
+    marginBottom: theme.spacing[3],
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: theme.colors.border.inverse,
   },
 
   featureIcon: {
-    fontSize: 24,
-    marginRight: spacing[4],
+    fontSize: theme.typography.fontSizes['2xl'],
+    marginRight: theme.spacing[4],
   },
 
   featureText: {
-    color: colors.textLight,
-    fontSize: 16,
-    fontWeight: '500',
+    ...commonStyles.textLight,
+    fontWeight: theme.typography.fontWeights.medium,
     flex: 1,
   },
 
@@ -339,42 +246,73 @@ export const onboardingformStyles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: theme.colors.background.overlayDark,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
   },
 
   loadingContent: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 16,
-    padding: spacing[8],
+    ...commonStyles.card,
     alignItems: 'center',
-    minWidth: width * 0.6,
-    ...shadows.xl,
+    minWidth: theme.dimensions.width * 0.6,
   },
 
   loadingText: {
-    color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: '600',
-    marginTop: spacing[4],
+    ...commonStyles.loadingText,
+    color: theme.colors.text.primary,
+    marginTop: theme.spacing[4],
   },
 
   // Security note
   securityNote: {
-    backgroundColor: 'rgba(14, 165, 233, 0.15)',
-    borderRadius: 12,
-    padding: spacing[4],
-    marginTop: spacing[4],
+    backgroundColor: `${theme.colors.primary[500]}20`,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing[4],
+    marginTop: theme.spacing[4],
     borderLeftWidth: 4,
-    borderLeftColor: colors.primary500,
+    borderLeftColor: theme.colors.primary[500],
   },
 
   securityText: {
-    color: colors.textLight,
-    fontSize: 14,
-    fontWeight: '500',
+    ...commonStyles.textLight,
+    fontSize: theme.typography.fontSizes.sm,
+    fontWeight: theme.typography.fontWeights.medium,
     textAlign: 'center',
   },
+
+  // Responsive adjustments
+  ...(theme.dimensions.isSmallScreen && {
+    content: {
+      paddingHorizontal: theme.spacing[4],
+      paddingTop: theme.spacing[12],
+    },
+    
+    header: {
+      marginBottom: theme.spacing[12],
+    },
+    
+    title: {
+      fontSize: theme.typography.fontSizes['5xl'],
+    },
+    
+    subtitle: {
+      fontSize: theme.typography.fontSizes.lg,
+      paddingHorizontal: theme.spacing[4],
+    },
+    
+    inputCard: {
+      padding: theme.spacing[6],
+    },
+    
+    input: {
+      fontSize: theme.typography.fontSizes['2xl'],
+      paddingVertical: theme.spacing[5],
+    },
+    
+    finishButton: {
+      minWidth: theme.dimensions.width * 0.85,
+      paddingVertical: theme.spacing[5],
+    },
+  }),
 });

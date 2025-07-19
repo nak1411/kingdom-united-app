@@ -1,86 +1,12 @@
-// app/styles/sosscreen.styles.js
-import { StatusBar, StyleSheet, Dimensions } from "react-native";
-
-const { width } = Dimensions.get('window');
-
-// Define theme values inline to avoid import issues
-const colors = {
-  emergency500: '#ef4444',
-  emergency600: '#dc2626',
-  emergency50: '#fef2f2',
-  primary500: '#0ea5e9',
-  primary600: '#0284c7',
-  success500: '#22c55e',
-  success600: '#16a34a',
-  neutral400: '#a3a3a3',
-  textInverse: '#ffffff',
-  textLight: 'rgba(255, 255, 255, 0.9)',
-  textPrimary: '#111827',
-  textSecondary: '#6b7280',
-  textDisabled: '#d1d5db',
-  backgroundDarker: '#111827',
-  backgroundPrimary: '#ffffff',
-  backgroundSecondary: '#f9fafb',
-  borderLight: '#e5e7eb',
-};
-
-const spacing = {
-  1: 4,
-  2: 8,
-  3: 12,
-  4: 16,
-  5: 20,
-  6: 24,
-  8: 32,
-  10: 40,
-  16: 64,
-};
-
-const shadows = {
-  sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  base: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  xl: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 16,
-  },
-};
+// app/styles/sosscreen.styles.js - Updated with Unified Theme
+import { StatusBar, StyleSheet } from "react-native";
+import { theme, commonStyles } from './theme';
 
 export const sosscreenStyles = StyleSheet.create({
+  // Base container
   container: {
-    flex: 1,
-    backgroundColor: '#000000',
+    ...commonStyles.container,
     paddingTop: StatusBar.currentHeight,
-  },
-
-  backgroundimage: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-
-  overlay: {
-    display: 'none',
   },
 
   scrollView: {
@@ -88,205 +14,165 @@ export const sosscreenStyles = StyleSheet.create({
   },
 
   scrollContent: {
-    padding: spacing[6],
-    paddingBottom: spacing[4],
+    padding: theme.spacing[6],
+    paddingBottom: theme.spacing[4],
   },
 
   // Loading state
   loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    ...commonStyles.loadingContainer,
+    backgroundColor: theme.colors.background.overlayDark,
   },
 
   loadingText: {
-    color: colors.textInverse,
-    fontSize: 18,
-    fontWeight: '500',
-    marginTop: spacing[4],
+    ...commonStyles.loadingText,
   },
 
   // Header section
   header: {
-    alignItems: 'center',
-    marginBottom: spacing[10],
-    paddingTop: spacing[6],
+    ...commonStyles.header,
+    marginBottom: theme.spacing[10],
+    paddingTop: theme.spacing[6],
   },
 
   title: {
-    color: colors.textInverse,
-    fontSize: 30,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: spacing[3],
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    ...commonStyles.headerTitle,
+    fontSize: theme.typography.fontSizes['4xl'],
+    color: theme.colors.text.inverse,
+    marginBottom: theme.spacing[3],
   },
 
   subtitle: {
-    color: colors.textLight,
-    fontSize: 18,
-    textAlign: 'center',
-    lineHeight: 26,
-    paddingHorizontal: spacing[4],
-    fontWeight: '500',
+    ...commonStyles.headerSubtitle,
+    paddingHorizontal: theme.spacing[4],
+    lineHeight: theme.typography.lineHeights.relaxed,
   },
 
   zipInfo: {
-    color: colors.textLight,
-    fontSize: 16,
+    color: theme.colors.text.medium,
+    fontSize: theme.typography.fontSizes.base,
     textAlign: 'center',
-    marginTop: spacing[2],
+    marginTop: theme.spacing[2],
     fontStyle: 'italic',
     opacity: 0.9,
   },
 
   // Prayer input section
   inputSection: {
-    marginBottom: spacing[6],
+    marginBottom: theme.spacing[6],
   },
 
   inputCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 24,
-    padding: spacing[6],
-    ...shadows.lg,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    ...commonStyles.card,
+    borderRadius: theme.borderRadius.xl,
   },
 
   inputHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing[4],
+    marginBottom: theme.spacing[4],
   },
 
   inputLabel: {
-    color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: '600',
+    ...commonStyles.cardTitle,
+    fontSize: theme.typography.fontSizes.lg,
+    marginBottom: 0,
   },
 
   characterCount: {
-    color: colors.textSecondary,
-    fontSize: 14,
-    fontWeight: '500',
+    ...commonStyles.textSecondary,
+    fontWeight: theme.typography.fontWeights.medium,
   },
 
   characterCountWarning: {
-    color: colors.emergency500,
+    color: theme.colors.emergency[500],
   },
 
-  // Modern text input
+  // Text input
   input: {
-    backgroundColor: colors.backgroundSecondary,
-    borderWidth: 2,
-    borderColor: colors.borderLight,
-    borderRadius: 12,
-    padding: spacing[5],
-    fontSize: 16,
-    lineHeight: 24,
+    ...commonStyles.input,
     minHeight: 160,
     textAlignVertical: 'top',
-    color: colors.textPrimary,
-    ...shadows.sm,
+    fontSize: theme.typography.fontSizes.base,
+    lineHeight: theme.typography.lineHeights.normal,
   },
 
   inputFocused: {
-    borderColor: colors.primary500,
-    backgroundColor: colors.backgroundPrimary,
-    ...shadows.base,
+    ...commonStyles.inputFocused,
   },
 
   inputError: {
-    borderColor: colors.emergency500,
-    backgroundColor: colors.emergency50,
+    ...commonStyles.inputError,
   },
 
   // Helper text
   errorText: {
-    color: colors.emergency600,
-    fontSize: 14,
-    fontWeight: '500',
-    marginTop: spacing[2],
-    marginLeft: spacing[1],
+    ...commonStyles.textError,
+    marginTop: theme.spacing[2],
+    marginLeft: theme.spacing[1],
   },
 
   helperText: {
-    color: colors.success600,
-    fontSize: 14,
-    fontWeight: '500',
-    marginTop: spacing[2],
-    marginLeft: spacing[1],
+    ...commonStyles.textSuccess,
+    marginTop: theme.spacing[2],
+    marginLeft: theme.spacing[1],
   },
 
   // Guidelines section
   guidelinesSection: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: spacing[5],
-    marginBottom: spacing[6],
+    backgroundColor: theme.colors.background.glassDark,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing[5],
+    marginBottom: theme.spacing[6],
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: theme.colors.border.inverse,
   },
 
   guidelinesTitle: {
-    color: colors.textInverse,
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: spacing[3],
+    color: theme.colors.text.inverse,
+    fontSize: theme.typography.fontSizes.lg,
+    fontWeight: theme.typography.fontWeights.semibold,
+    marginBottom: theme.spacing[3],
   },
 
   guidelinesText: {
-    color: colors.textLight,
-    fontSize: 16,
-    lineHeight: 24,
+    color: theme.colors.text.light,
+    fontSize: theme.typography.fontSizes.base,
+    lineHeight: theme.typography.lineHeights.normal,
   },
 
   // Button section
   buttonSection: {
-    padding: spacing[6],
-    paddingTop: spacing[4],
-    gap: spacing[4],
+    padding: theme.spacing[6],
+    paddingTop: theme.spacing[4],
+    gap: theme.spacing[4],
   },
 
-  // Modern clear button
+  // Clear button
   clearButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    paddingVertical: spacing[4],
-    paddingHorizontal: spacing[6],
-    borderRadius: 12,
-    alignItems: 'center',
-    ...shadows.base,
+    ...commonStyles.button,
+    ...commonStyles.buttonSecondary,
   },
 
   clearButtonText: {
-    color: colors.textInverse,
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: 1,
+    ...commonStyles.buttonText,
+    ...commonStyles.buttonTextSecondary,
   },
 
-  // Modern send button
+  // Send button (Emergency style)
   sendButton: {
-    backgroundColor: colors.emergency500,
-    paddingVertical: spacing[6],
-    paddingHorizontal: spacing[8],
-    borderRadius: 16,
-    alignItems: 'center',
-    ...shadows.xl,
-    position: 'relative',
-    overflow: 'hidden',
+    ...commonStyles.button,
+    ...commonStyles.buttonEmergency,
+    paddingVertical: theme.spacing[6],
+    borderRadius: theme.borderRadius.lg,
+    // Enhanced emergency shadow
+    shadowColor: theme.colors.emergency[500],
+    shadowOpacity: 0.4,
   },
 
   sendButtonDisabled: {
-    backgroundColor: colors.neutral400,
-    ...shadows.sm,
+    ...commonStyles.buttonDisabled,
   },
 
   sendingContainer: {
@@ -296,49 +182,36 @@ export const sosscreenStyles = StyleSheet.create({
   },
 
   sendingText: {
-    color: colors.textInverse,
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: spacing[3],
-    letterSpacing: 1,
+    ...commonStyles.buttonTextLarge,
+    ...commonStyles.buttonTextPrimary,
+    marginLeft: theme.spacing[3],
   },
 
   sendButtonText: {
-    color: colors.textInverse,
-    fontSize: 18,
-    fontWeight: 'bold',
-    letterSpacing: 1,
+    ...commonStyles.buttonTextLarge,
+    ...commonStyles.buttonTextPrimary,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
 
   sendButtonTextDisabled: {
-    color: colors.textDisabled,
+    ...commonStyles.buttonTextDisabled,
   },
 
-  // Modern back button
+  // Back button
   backButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    paddingVertical: spacing[5],
-    paddingHorizontal: spacing[6],
-    borderRadius: 12,
-    alignItems: 'center',
+    ...commonStyles.backButton,
   },
 
   backButtonText: {
-    color: colors.textLight,
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: 1,
+    ...commonStyles.backButtonText,
   },
 
   // Progress indicator for character count
   progressContainer: {
-    marginTop: spacing[3],
-    backgroundColor: '#e5e7eb',
+    marginTop: theme.spacing[3],
+    backgroundColor: theme.colors.neutral[200],
     height: 4,
     borderRadius: 2,
     overflow: 'hidden',
@@ -346,62 +219,77 @@ export const sosscreenStyles = StyleSheet.create({
 
   progressBar: {
     height: '100%',
-    backgroundColor: colors.primary500,
+    backgroundColor: theme.colors.primary[500],
     borderRadius: 2,
   },
 
   progressBarWarning: {
-    backgroundColor: colors.emergency500,
+    backgroundColor: theme.colors.emergency[500],
   },
 
   // Emergency indicator
   emergencyIndicator: {
     position: 'absolute',
-    top: spacing[4],
-    right: spacing[4],
-    backgroundColor: colors.emergency500,
-    borderRadius: 50,
-    paddingVertical: spacing[2],
-    paddingHorizontal: spacing[3],
+    top: theme.spacing[4],
+    right: theme.spacing[4],
+    ...commonStyles.badge,
+    ...commonStyles.badgeEmergency,
     flexDirection: 'row',
     alignItems: 'center',
-    ...shadows.base,
   },
 
   emergencyDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.textInverse,
-    marginRight: spacing[2],
+    backgroundColor: theme.colors.text.inverse,
+    marginRight: theme.spacing[2],
   },
 
   emergencyText: {
-    color: colors.textInverse,
-    fontSize: 12,
-    fontWeight: 'bold',
+    ...commonStyles.badgeText,
   },
 
   // Tips section
   tipsSection: {
-    backgroundColor: 'rgba(14, 165, 233, 0.1)',
-    borderRadius: 12,
-    padding: spacing[5],
-    marginBottom: spacing[6],
+    backgroundColor: `${theme.colors.primary[500]}20`,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing[5],
+    marginBottom: theme.spacing[6],
     borderLeftWidth: 4,
-    borderLeftColor: colors.primary500,
+    borderLeftColor: theme.colors.primary[500],
   },
 
   tipsTitle: {
-    color: colors.textInverse,
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: spacing[2],
+    color: theme.colors.text.inverse,
+    fontSize: theme.typography.fontSizes.base,
+    fontWeight: theme.typography.fontWeights.semibold,
+    marginBottom: theme.spacing[2],
   },
 
   tipsText: {
-    color: colors.textLight,
-    fontSize: 14,
-    lineHeight: 20,
+    color: theme.colors.text.light,
+    fontSize: theme.typography.fontSizes.sm,
+    lineHeight: theme.typography.lineHeights.normal,
   },
+
+  // Responsive adjustments
+  ...(theme.dimensions.isSmallScreen && {
+    scrollContent: {
+      padding: theme.spacing[4],
+    },
+    
+    header: {
+      paddingTop: theme.spacing[4],
+      marginBottom: theme.spacing[8],
+    },
+    
+    title: {
+      fontSize: theme.typography.fontSizes['3xl'],
+    },
+    
+    sendButton: {
+      paddingVertical: theme.spacing[5],
+    },
+  }),
 });

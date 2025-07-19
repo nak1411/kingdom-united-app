@@ -1,103 +1,22 @@
-// app/styles/requestsscreen.styles.js
-import { StatusBar, StyleSheet, Dimensions } from "react-native";
-
-const { width } = Dimensions.get('window');
-
-// Define theme values inline
-const colors = {
-  primary500: '#0ea5e9',
-  primary600: '#0284c7',
-  primary100: '#e0f2fe',
-  primary300: '#7dd3fc',
-  emergency500: '#ef4444',
-  secondary500: '#d946ef',
-  success500: '#22c55e',
-  textInverse: '#ffffff',
-  textLight: 'rgba(255, 255, 255, 0.9)',
-  textPrimary: '#111827',
-  textSecondary: '#6b7280',
-  textTertiary: '#9ca3af',
-  backgroundDarker: '#111827',
-  backgroundPrimary: '#ffffff',
-  backgroundSecondary: '#f9fafb',
-  borderLight: '#e5e7eb',
-};
-
-const spacing = {
-  1: 4,
-  2: 8,
-  3: 12,
-  4: 16,
-  5: 20,
-  6: 24,
-  8: 32,
-  10: 40,
-  20: 80,
-  24: 96,
-};
-
-const shadows = {
-  sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  base: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  xl: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 16,
-  },
-};
+// app/styles/requestsscreen.styles.js - Updated with Unified Theme
+import { StatusBar, StyleSheet } from "react-native";
+import { theme, commonStyles } from './theme';
 
 export const requestsscreenStyles = StyleSheet.create({
+  // Base container
   container: {
-    flex: 1,
-    backgroundColor: '#000000',
+    ...commonStyles.container,
     paddingTop: StatusBar.currentHeight,
-  },
-
-  backgroundimage: {
-    flex: 1,
-    backgroundColor: '#000000',
-  },
-
-  overlay: {
-    display: 'none',
   },
 
   // Header section
   header: {
-    paddingHorizontal: spacing[6],
-    paddingVertical: spacing[5],
+    paddingHorizontal: theme.spacing[6],
+    paddingVertical: theme.spacing[5],
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: theme.colors.background.glassDark,
   },
 
   titleContainer: {
@@ -105,48 +24,47 @@ export const requestsscreenStyles = StyleSheet.create({
   },
 
   title: {
-    color: colors.textInverse,
-    fontWeight: 'bold',
-    fontSize: 24,
-    marginBottom: spacing[1],
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    color: theme.colors.text.inverse,
+    fontWeight: theme.typography.fontWeights.bold,
+    fontSize: theme.typography.fontSizes['2xl'],
+    marginBottom: theme.spacing[1],
+    textShadowColor: theme.colors.background.overlay,
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
 
   subtitle: {
-    color: colors.textLight,
-    fontSize: 16,
-    fontWeight: '500',
+    color: theme.colors.text.light,
+    fontSize: theme.typography.fontSizes.base,
+    fontWeight: theme.typography.fontWeights.medium,
   },
 
   // Real-time toggle
   realTimeToggle: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[2],
-    borderRadius: 50,
+    ...commonStyles.badge,
+    backgroundColor: theme.colors.background.glassMedium,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: theme.colors.border.inverse,
+    paddingHorizontal: theme.spacing[3],
+    paddingVertical: theme.spacing[2],
   },
 
   realTimeToggleText: {
-    color: colors.textInverse,
-    fontSize: 12,
-    fontWeight: 'bold',
-    letterSpacing: 1,
+    ...commonStyles.badgeText,
+    fontSize: theme.typography.fontSizes.xs,
+    letterSpacing: theme.typography.letterSpacing.wide,
   },
 
   // Real-time status bar
   realTimeStatus: {
-    paddingHorizontal: spacing[6],
-    paddingVertical: spacing[3],
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    paddingHorizontal: theme.spacing[6],
+    paddingVertical: theme.spacing[3],
+    backgroundColor: theme.colors.background.glassDark,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: theme.colors.border.inverse,
   },
 
   statusContainer: {
@@ -158,87 +76,73 @@ export const requestsscreenStyles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: spacing[2],
+    marginRight: theme.spacing[2],
   },
 
   statusText: {
-    color: colors.textLight,
-    fontSize: 14,
-    fontWeight: '500',
-    marginRight: spacing[3],
+    color: theme.colors.text.light,
+    fontSize: theme.typography.fontSizes.sm,
+    fontWeight: theme.typography.fontWeights.medium,
+    marginRight: theme.spacing[3],
   },
 
   lastUpdateText: {
-    color: colors.textLight,
-    fontSize: 12,
+    color: theme.colors.text.light,
+    fontSize: theme.typography.fontSizes.xs,
     opacity: 0.8,
   },
 
   newPrayersNotification: {
-    backgroundColor: colors.emergency500,
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1],
-    borderRadius: 50,
-    ...shadows.base,
+    ...commonStyles.badge,
+    ...commonStyles.badgeEmergency,
   },
 
   newPrayersText: {
-    color: colors.textInverse,
-    fontSize: 12,
-    fontWeight: 'bold',
+    ...commonStyles.badgeText,
   },
 
   // Content area
   content: {
     flex: 1,
-    marginHorizontal: spacing[3],
+    marginHorizontal: theme.spacing[3],
   },
 
   // Loading states
   loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing[6],
+    ...commonStyles.loadingContainer,
+    paddingHorizontal: theme.spacing[6],
   },
 
   loadingText: {
-    color: colors.textInverse,
-    marginTop: spacing[4],
-    fontSize: 18,
-    fontWeight: '500',
+    ...commonStyles.loadingText,
     textAlign: 'center',
   },
 
   // Feed container
   feedContainer: {
-    paddingBottom: spacing[6],
+    paddingBottom: theme.spacing[6],
   },
 
-  // Modern prayer item cards
+  // Prayer item cards
   prayerItem: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    marginHorizontal: spacing[3],
-    marginVertical: spacing[2],
-    borderRadius: 16,
-    padding: spacing[5],
-    ...shadows.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    ...commonStyles.card,
+    marginHorizontal: theme.spacing[3],
+    marginVertical: theme.spacing[2],
+    padding: theme.spacing[5],
   },
 
   recentPrayerItem: {
     borderLeftWidth: 4,
-    borderLeftColor: colors.success500,
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
-    ...shadows.lg,
+    borderLeftColor: theme.colors.success[500],
+    backgroundColor: theme.colors.background.glass,
+    ...theme.shadows.lg,
   },
 
   prayerHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: spacing[4],
+    marginBottom: theme.spacing[4],
   },
 
   userInfo: {
@@ -251,15 +155,15 @@ export const requestsscreenStyles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: theme.colors.background.secondary,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: spacing[3],
-    ...shadows.sm,
+    marginRight: theme.spacing[3],
+    ...theme.shadows.sm,
   },
 
   avatarText: {
-    fontSize: 18,
+    fontSize: theme.typography.fontSizes.lg,
   },
 
   userDetails: {
@@ -267,118 +171,99 @@ export const requestsscreenStyles = StyleSheet.create({
   },
 
   userName: {
-    fontWeight: '600',
-    fontSize: 16,
-    color: colors.textPrimary,
-    marginBottom: spacing[1],
+    ...commonStyles.cardTitle,
+    fontSize: theme.typography.fontSizes.base,
+    marginBottom: theme.spacing[1],
   },
 
   timestamp: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '500',
+    ...commonStyles.cardSubtitle,
+    fontWeight: theme.typography.fontWeights.medium,
   },
 
   // Badges section
   badges: {
     alignItems: 'flex-end',
-    gap: spacing[2],
+    gap: theme.spacing[2],
   },
 
   newBadge: {
-    backgroundColor: colors.success500,
-    paddingHorizontal: spacing[2],
-    paddingVertical: spacing[1],
-    borderRadius: 6,
-    ...shadows.sm,
+    ...commonStyles.badge,
+    ...commonStyles.badgeSuccess,
   },
 
   newBadgeText: {
-    color: colors.textInverse,
-    fontSize: 12,
-    fontWeight: 'bold',
-    letterSpacing: 1,
+    ...commonStyles.badgeText,
+    letterSpacing: theme.typography.letterSpacing.wide,
   },
 
   prayerBadge: {
-    backgroundColor: colors.emergency500,
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1],
-    borderRadius: 50,
-    ...shadows.sm,
+    ...commonStyles.badge,
+    ...commonStyles.badgeEmergency,
   },
 
   prayerBadgeText: {
-    color: colors.textInverse,
-    fontSize: 12,
-    fontWeight: '600',
+    ...commonStyles.badgeText,
   },
 
   urgentBadge: {
-    backgroundColor: colors.secondary500,
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[1],
-    borderRadius: 50,
+    ...commonStyles.badge,
+    backgroundColor: theme.colors.warrior[500],
   },
 
   urgentBadgeText: {
-    color: colors.textInverse,
-    fontSize: 12,
-    fontWeight: 'bold',
+    ...commonStyles.badgeText,
   },
 
   // Prayer content
   prayerContent: {
-    marginBottom: spacing[4],
+    marginBottom: theme.spacing[4],
   },
 
   prayerText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: colors.textPrimary,
-    fontWeight: 'normal',
+    ...commonStyles.textPrimary,
+    lineHeight: theme.typography.lineHeights.normal,
   },
 
   readMore: {
-    color: colors.primary600,
-    fontSize: 14,
-    marginTop: spacing[2],
-    fontWeight: '600',
+    color: theme.colors.primary[600],
+    fontSize: theme.typography.fontSizes.sm,
+    marginTop: theme.spacing[2],
+    fontWeight: theme.typography.fontWeights.semibold,
   },
 
   // Prayer actions
   prayerActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: spacing[4],
+    paddingTop: theme.spacing[4],
     borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
-    gap: spacing[2],
+    borderTopColor: theme.colors.border.light,
+    gap: theme.spacing[2],
   },
 
   actionButton: {
     flex: 1,
-    paddingVertical: spacing[3],
-    paddingHorizontal: spacing[2],
-    borderRadius: 8,
-    backgroundColor: colors.backgroundSecondary,
+    paddingVertical: theme.spacing[3],
+    paddingHorizontal: theme.spacing[2],
+    borderRadius: theme.borderRadius.base,
+    backgroundColor: theme.colors.background.secondary,
     alignItems: 'center',
-    ...shadows.sm,
+    ...theme.shadows.sm,
   },
 
   actionButtonPressed: {
-    backgroundColor: colors.primary100,
+    backgroundColor: theme.colors.primary[100],
     transform: [{ scale: 0.95 }],
   },
 
   actionText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '500',
+    ...commonStyles.textSecondary,
+    fontWeight: theme.typography.fontWeights.medium,
   },
 
   actionTextActive: {
-    color: colors.primary600,
+    color: theme.colors.primary[600],
   },
 
   // Separator
@@ -392,47 +277,37 @@ export const requestsscreenStyles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing[10],
+    paddingHorizontal: theme.spacing[10],
   },
 
   emptyStateIcon: {
     fontSize: 64,
-    marginBottom: spacing[6],
+    marginBottom: theme.spacing[6],
     opacity: 0.8,
   },
 
   emptyStateTitle: {
-    color: colors.textInverse,
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...commonStyles.headerTitle,
+    fontSize: theme.typography.fontSizes['2xl'],
     textAlign: 'center',
-    marginBottom: spacing[4],
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    marginBottom: theme.spacing[4],
   },
 
   emptyStateText: {
-    color: colors.textLight,
-    fontSize: 16,
+    ...commonStyles.textLight,
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: spacing[6],
-    fontWeight: '500',
+    lineHeight: theme.typography.lineHeights.normal,
+    marginBottom: theme.spacing[6],
   },
 
   settingsButton: {
-    backgroundColor: colors.primary500,
-    paddingVertical: spacing[4],
-    paddingHorizontal: spacing[6],
-    borderRadius: 12,
-    ...shadows.base,
+    ...commonStyles.button,
+    ...commonStyles.buttonPrimary,
   },
 
   settingsButtonText: {
-    color: colors.textInverse,
-    fontSize: 16,
-    fontWeight: '600',
+    ...commonStyles.buttonText,
+    ...commonStyles.buttonTextPrimary,
   },
 
   // Error state
@@ -440,223 +315,193 @@ export const requestsscreenStyles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: spacing[10],
+    paddingHorizontal: theme.spacing[10],
   },
 
   errorStateIcon: {
     fontSize: 64,
-    marginBottom: spacing[6],
+    marginBottom: theme.spacing[6],
     opacity: 0.8,
   },
 
   errorStateTitle: {
-    color: colors.textInverse,
-    fontSize: 24,
-    fontWeight: 'bold',
+    ...commonStyles.headerTitle,
+    fontSize: theme.typography.fontSizes['2xl'],
     textAlign: 'center',
-    marginBottom: spacing[4],
+    marginBottom: theme.spacing[4],
   },
 
   errorStateText: {
-    color: colors.textLight,
-    fontSize: 16,
+    ...commonStyles.textLight,
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: spacing[6],
+    lineHeight: theme.typography.lineHeights.normal,
+    marginBottom: theme.spacing[6],
   },
 
   retryButton: {
-    backgroundColor: colors.success500,
-    paddingVertical: spacing[4],
-    paddingHorizontal: spacing[6],
-    borderRadius: 12,
-    ...shadows.base,
+    ...commonStyles.button,
+    ...commonStyles.buttonSuccess,
   },
 
   retryButtonText: {
-    color: colors.textInverse,
-    fontSize: 16,
-    fontWeight: '600',
+    ...commonStyles.buttonText,
+    ...commonStyles.buttonTextPrimary,
   },
 
   // Bottom section
   bottomSection: {
-    padding: spacing[6],
-    paddingTop: spacing[4],
+    ...commonStyles.bottomSection,
   },
 
   backButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    paddingVertical: spacing[5],
-    paddingHorizontal: spacing[8],
-    borderRadius: 12,
-    alignItems: 'center',
-    ...shadows.base,
+    ...commonStyles.backButton,
   },
 
   backButtonText: {
-    color: colors.textLight,
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: 1,
-  },
-
-  // Original styles for compatibility
-  backbutton: {
-    marginBottom: 20,
-    borderRadius: 15,
-    borderWidth: 2,
-    borderColor: "gray",
-    backgroundColor: "#004060",
-    width: 250,
-    height: 60,
-    justifyContent: "center",
-    alignSelf: "center",
-  },
-
-  input: {
-    color: "black",
-    backgroundColor: "white",
-    height: 200,
-    margin: 12,
-    padding: 100,
-    borderWidth: 2,
+    ...commonStyles.backButtonText,
   },
 
   // Modal styles
   modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    ...commonStyles.modalOverlay,
   },
 
   modalContent: {
-    backgroundColor: colors.backgroundPrimary,
-    marginHorizontal: spacing[6],
-    borderRadius: 24,
-    maxHeight: '85%',
-    width: width * 0.9,
-    ...shadows.xl,
+    ...commonStyles.modalContent,
   },
 
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing[6],
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
+    ...commonStyles.modalHeader,
   },
 
   modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
+    ...commonStyles.modalTitle,
   },
 
   closeButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.backgroundSecondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...shadows.sm,
+    ...commonStyles.modalCloseButton,
   },
 
   closeButtonText: {
-    fontSize: 18,
-    color: colors.textSecondary,
-    fontWeight: 'bold',
+    ...commonStyles.modalCloseText,
   },
 
   modalBody: {
-    padding: spacing[6],
+    padding: theme.spacing[6],
   },
 
   modalPrayerHeader: {
-    marginBottom: spacing[5],
-    paddingBottom: spacing[4],
+    marginBottom: theme.spacing[5],
+    paddingBottom: theme.spacing[4],
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
+    borderBottomColor: theme.colors.border.light,
   },
 
   modalTimestamp: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    marginBottom: spacing[2],
-    fontWeight: '500',
+    ...commonStyles.textSecondary,
+    fontSize: theme.typography.fontSizes.base,
+    marginBottom: theme.spacing[2],
+    fontWeight: theme.typography.fontWeights.medium,
   },
 
   modalPrayerId: {
-    fontSize: 14,
-    color: colors.textTertiary,
+    ...commonStyles.textSecondary,
+    fontSize: theme.typography.fontSizes.sm,
     fontStyle: 'italic',
+    opacity: 0.7,
   },
 
   modalPrayerText: {
-    fontSize: 18,
-    lineHeight: 28,
-    color: colors.textPrimary,
-    marginBottom: spacing[6],
-    fontWeight: 'normal',
+    ...commonStyles.textPrimary,
+    fontSize: theme.typography.fontSizes.lg,
+    lineHeight: theme.typography.lineHeights.relaxed,
+    marginBottom: theme.spacing[6],
   },
 
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: spacing[5],
+    paddingTop: theme.spacing[5],
     borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
-    gap: spacing[3],
+    borderTopColor: theme.colors.border.light,
+    gap: theme.spacing[3],
   },
 
   modalActionButton: {
     flex: 1,
-    backgroundColor: colors.backgroundSecondary,
-    paddingVertical: spacing[4],
-    paddingHorizontal: spacing[5],
-    borderRadius: 12,
+    ...commonStyles.button,
+    backgroundColor: theme.colors.background.secondary,
     borderWidth: 1,
-    borderColor: colors.borderLight,
-    alignItems: 'center',
-    ...shadows.sm,
+    borderColor: theme.colors.border.light,
+    paddingVertical: theme.spacing[4],
   },
 
   modalActionButtonPressed: {
-    backgroundColor: colors.primary100,
-    borderColor: colors.primary300,
+    backgroundColor: theme.colors.primary[100],
+    borderColor: theme.colors.primary[300],
   },
 
   modalActionText: {
-    fontSize: 16,
-    color: colors.textPrimary,
-    fontWeight: '500',
+    ...commonStyles.buttonText,
+    color: theme.colors.text.primary,
   },
 
   modalActionTextActive: {
-    color: colors.primary600,
+    color: theme.colors.primary[600],
   },
 
   // Floating refresh button
   floatingRefresh: {
     position: 'absolute',
-    bottom: spacing[24],
-    right: spacing[6],
-    backgroundColor: colors.primary500,
+    bottom: theme.spacing[24],
+    right: theme.spacing[6],
+    backgroundColor: theme.colors.primary[500],
     width: 56,
     height: 56,
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    ...shadows.lg,
+    ...theme.shadows.lg,
   },
 
   floatingRefreshIcon: {
-    color: colors.textInverse,
-    fontSize: 20,
+    color: theme.colors.text.inverse,
+    fontSize: theme.typography.fontSizes.xl,
   },
+
+  // Legacy compatibility styles
+  backbutton: {
+    ...commonStyles.backButton,
+    marginBottom: theme.spacing[5],
+    width: 250,
+    height: 60,
+    alignSelf: 'center',
+  },
+
+  input: {
+    ...commonStyles.input,
+    height: 200,
+    margin: theme.spacing[3],
+    padding: theme.spacing[25],
+  },
+
+  // Responsive adjustments
+  ...(theme.dimensions.isSmallScreen && {
+    header: {
+      paddingHorizontal: theme.spacing[4],
+    },
+    
+    title: {
+      fontSize: theme.typography.fontSizes.xl,
+    },
+    
+    prayerItem: {
+      marginHorizontal: theme.spacing[2],
+      padding: theme.spacing[4],
+    },
+    
+    modalContent: {
+      width: theme.dimensions.width * 0.95,
+    },
+  }),
 });

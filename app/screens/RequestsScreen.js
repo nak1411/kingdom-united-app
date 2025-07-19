@@ -342,17 +342,7 @@ export default function RequestsScreen({ navigation }) {
           )}
         </View>
 
-        <View style={styles.prayerActions}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionText}>🤲 Pray</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionText}>💙 Support</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionText}>🔗 Share</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Removed prayer actions section */}
       </TouchableOpacity>
     );
   };
@@ -561,14 +551,7 @@ export default function RequestsScreen({ navigation }) {
                     "Prayer request"}
                 </Text>
 
-                <View style={styles.modalActions}>
-                  <TouchableOpacity style={styles.modalActionButton}>
-                    <Text style={styles.modalActionText}>🤲 I'm Praying</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.modalActionButton}>
-                    <Text style={styles.modalActionText}>💙 Send Support</Text>
-                  </TouchableOpacity>
-                </View>
+                {/* Removed modal actions section */}
               </ScrollView>
             )}
           </View>
@@ -769,21 +752,6 @@ const styles = {
     marginTop: 5,
     fontWeight: "500",
   },
-  prayerActions: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
-  },
-  actionButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  actionText: {
-    fontSize: 14,
-    color: "#666",
-  },
   separator: {
     height: 1,
   },
@@ -875,7 +843,7 @@ const styles = {
     fontSize: 16,
     fontWeight: "600",
   },
-  // Modal styles remain the same...
+  // Modal styles
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -938,25 +906,5 @@ const styles = {
     lineHeight: 26,
     color: "#333",
     marginBottom: 20,
-  },
-  modalActions: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingTop: 15,
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
-  },
-  modalActionButton: {
-    backgroundColor: "#f8f9fa",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#dee2e6",
-  },
-  modalActionText: {
-    fontSize: 16,
-    color: "#495057",
-    fontWeight: "500",
   },
 };

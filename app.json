@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "KingdomUnitedApp",
+    "name": "Kingdom United App",
     "slug": "KingdomUnitedApp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourname.kingdomunitedapp"
+      "bundleIdentifier": "com.nak1411.kingdomunitedapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +22,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.yourname.kingdomunitedapp"
+      "package": "com.nak1411.kingdomunitedapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -1,4 +1,4 @@
-// Production-ready API Configuration
+// Production-ready API Configuration - Updated for Database Integration
 import { Platform } from 'react-native';
 
 const getBaseURL = () => {
@@ -89,7 +89,13 @@ export const apiRequest = async (endpoint, options = {}) => {
       if (__DEV__) {
         console.log(`[API] Success response:`, data);
       }
-      return data;
+      
+      // Return data in consistent format
+      return {
+        data: Array.isArray(data) ? data : [data],
+        success: true,
+        timestamp: new Date().toISOString()
+      };
       
     } catch (error) {
       lastError = error;
@@ -168,7 +174,7 @@ export const testConnection = async () => {
   }
 };
 
-// Production-ready Prayer API
+// Production-ready Prayer API - Updated for your database schema
 export const prayerAPI = {
   testConnection,
   
@@ -181,29 +187,52 @@ export const prayerAPI = {
       }
     }
     
+    // Map frontend fields to backend fields
+    const backendData = {
+      userId: prayerData.userId,
+      zip: parseInt(prayerData.zip), // Ensure zip is integer
+      prayerText: prayerData.prayerText,
+    };
+    
+    console.log('[API] Submitting prayer data:', backendData);
+    
     return apiRequest(API_CONFIG.ENDPOINTS.PRAYERS, {
       method: 'POST',
-      body: JSON.stringify(prayerData),
+      body: JSON.stringify(backendData),
     });
   },
   
   getAll: async () => {
+    console.log('[API] Fetching all prayers');
     return apiRequest(API_CONFIG.ENDPOINTS.PRAYERS);
   },
   
   getByUser: async (userId) => {
+    console.log(`[API] Fetching prayers for user: ${userId}`);
     return apiRequest(`${API_CONFIG.ENDPOINTS.PRAYERS_BY_USER}/${userId}`);
   },
   
   getByZip: async (zipCode) => {
-    return apiRequest(`${API_CONFIG.ENDPOINTS.PRAYERS_BY_ZIP}/${zipCode}`);
+    console.log(`[API] Fetching prayers for zip: ${zipCode}`);
+    const result = await apiRequest(`${API_CONFIG.ENDPOINTS.PRAYERS_BY_ZIP}/${zipCode}`);
+    
+    // Ensure we return the data in the expected format
+    if (result && Array.isArray(result)) {
+      return { data: result };
+    } else if (result && result.data) {
+      return result;
+    } else {
+      return { data: [] };
+    }
   },
   
   getById: async (id) => {
+    console.log(`[API] Fetching prayer by ID: ${id}`);
     return apiRequest(`${API_CONFIG.ENDPOINTS.PRAYERS}/${id}`);
   },
   
   update: async (id, updateData) => {
+    console.log(`[API] Updating prayer ${id}:`, updateData);
     return apiRequest(`${API_CONFIG.ENDPOINTS.PRAYERS}/${id}`, {
       method: 'PUT',
       body: JSON.stringify(updateData),
@@ -211,6 +240,7 @@ export const prayerAPI = {
   },
   
   delete: async (id) => {
+    console.log(`[API] Deleting prayer ${id}`);
     return apiRequest(`${API_CONFIG.ENDPOINTS.PRAYERS}/${id}`, {
       method: 'DELETE',
     });
@@ -292,9 +322,29 @@ export const debugConnection = async () => {
   console.log(`Full health check URL: ${API_CONFIG.BASE_URL}/health`);
   
   try {
-    const result = await testConnection();
-    console.log('Connection test result:', result);
-    return result;
+    // Test health endpoint
+    const healthResult = await testConnection();
+    console.log('Health check result:', healthResult);
+    
+    // Test fetching all prayers
+    console.log('\n=== TESTING PRAYERS ENDPOINT ===');
+    const prayersResult = await prayerAPI.getAll();
+    console.log('All prayers result:', prayersResult);
+    
+    // Test fetching by zip if we have data
+    if (prayersResult.data && prayersResult.data.length > 0) {
+      const sampleZip = prayersResult.data[0].zip;
+      console.log(`\n=== TESTING ZIP ENDPOINT (${sampleZip}) ===`);
+      const zipResult = await prayerAPI.getByZip(sampleZip);
+      console.log('Zip prayers result:', zipResult);
+    }
+    
+    return { 
+      success: true, 
+      healthCheck: healthResult,
+      prayersTest: prayersResult,
+      message: 'All tests completed successfully'
+    };
   } catch (error) {
     console.error('Debug connection failed:', error);
     return { success: false, error: error.message };

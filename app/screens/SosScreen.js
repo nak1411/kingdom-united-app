@@ -34,8 +34,8 @@ export default function SosScreen({ navigation }) {
   const [prayerError, setPrayerError] = useState("");
   const [userId, setUserId] = useState("");
 
-  const MAX_CHARACTERS = 500; // Increased from 120 for more detailed prayers
-  const MIN_CHARACTERS = 10;
+  const MAX_CHARACTERS = 125; // Increased from 120 for more detailed prayers
+  const MIN_CHARACTERS = 5;
 
   // Store prayer in AsyncStorage
   const storePrayer = async (value) => {

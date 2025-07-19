@@ -9,6 +9,7 @@ import HomeScreen from "./screens/HomeScreen.js";
 import SosScreen from "./screens/SosScreen.js";
 import RequestsScreen from "./screens/RequestsScreen.js";
 import SettingsScreen from "./screens/SettingsScreen.js";
+import WarriorBookScreen from "./screens/WarriorBookScreen.js";
 
 const Stack = createNativeStackNavigator();
 
@@ -84,6 +85,11 @@ export default function App() {
         <Stack.Screen
           name="Settings"
           component={SettingsScreen}
+        />
+
+        <Stack.Screen
+          name="WarriorBook"
+          component={WarriorBookScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

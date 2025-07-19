@@ -32,6 +32,11 @@ export default function HomeScreen({ navigation }) {
     navigation.navigate("Settings");
   };
 
+  const warriorBookPressed = () => {
+    console.log("WARRIOR BOOK");
+    navigation.navigate("WarriorBook");
+  };
+
   useEffect(() => {
     runOnboarding();
   });
@@ -80,6 +85,22 @@ export default function HomeScreen({ navigation }) {
           <ImageBackground
             source={require("../../assets/image_33.jpg")}
           ></ImageBackground>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={homescreenStyles.warriorbookbutton}
+          onPress={() => warriorBookPressed()}
+        >
+          <Text
+            style={{
+              color: "black",
+              fontSize: 30,
+              alignSelf: "center",
+              justifyContent: "center",
+            }}
+          >
+            WARRIOR BOOK ⚔️
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity

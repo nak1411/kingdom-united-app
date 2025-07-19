@@ -9,6 +9,7 @@ const colors = {
   primary500: '#0ea5e9',
   success500: '#22c55e',
   neutral500: '#737373',
+  warrior500: '#8b5cf6', // Purple for warrior book
   textInverse: '#ffffff',
   textLight: 'rgba(255, 255, 255, 0.9)',
   backgroundDarker: '#111827',
@@ -256,12 +257,26 @@ export const homescreenStyles = StyleSheet.create({
     borderColor: 'rgba(14, 165, 233, 0.3)',
     borderRadius: 15,
     borderWidth: 2,
-    width: 250,
+    width: 280,
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
+  },
+
+  // New WarriorBook button style
+  warriorbookbutton: {
+    backgroundColor: 'rgba(139, 92, 246, 0.2)', // Purple theme
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+    borderRadius: 15,
+    borderWidth: 2,
+    width: 280,
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginBottom: 15,
   },
 
   settingsbutton: {
@@ -269,7 +284,7 @@ export const homescreenStyles = StyleSheet.create({
     borderColor: 'rgba(107, 114, 128, 0.3)',
     borderRadius: 15,
     borderWidth: 2,
-    width: 250,
+    width: 280,
     height: 60,
     justifyContent: 'center',
     alignItems: 'center',

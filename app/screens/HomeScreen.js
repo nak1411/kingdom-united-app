@@ -9,7 +9,7 @@ import {
 import { useEffect } from "react";
 import backgroundimage from "../../assets/image_33.jpg";
 import logoimage from "../../assets/logo.png";
-import {homescreenStyles} from "../styles/homescreen.styles"
+import { homescreenStyles } from "../styles/homescreen.styles";
 
 export default function HomeScreen({ navigation }) {
   const runOnboarding = async () => {
@@ -38,68 +38,66 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={homescreenStyles.container}>
-      <ImageBackground
-        source={backgroundimage}
-        resizeMode="stretch"
-        style={homescreenStyles.backgroundimage}
-      >
-        <ImageBackground
-          source={logoimage}
-          resizeMode="center"
-          style={homescreenStyles.logoimage}
-        ></ImageBackground>
 
-        <StatusBar style="light" />
-        <TouchableOpacity style={homescreenStyles.sosbutton} onPress={() => sosPressed()}>
+      <ImageBackground
+        source={logoimage}
+        resizeMode="center"
+        style={homescreenStyles.logoimage}
+      ></ImageBackground>
+
+      <StatusBar style="light" />
+      <TouchableOpacity
+        style={homescreenStyles.sosbutton}
+        onPress={() => sosPressed()}
+      >
+        <Text
+          style={{
+            color: "#fff",
+            fontSize: 60,
+            alignSelf: "center",
+            justifyContent: "center",
+          }}
+        >
+          SOS
+        </Text>
+      </TouchableOpacity>
+
+      <View style={{ flex: 1, marginTop: 80 }}>
+        <TouchableOpacity
+          style={homescreenStyles.requestsbutton}
+          onPress={() => requestsPressed()}
+        >
           <Text
             style={{
-              color: "#fff",
-              fontSize: 60,
+              color: "black",
+              fontSize: 30,
               alignSelf: "center",
               justifyContent: "center",
             }}
           >
-            SOS
+            REQUESTS
           </Text>
+          <ImageBackground
+            source={require("../../assets/image_33.jpg")}
+          ></ImageBackground>
         </TouchableOpacity>
 
-        <View style={{ flex: 1, marginTop: 80 }}>
-          <TouchableOpacity
-            style={homescreenStyles.requestsbutton}
-            onPress={() => requestsPressed()}
+        <TouchableOpacity
+          style={homescreenStyles.settingsbutton}
+          onPress={() => settingsPressed()}
+        >
+          <Text
+            style={{
+              color: "black",
+              fontSize: 30,
+              alignSelf: "center",
+              justifyContent: "center",
+            }}
           >
-            <Text
-              style={{
-                color: "black",
-                fontSize: 30,
-                alignSelf: "center",
-                justifyContent: "center",
-              }}
-            >
-              REQUESTS
-            </Text>
-            <ImageBackground
-              source={require("../../assets/image_33.jpg")}
-            ></ImageBackground>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={homescreenStyles.settingsbutton}
-            onPress={() => settingsPressed()}
-          >
-            <Text
-              style={{
-                color: "black",
-                fontSize: 30,
-                alignSelf: "center",
-                justifyContent: "center",
-              }}
-            >
-              SETTINGS
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
+            SETTINGS
+          </Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }

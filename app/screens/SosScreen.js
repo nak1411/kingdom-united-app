@@ -16,7 +16,12 @@ import {
 } from "react-native";
 
 import backgroundimage from "../../assets/image_33.jpg";
-import { prayerAPI, validation, errorHandler, debugConnection } from "../config/api.js";
+import {
+  prayerAPI,
+  validation,
+  errorHandler,
+  debugConnection,
+} from "../config/api.js";
 import { userUtils } from "../utils/user.js";
 
 export default function SosScreen({ navigation }) {
@@ -38,7 +43,7 @@ export default function SosScreen({ navigation }) {
       await AsyncStorage.setItem("prayer", value);
       setSavedPrayer(value);
     } catch (error) {
-      console.error('Failed to store prayer:', error);
+      console.error("Failed to store prayer:", error);
     }
   };
 
@@ -52,7 +57,7 @@ export default function SosScreen({ navigation }) {
         setCharacterCount(savedPrayerText.length);
       }
     } catch (error) {
-      console.error('Failed to read prayer:', error);
+      console.error("Failed to read prayer:", error);
     }
   };
 
@@ -62,39 +67,46 @@ export default function SosScreen({ navigation }) {
       const userData = await userUtils.getUserData();
       setUserZip(userData.zip || "");
       setUserId(userData.userId);
-      
+
       if (!userData.zip) {
-        console.warn('User has not set zip code yet');
+        console.warn("User has not set zip code yet");
       }
     } catch (error) {
-      console.error('Failed to read user data:', error);
+      console.error("Failed to read user data:", error);
       // Set fallback values
       setUserId(`temp_${Date.now()}`);
     }
   };
 
   // Handle prayer text change
-  const handlePrayerChange = useCallback((text) => {
-    if (text.length <= MAX_CHARACTERS) {
-      setPrayer(text);
-      setCharacterCount(text.length);
-      storePrayer(text);
-      
-      // Clear error when user starts typing
-      if (prayerError) {
-        setPrayerError("");
+  const handlePrayerChange = useCallback(
+    (text) => {
+      if (text.length <= MAX_CHARACTERS) {
+        setPrayer(text);
+        setCharacterCount(text.length);
+        storePrayer(text);
+
+        // Clear error when user starts typing
+        if (prayerError) {
+          setPrayerError("");
+        }
       }
-    }
-  }, [prayerError]);
+    },
+    [prayerError]
+  );
 
   // Validate prayer text using utility function
   const validatePrayer = useCallback((text) => {
-    const result = validation.validatePrayerText(text, MIN_CHARACTERS, MAX_CHARACTERS);
-    
+    const result = validation.validatePrayerText(
+      text,
+      MIN_CHARACTERS,
+      MAX_CHARACTERS
+    );
+
     if (!text.trim()) {
       return "Please enter your prayer request";
     }
-    
+
     if (!result.isValid) {
       if (result.length < result.minLength) {
         return `Prayer request must be at least ${result.minLength} characters`;
@@ -103,7 +115,7 @@ export default function SosScreen({ navigation }) {
         return `Prayer request must be no more than ${result.maxLength} characters`;
       }
     }
-    
+
     return null;
   }, []);
 
@@ -114,12 +126,16 @@ export default function SosScreen({ navigation }) {
       if (!validation.validateUserId(userId)) {
         throw new Error("Invalid user ID");
       }
-      
+
       if (!validation.validateZipCode(zipCode)) {
         throw new Error("Invalid zip code");
       }
-      
-      const prayerValidation = validation.validatePrayerText(prayerText, MIN_CHARACTERS, MAX_CHARACTERS);
+
+      const prayerValidation = validation.validatePrayerText(
+        prayerText,
+        MIN_CHARACTERS,
+        MAX_CHARACTERS
+      );
       if (!prayerValidation.isValid) {
         throw new Error("Invalid prayer text length");
       }
@@ -131,13 +147,13 @@ export default function SosScreen({ navigation }) {
         prayerText: prayerText.trim(),
       });
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         message: "Prayer request sent successfully",
-        data: result 
+        data: result,
       };
     } catch (error) {
-      console.error('Prayer submission failed:', error);
+      console.error("Prayer submission failed:", error);
       throw new Error(errorHandler.getErrorMessage(error));
     }
   };
@@ -145,7 +161,7 @@ export default function SosScreen({ navigation }) {
   // Handle send button press with connection testing
   const handleSendPressed = async () => {
     Keyboard.dismiss();
-    
+
     const validationError = validatePrayer(prayer);
     if (validationError) {
       setPrayerError(validationError);
@@ -159,39 +175,39 @@ export default function SosScreen({ navigation }) {
         "Please set your zip code in Settings before sending a prayer request.",
         [
           { text: "Cancel" },
-          { 
-            text: "Go to Settings", 
-            onPress: () => navigation.navigate("Settings") 
-          }
+          {
+            text: "Go to Settings",
+            onPress: () => navigation.navigate("Settings"),
+          },
         ]
       );
       return;
     }
 
     setIsSending(true);
-    
+
     try {
       // First, debug the connection
-      console.log('=== DEBUGGING CONNECTION BEFORE PRAYER SUBMISSION ===');
+      console.log("=== DEBUGGING CONNECTION BEFORE PRAYER SUBMISSION ===");
       const debugResult = await debugConnection();
-      console.log('Debug result:', debugResult);
-      
+      console.log("Debug result:", debugResult);
+
       if (!debugResult.success) {
         throw new Error(`Connection test failed: ${debugResult.error}`);
       }
 
       // Submit prayer request to API
       const result = await submitPrayerRequest(prayer.trim(), userZip, userId);
-      
+
       if (result.success) {
         // Clear prayer after successful submission
         setPrayer("");
         setSavedPrayer("");
         setCharacterCount(0);
-        
+
         // Clear from storage
         await AsyncStorage.removeItem("prayer");
-        
+
         // Show success message
         Alert.alert(
           "Prayer Sent! 🙏",
@@ -199,43 +215,40 @@ export default function SosScreen({ navigation }) {
           [
             {
               text: "OK",
-              onPress: () => navigation.navigate("Home")
-            }
+              onPress: () => navigation.navigate("Home"),
+            },
           ]
         );
       }
     } catch (error) {
-      console.error('Failed to send prayer:', error);
-      
+      console.error("Failed to send prayer:", error);
+
       let errorMessage = errorHandler.getErrorMessage(error);
       let alertButtons = [{ text: "OK" }];
-      
+
       // Add debug option for network errors
       if (errorHandler.isNetworkError(error)) {
-        errorMessage += "\n\nTroubleshooting steps:\n• Check if your server is running\n• Verify your device/emulator network connection\n• Try the debug connection test";
+        errorMessage +=
+          "\n\nTroubleshooting steps:\n• Check if your server is running\n• Verify your device/emulator network connection\n• Try the debug connection test";
         alertButtons = [
           { text: "OK" },
-          { 
-            text: "Debug Connection", 
+          {
+            text: "Debug Connection",
             onPress: async () => {
               const debugResult = await debugConnection();
               Alert.alert(
-                "Debug Results", 
+                "Debug Results",
                 JSON.stringify(debugResult, null, 2)
               );
-            }
+            },
           },
-          { text: "Retry", onPress: handleSendPressed }
+          { text: "Retry", onPress: handleSendPressed },
         ];
       } else {
         alertButtons.push({ text: "Retry", onPress: handleSendPressed });
       }
-      
-      Alert.alert(
-        "Send Failed",
-        errorMessage,
-        alertButtons
-      );
+
+      Alert.alert("Send Failed", errorMessage, alertButtons);
     } finally {
       setIsSending(false);
     }
@@ -254,15 +267,15 @@ export default function SosScreen({ navigation }) {
             onPress: () => {
               setPrayer(savedPrayer);
               navigation.navigate("Home");
-            }
+            },
           },
           {
             text: "Save",
             onPress: async () => {
               await storePrayer(prayer);
               navigation.navigate("Home");
-            }
-          }
+            },
+          },
         ]
       );
     } else {
@@ -285,22 +298,27 @@ export default function SosScreen({ navigation }) {
             setCharacterCount(0);
             storePrayer("");
             setPrayerError("");
-          }
-        }
+          },
+        },
       ]
     );
   };
 
   useEffect(() => {
     setIsLoading(true);
-    Promise.all([readPrayer(), readUserData()])
-      .finally(() => setIsLoading(false));
+    Promise.all([readPrayer(), readUserData()]).finally(() =>
+      setIsLoading(false)
+    );
   }, []);
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ImageBackground source={backgroundimage} resizeMode="stretch" style={styles.backgroundimage}>
+        <ImageBackground
+          source={backgroundimage}
+          resizeMode="stretch"
+          style={styles.backgroundimage}
+        >
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#fff" />
             <Text style={styles.loadingText}>Loading...</Text>
@@ -313,132 +331,135 @@ export default function SosScreen({ navigation }) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
-        <ImageBackground
-          source={backgroundimage}
-          resizeMode="stretch"
-          style={styles.backgroundimage}
+        <StatusBar style="light" />
+
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          <StatusBar style="light" />
-          
-          <ScrollView 
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Header */}
-            <View style={styles.header}>
-              <Text style={styles.title}>Emergency Prayer Request 🙏</Text>
-              <Text style={styles.subtitle}>
-                Share your prayer request with your local community
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Emergency Prayer Request 🙏</Text>
+            <Text style={styles.subtitle}>
+              Share your prayer request with your local community
+            </Text>
+            {userZip && (
+              <Text style={styles.zipInfo}>
+                Sending to community in {userZip}
               </Text>
-              {userZip && (
-                <Text style={styles.zipInfo}>Sending to community in {userZip}</Text>
-              )}
-            </View>
-
-            {/* Prayer Input Section */}
-            <View style={styles.inputSection}>
-              <View style={styles.inputHeader}>
-                <Text style={styles.inputLabel}>Your Prayer Request</Text>
-                <Text style={[
-                  styles.characterCount,
-                  characterCount > MAX_CHARACTERS * 0.9 && styles.characterCountWarning
-                ]}>
-                  {characterCount}/{MAX_CHARACTERS}
-                </Text>
-              </View>
-              
-              <TextInput
-                value={prayer}
-                onChangeText={handlePrayerChange}
-                multiline={true}
-                numberOfLines={6}
-                maxLength={MAX_CHARACTERS}
-                style={[
-                  styles.input,
-                  prayerError ? styles.inputError : null
-                ]}
-                placeholder="Please share what you need prayer for. Be as specific as you'd like - your community is here to support you."
-                placeholderTextColor="rgba(0, 0, 0, 0.5)"
-                textAlignVertical="top"
-                editable={!isSending}
-                accessibilityLabel="Prayer request input"
-                accessibilityHint="Enter your prayer request text"
-              />
-              
-              {prayerError && (
-                <Text style={styles.errorText}>{prayerError}</Text>
-              )}
-              
-              {characterCount >= MIN_CHARACTERS && !prayerError && (
-                <Text style={styles.helperText}>
-                  ✓ Ready to send
-                </Text>
-              )}
-            </View>
-
-            {/* Prayer Guidelines */}
-            <View style={styles.guidelinesSection}>
-              <Text style={styles.guidelinesTitle}>Prayer Request Guidelines:</Text>
-              <Text style={styles.guidelinesText}>
-                • Be respectful and honest{'\n'}
-                • Share what kind of support you need{'\n'}
-                • Include any urgent timing if applicable{'\n'}
-                • Your request will be shared anonymously
-              </Text>
-            </View>
-          </ScrollView>
-
-          {/* Button Section */}
-          <View style={styles.buttonSection}>
-            {prayer.trim().length > 0 && (
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={handleClearPressed}
-                disabled={isSending}
-                accessibilityRole="button"
-                accessibilityLabel="Clear prayer text"
-              >
-                <Text style={styles.clearButtonText}>CLEAR</Text>
-              </TouchableOpacity>
             )}
+          </View>
 
-            <TouchableOpacity
-              style={[
-                styles.sendButton,
-                (!prayer.trim() || prayer.trim().length < MIN_CHARACTERS || isSending) && styles.buttonDisabled
-              ]}
-              onPress={handleSendPressed}
-              disabled={!prayer.trim() || prayer.trim().length < MIN_CHARACTERS || isSending}
-              accessibilityRole="button"
-              accessibilityLabel="Send prayer request"
-            >
-              {isSending ? (
-                <View style={styles.sendingContainer}>
-                  <ActivityIndicator color="white" size="small" />
-                  <Text style={styles.sendingText}>SENDING...</Text>
-                </View>
-              ) : (
-                <Text style={[
-                  styles.sendButtonText,
-                  (!prayer.trim() || prayer.trim().length < MIN_CHARACTERS) && styles.buttonTextDisabled
-                ]}>
-                  SEND PRAYER REQUEST
-                </Text>
-              )}
-            </TouchableOpacity>
+          {/* Prayer Input Section */}
+          <View style={styles.inputSection}>
+            <View style={styles.inputHeader}>
+              <Text style={styles.inputLabel}>Your Prayer Request</Text>
+              <Text
+                style={[
+                  styles.characterCount,
+                  characterCount > MAX_CHARACTERS * 0.9 &&
+                    styles.characterCountWarning,
+                ]}
+              >
+                {characterCount}/{MAX_CHARACTERS}
+              </Text>
+            </View>
 
+            <TextInput
+              value={prayer}
+              onChangeText={handlePrayerChange}
+              multiline={true}
+              numberOfLines={6}
+              maxLength={MAX_CHARACTERS}
+              style={[styles.input, prayerError ? styles.inputError : null]}
+              placeholder="Please share what you need prayer for. Be as specific as you'd like - your community is here to support you."
+              placeholderTextColor="rgba(0, 0, 0, 0.5)"
+              textAlignVertical="top"
+              editable={!isSending}
+              accessibilityLabel="Prayer request input"
+              accessibilityHint="Enter your prayer request text"
+            />
+
+            {prayerError && <Text style={styles.errorText}>{prayerError}</Text>}
+
+            {characterCount >= MIN_CHARACTERS && !prayerError && (
+              <Text style={styles.helperText}>✓ Ready to send</Text>
+            )}
+          </View>
+
+          {/* Prayer Guidelines */}
+          <View style={styles.guidelinesSection}>
+            <Text style={styles.guidelinesTitle}>
+              Prayer Request Guidelines:
+            </Text>
+            <Text style={styles.guidelinesText}>
+              • Be respectful and honest{"\n"}• Share what kind of support you
+              need{"\n"}• Include any urgent timing if applicable{"\n"}• Your
+              request will be shared anonymously
+            </Text>
+          </View>
+        </ScrollView>
+
+        {/* Button Section */}
+        <View style={styles.buttonSection}>
+          {prayer.trim().length > 0 && (
             <TouchableOpacity
-              style={styles.backButton}
-              onPress={handleBackPressed}
+              style={styles.clearButton}
+              onPress={handleClearPressed}
               disabled={isSending}
               accessibilityRole="button"
-              accessibilityLabel="Go back to home"
+              accessibilityLabel="Clear prayer text"
             >
-              <Text style={styles.backButtonText}>BACK TO HOME</Text>
+              <Text style={styles.clearButtonText}>CLEAR</Text>
             </TouchableOpacity>
-          </View>
-        </ImageBackground>
+          )}
+
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              (!prayer.trim() ||
+                prayer.trim().length < MIN_CHARACTERS ||
+                isSending) &&
+                styles.buttonDisabled,
+            ]}
+            onPress={handleSendPressed}
+            disabled={
+              !prayer.trim() ||
+              prayer.trim().length < MIN_CHARACTERS ||
+              isSending
+            }
+            accessibilityRole="button"
+            accessibilityLabel="Send prayer request"
+          >
+            {isSending ? (
+              <View style={styles.sendingContainer}>
+                <ActivityIndicator color="white" size="small" />
+                <Text style={styles.sendingText}>SENDING...</Text>
+              </View>
+            ) : (
+              <Text
+                style={[
+                  styles.sendButtonText,
+                  (!prayer.trim() || prayer.trim().length < MIN_CHARACTERS) &&
+                    styles.buttonTextDisabled,
+                ]}
+              >
+                SEND PRAYER REQUEST
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={handleBackPressed}
+            disabled={isSending}
+            accessibilityRole="button"
+            accessibilityLabel="Go back to home"
+          >
+            <Text style={styles.backButtonText}>BACK TO HOME</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
@@ -462,16 +483,16 @@ const styles = {
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
-    color: 'white',
+    color: "white",
     marginTop: 10,
     fontSize: 16,
   },
   header: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 30,
   },
   title: {
@@ -493,15 +514,15 @@ const styles = {
     fontSize: 14,
     textAlign: "center",
     marginTop: 5,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   inputSection: {
     marginBottom: 20,
   },
   inputHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 10,
   },
   inputLabel: {
@@ -605,8 +626,8 @@ const styles = {
     elevation: 0,
   },
   sendingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   sendingText: {
     color: "white",

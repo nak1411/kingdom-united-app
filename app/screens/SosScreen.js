@@ -228,9 +228,10 @@ const SosScreen = React.memo(({ navigation }) => {
   );
 
   // Enhanced prayer validation with content filtering
-  const validatePrayer = useCallback((text) => {
+  const validatePrayer = useCallback(async (text) => {
     const textToValidate = String(text || "").trim();
-    const result = validation.validatePrayerText(
+
+    const result = await validation.validatePrayerText(
       textToValidate,
       MIN_CHARACTERS,
       MAX_CHARACTERS
@@ -246,15 +247,18 @@ const SosScreen = React.memo(({ navigation }) => {
   const submitPrayerRequest = useCallback(
     async (prayerText, zipCode, userId) => {
       try {
+        // Validate user ID
         if (!validation.validateUserId(userId)) {
           throw new Error("Invalid user ID");
         }
 
+        // Validate zip code
         if (!validation.validateZipCode(zipCode)) {
           throw new Error("Invalid zip code");
         }
 
-        const prayerValidation = validation.validatePrayerText(
+        // Validate prayer text again (server-side validation)
+        const prayerValidation = await validation.validatePrayerText(
           prayerText,
           MIN_CHARACTERS,
           MAX_CHARACTERS
@@ -276,11 +280,16 @@ const SosScreen = React.memo(({ navigation }) => {
           throw error;
         }
 
-        const result = await prayerAPI.submit({
+        // Prepare API data
+        const apiData = {
           userId: userId,
-          zip: parseInt(zipCode),
+          zip: parseInt(zipCode, 10),
           prayerText: prayerText.trim(),
-        });
+        };
+
+        // Submit to API
+
+        const result = await prayerAPI.submit(apiData);
 
         return {
           success: true,
@@ -288,7 +297,12 @@ const SosScreen = React.memo(({ navigation }) => {
           data: result,
         };
       } catch (error) {
-        console.error("Prayer submission failed:", error);
+        console.error("Error details:", {
+          message: error.message,
+          stack: error.stack,
+          suggestions: error.suggestions,
+          hasInappropriateContent: error.hasInappropriateContent,
+        });
 
         if (error.suggestions) {
           const filterError = new Error(error.message);
@@ -307,8 +321,19 @@ const SosScreen = React.memo(({ navigation }) => {
   const handleSendPressed = useCallback(async () => {
     Keyboard.dismiss();
 
-    const validationResult = validatePrayer(prayer);
+    console.log("=== PRAYER SUBMISSION DEBUG ===");
+    console.log("Prayer text:", `"${prayer}"`);
+    console.log("Prayer length:", prayer.length);
+    console.log("Trimmed prayer:", `"${prayer.trim()}"`);
+    console.log("Trimmed length:", prayer.trim().length);
+    console.log("User zip:", userZip);
+    console.log("User ID:", userId);
+
+    const validationResult = await validatePrayer(prayer); // Add await here
+    console.log("Frontend validation result:", validationResult);
+
     if (validationResult.error) {
+      console.log("❌ Frontend validation failed:", validationResult.error);
       setPrayerError(validationResult.error);
       setPrayerSuggestions(validationResult.suggestions);
       return;

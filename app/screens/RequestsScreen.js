@@ -1,4 +1,4 @@
-// app/screens/RequestsScreen.js - Optimized with Performance Improvements
+// app/screens/RequestsScreen.js - Updated to show User IDs instead of "Community Member"
 import React, {
   useState,
   useEffect,
@@ -110,6 +110,55 @@ const PrayerItemContent = React.memo(({ prayerText, onReadMore, styles }) => {
 
 PrayerItemContent.displayName = 'PrayerItemContent';
 
+// Enhanced UserAvatar component with user ID display
+const UserAvatar = React.memo(({ userId, styles }) => {
+  // Generate avatar initials from user ID
+  const getAvatarInitials = (id) => {
+    if (!id) return "??";
+    
+    // For Reddit-style IDs like "AmazingWarrior1234"
+    if (id.match(/^[A-Z][a-z]+[A-Z][a-z]+\d/)) {
+      // Extract first letter of each word
+      const matches = id.match(/[A-Z][a-z]*/g);
+      if (matches && matches.length >= 2) {
+        return `${matches[0][0]}${matches[1][0]}`;
+      }
+    }
+    
+    // For legacy IDs or fallback
+    return id.substring(0, 2).toUpperCase();
+  };
+
+  // Generate consistent color from user ID
+  const getAvatarColor = (id) => {
+    if (!id) return '#6b7280';
+    
+    // Generate a hash from the user ID
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    // Convert to a consistent hue
+    const hue = Math.abs(hash) % 360;
+    return `hsl(${hue}, 60%, 50%)`;
+  };
+
+  const initials = getAvatarInitials(userId);
+  const backgroundColor = getAvatarColor(userId);
+
+  return (
+    <View style={[styles.avatar, { backgroundColor }]}>
+      <Text style={[styles.avatarText, { color: '#ffffff' }]}>
+        {initials}
+      </Text>
+    </View>
+  );
+});
+
+UserAvatar.displayName = 'UserAvatar';
+
+// Updated PrayerItem component with user ID display
 const PrayerItem = React.memo(({ 
   item, 
   index, 
@@ -127,6 +176,22 @@ const PrayerItem = React.memo(({
 
   const prayerText = item.prayerText || item.prayer || item.text || "Prayer request";
   const timestamp = item.createdAt || item.created_at;
+  
+  // Extract user ID from prayer data
+  const userId = item.userId || item.user_id || "Anonymous";
+  
+  // Format user ID for display (truncate if too long)
+  const displayUserId = useMemo(() => {
+    if (!userId || userId === "Anonymous") return "Anonymous";
+    
+    // For Reddit-style IDs, show full ID if reasonable length
+    if (userId.length <= 20) {
+      return userId;
+    }
+    
+    // For very long IDs, truncate with ellipsis
+    return `${userId.substring(0, 17)}...`;
+  }, [userId]);
 
   const handlePress = useCallback(() => {
     onPress(item);
@@ -144,8 +209,9 @@ const PrayerItem = React.memo(({
     >
       <View style={styles.prayerHeader}>
         <View style={styles.userInfo}>
+          <UserAvatar userId={userId} styles={styles} />
           <View style={styles.userDetails}>
-            <Text style={styles.userName}>Community Member</Text>
+            <Text style={styles.userName}>{displayUserId}</Text>
             <Text style={styles.timestamp}>
               {formatTimestamp(timestamp)} • Zip {item.zip || userZip}
             </Text>
@@ -198,6 +264,7 @@ const ErrorState = React.memo(({ error, onRetry, styles }) => (
 
 ErrorState.displayName = 'ErrorState';
 
+// Enhanced PrayerModal with user ID display
 const PrayerModal = React.memo(({ 
   visible, 
   prayer, 
@@ -206,6 +273,9 @@ const PrayerModal = React.memo(({
   formatTimestamp 
 }) => {
   if (!prayer) return null;
+
+  const userId = prayer.userId || prayer.user_id || "Anonymous";
+  const displayUserId = userId === "Anonymous" ? "Anonymous User" : userId;
 
   return (
     <Modal
@@ -225,9 +295,15 @@ const PrayerModal = React.memo(({
 
           <ScrollView style={styles.modalBody}>
             <View style={styles.modalPrayerHeader}>
-              <Text style={styles.modalTimestamp}>
-                {formatTimestamp(prayer.createdAt || prayer.created_at)}
-              </Text>
+              <View style={styles.modalUserInfo}>
+                <UserAvatar userId={userId} styles={styles} />
+                <View style={styles.modalUserDetails}>
+                  <Text style={styles.modalUserName}>{displayUserId}</Text>
+                  <Text style={styles.modalTimestamp}>
+                    {formatTimestamp(prayer.createdAt || prayer.created_at)}
+                  </Text>
+                </View>
+              </View>
               <Text style={styles.modalPrayerId}>Prayer ID: {prayer.id}</Text>
             </View>
 
@@ -714,7 +790,6 @@ const RequestsScreen = React.memo(({ navigation }) => {
       width: 44,
       height: 44,
       borderRadius: 22,
-      backgroundColor: colors.background.secondary,
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: spacing[3],
@@ -722,8 +797,8 @@ const RequestsScreen = React.memo(({ navigation }) => {
     },
 
     avatarText: {
-      fontSize: typography.fontSizes.lg,
-      color: colors.text.secondary,
+      fontSize: typography.fontSizes.base,
+      fontWeight: typography.fontWeights.bold,
     },
 
     userDetails: {
@@ -960,10 +1035,27 @@ const RequestsScreen = React.memo(({ navigation }) => {
       borderBottomColor: colors.border.light,
     },
 
+    modalUserInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: spacing[3],
+    },
+
+    modalUserDetails: {
+      marginLeft: spacing[3],
+      flex: 1,
+    },
+
+    modalUserName: {
+      fontSize: typography.fontSizes.lg,
+      fontWeight: typography.fontWeights.semibold,
+      color: colors.text.primary,
+      marginBottom: spacing[1],
+    },
+
     modalTimestamp: {
       fontSize: typography.fontSizes.base,
       color: colors.text.secondary,
-      marginBottom: spacing[2],
       fontWeight: typography.fontWeights.medium,
     },
 

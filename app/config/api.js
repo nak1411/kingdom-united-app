@@ -339,11 +339,17 @@ export const validation = Object.freeze({
   },
   
   validatePrayerText: async (text, minLength = 10, maxLength = 500) => {
+    console.log('=== API VALIDATE PRAYER TEXT ===');
+  console.log('Input text:', `"${text}"`);
+  console.log('Min length:', minLength, 'Max length:', maxLength);
     try {
       const trimmed = String(text || '').trim();
+      console.log('Trimmed text:', `"${trimmed}"`);
+    console.log('Trimmed length:', trimmed.length);
       
       // First check basic length requirements
       if (trimmed.length < minLength) {
+        console.log('❌ Text too short');
         return { 
           isValid: false, 
           error: `Prayer request must be at least ${minLength} characters`,
@@ -356,6 +362,7 @@ export const validation = Object.freeze({
       }
       
       if (trimmed.length > maxLength) {
+        console.log('❌ Text too long');
         return { 
           isValid: false, 
           error: `Prayer request must be no more than ${maxLength} characters`,
@@ -366,6 +373,8 @@ export const validation = Object.freeze({
           hasInappropriateContent: false
         };
       }
+
+      console.log('✅ Basic validation passed');
       
       // Check for basic security issues
       if (trimmed.includes('<script>') || trimmed.includes('</script>')) {

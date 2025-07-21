@@ -19,16 +19,16 @@ import { userUtils } from "../utils/user.js";
 import { validation } from "../config/api.js";
 
 export default function SettingsScreen({ navigation }) {
-  const { 
-    currentTheme, 
-    isDark, 
+  const {
+    currentTheme,
+    isDark,
     toggleTheme,
-    colors, 
-    typography, 
-    spacing, 
-    borderRadius, 
+    colors,
+    typography,
+    spacing,
+    borderRadius,
     shadows,
-    commonStyles 
+    commonStyles,
   } = useTheme();
 
   const [currentZip, setCurrentZip] = useState("");
@@ -265,8 +265,8 @@ export default function SettingsScreen({ navigation }) {
 
     loadingContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       backgroundColor: colors.background.dark,
     },
 
@@ -278,7 +278,7 @@ export default function SettingsScreen({ navigation }) {
     },
 
     header: {
-      alignItems: 'center',
+      alignItems: "center",
       marginBottom: spacing[12],
       paddingTop: spacing[6],
     },
@@ -286,7 +286,7 @@ export default function SettingsScreen({ navigation }) {
     title: {
       color: colors.text.primary,
       fontWeight: typography.fontWeights.bold,
-      fontSize: typography.fontSizes['5xl'],
+      fontSize: typography.fontSizes["5xl"],
       marginBottom: spacing[3],
       textShadowColor: colors.background.overlay,
       textShadowOffset: { width: 0, height: 2 },
@@ -296,7 +296,7 @@ export default function SettingsScreen({ navigation }) {
     subtitle: {
       color: colors.text.secondary,
       fontSize: typography.fontSizes.lg,
-      textAlign: 'center',
+      textAlign: "center",
       lineHeight: typography.lineHeights.relaxed,
       fontWeight: typography.fontWeights.medium,
     },
@@ -326,9 +326,9 @@ export default function SettingsScreen({ navigation }) {
       ...shadows.lg,
       borderWidth: 1,
       borderColor: colors.border.light,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
     },
 
     themeInfo: {
@@ -361,7 +361,7 @@ export default function SettingsScreen({ navigation }) {
       ...shadows.lg,
       borderWidth: 1,
       borderColor: colors.border.light,
-      alignItems: 'center',
+      alignItems: "center",
     },
 
     currentLocationLabel: {
@@ -370,11 +370,11 @@ export default function SettingsScreen({ navigation }) {
       fontWeight: typography.fontWeights.semibold,
       letterSpacing: typography.letterSpacing.wider,
       marginBottom: spacing[2],
-      textAlign: 'center',
+      textAlign: "center",
     },
 
     currentLocationValue: {
-      fontSize: typography.fontSizes['5xl'],
+      fontSize: typography.fontSizes["5xl"],
       fontWeight: typography.fontWeights.bold,
       color: colors.text.primary,
       marginBottom: spacing[3],
@@ -384,8 +384,8 @@ export default function SettingsScreen({ navigation }) {
     currentLocationNote: {
       fontSize: typography.fontSizes.sm,
       color: colors.text.secondary,
-      textAlign: 'center',
-      fontStyle: 'italic',
+      textAlign: "center",
+      fontStyle: "italic",
       lineHeight: typography.lineHeights.normal,
     },
 
@@ -406,14 +406,14 @@ export default function SettingsScreen({ navigation }) {
       fontWeight: typography.fontWeights.semibold,
       letterSpacing: typography.letterSpacing.wider,
       marginBottom: spacing[4],
-      textAlign: 'center',
+      textAlign: "center",
     },
 
     input: {
       ...commonStyles.input,
-      fontSize: typography.fontSizes['3xl'],
+      fontSize: typography.fontSizes["3xl"],
       fontWeight: typography.fontWeights.bold,
-      textAlign: 'center',
+      textAlign: "center",
       paddingVertical: spacing[5],
       paddingHorizontal: spacing[6],
       marginBottom: spacing[3],
@@ -434,7 +434,7 @@ export default function SettingsScreen({ navigation }) {
     errorText: {
       color: colors.emergency[600],
       fontSize: typography.fontSizes.sm,
-      textAlign: 'center',
+      textAlign: "center",
       marginTop: spacing[2],
       fontWeight: typography.fontWeights.medium,
     },
@@ -442,7 +442,7 @@ export default function SettingsScreen({ navigation }) {
     helperText: {
       color: colors.text.secondary,
       fontSize: typography.fontSizes.sm,
-      textAlign: 'center',
+      textAlign: "center",
       marginTop: spacing[2],
       fontWeight: typography.fontWeights.medium,
     },
@@ -450,15 +450,15 @@ export default function SettingsScreen({ navigation }) {
     changedText: {
       color: colors.success[600],
       fontSize: typography.fontSizes.sm,
-      textAlign: 'center',
+      textAlign: "center",
       marginTop: spacing[2],
       fontWeight: typography.fontWeights.semibold,
     },
 
     // Zip actions
     zipActions: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      justifyContent: "space-between",
       marginTop: spacing[5],
       gap: spacing[3],
     },
@@ -501,9 +501,9 @@ export default function SettingsScreen({ navigation }) {
       ...shadows.md,
       borderWidth: 1,
       borderColor: colors.border.light,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
     },
 
     dangerCard: {
@@ -529,15 +529,15 @@ export default function SettingsScreen({ navigation }) {
     },
 
     actionArrow: {
-      fontSize: typography.fontSizes['2xl'],
+      fontSize: typography.fontSizes["2xl"],
       color: colors.text.secondary,
       marginLeft: spacing[4],
     },
 
     // Info section - Fixed for dark theme
     infoSection: {
-      backgroundColor: isDark 
-        ? colors.background.glassDark 
+      backgroundColor: isDark
+        ? colors.background.glassDark
         : `${colors.primary[100]}`,
       borderRadius: borderRadius.lg,
       padding: spacing[6],
@@ -549,7 +549,7 @@ export default function SettingsScreen({ navigation }) {
     infoText: {
       color: colors.text.secondary,
       fontSize: typography.fontSizes.sm,
-      textAlign: 'center',
+      textAlign: "center",
       lineHeight: typography.lineHeights.normal,
       fontWeight: typography.fontWeights.medium,
     },
@@ -567,7 +567,7 @@ export default function SettingsScreen({ navigation }) {
       paddingVertical: spacing[4],
       paddingHorizontal: spacing[6],
       borderRadius: borderRadius.md,
-      alignItems: 'center',
+      alignItems: "center",
       ...shadows.base,
     },
 
@@ -593,8 +593,8 @@ export default function SettingsScreen({ navigation }) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
-        <StatusBar 
-          barStyle={isDark ? "light-content" : "dark-content"} 
+        <StatusBar
+          barStyle={isDark ? "light-content" : "dark-content"}
           backgroundColor={colors.background.dark}
         />
 
@@ -620,21 +620,22 @@ export default function SettingsScreen({ navigation }) {
                   {isDark ? "Dark Mode" : "Light Mode"}
                 </Text>
                 <Text style={styles.themeDescription}>
-                  {isDark 
-                    ? "Dark theme is easier on the eyes in low light" 
-                    : "Light theme provides better visibility in bright environments"
-                  }
+                  {isDark
+                    ? "Dark theme is easier on the eyes in low light"
+                    : "Light theme provides better visibility in bright environments"}
                 </Text>
               </View>
               <View style={styles.themeToggle}>
                 <Switch
                   value={isDark}
                   onValueChange={handleThemeToggle}
-                  trackColor={{ 
-                    false: colors.neutral[300], 
-                    true: colors.primary[500] 
+                  trackColor={{
+                    false: colors.neutral[300],
+                    true: colors.primary[500],
                   }}
-                  thumbColor={isDark ? colors.primary[100] : colors.neutral[100]}
+                  thumbColor={
+                    isDark ? colors.primary[100] : colors.neutral[100]
+                  }
                   ios_backgroundColor={colors.neutral[300]}
                 />
               </View>
@@ -771,15 +772,6 @@ export default function SettingsScreen({ navigation }) {
                 <Text style={styles.actionArrow}>›</Text>
               )}
             </TouchableOpacity>
-          </View>
-
-          {/* Info Section */}
-          <View style={styles.infoSection}>
-            <Text style={styles.infoText}>
-              Your preferences are stored locally on your device. Theme setting and 
-              zip code help personalize your prayer community experience while 
-              maintaining your privacy.
-            </Text>
           </View>
         </ScrollView>
 

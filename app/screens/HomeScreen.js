@@ -13,14 +13,14 @@ import logoimage from "../../assets/logo.png";
 import { useTheme } from "../context/ThemeContext";
 
 export default function HomeScreen({ navigation }) {
-  const { 
-    colors, 
-    typography, 
-    spacing, 
-    borderRadius, 
-    shadows, 
+  const {
+    colors,
+    typography,
+    spacing,
+    borderRadius,
+    shadows,
     isDark,
-    commonStyles 
+    commonStyles,
   } = useTheme();
 
   const runOnboarding = async () => {
@@ -62,35 +62,35 @@ export default function HomeScreen({ navigation }) {
 
     logoContainer: {
       flex: 0.8,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       paddingTop: spacing[4],
       paddingBottom: spacing[2],
     },
 
     logoimage: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: '100%',
-      height: '100%',
-      resizeMode: 'center',
+      justifyContent: "center",
+      alignItems: "center",
+      width: "100%",
+      height: "100%",
+      resizeMode: "center",
     },
 
     mainContent: {
       flex: 1,
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      justifyContent: "space-between",
+      alignItems: "center",
       paddingHorizontal: spacing[6],
       paddingBottom: spacing[6],
     },
 
     // Big Red SOS Button (always red regardless of theme)
     sosButtonContainer: {
-      alignItems: 'center',
-      justifyContent: 'center',
+      alignItems: "center",
+      justifyContent: "center",
       marginVertical: spacing[6],
-      position: 'relative',
+      position: "relative",
     },
 
     sosButton: {
@@ -98,8 +98,8 @@ export default function HomeScreen({ navigation }) {
       height: 200,
       borderRadius: 100,
       backgroundColor: colors.emergency[500], // Always red
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       shadowColor: colors.emergency[500],
       shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.5,
@@ -113,95 +113,95 @@ export default function HomeScreen({ navigation }) {
       width: 180,
       height: 180,
       borderRadius: 90,
-      backgroundColor: 'rgba(255, 255, 255, 0.15)',
-      justifyContent: 'center',
-      alignItems: 'center',
+      backgroundColor: "rgba(255, 255, 255, 0.15)",
+      justifyContent: "center",
+      alignItems: "center",
       borderWidth: 2,
-      borderColor: 'rgba(255, 255, 255, 0.4)',
+      borderColor: "rgba(255, 255, 255, 0.4)",
     },
 
     sosButtonText: {
-      color: '#ffffff', // Always white text
+      color: "#ffffff", // Always white text
       fontSize: 42,
       fontWeight: typography.fontWeights.black,
-      textShadowColor: 'rgba(0, 0, 0, 0.5)',
+      textShadowColor: "rgba(0, 0, 0, 0.5)",
       textShadowOffset: { width: 0, height: 2 },
       textShadowRadius: 4,
       letterSpacing: 2,
-      textAlign: 'center',
+      textAlign: "center",
     },
 
     sosButtonSubtext: {
-      color: isDark ? colors.text.secondary : colors.text.primary,  // Dark text in light theme
+      color: isDark ? colors.text.secondary : colors.text.primary, // Dark text in light theme
       fontSize: typography.fontSizes.xs,
       fontWeight: typography.fontWeights.semibold,
       marginTop: spacing[1],
-      textAlign: 'center',
-      position: 'absolute',
+      textAlign: "center",
+      position: "absolute",
       bottom: -spacing[6],
-      textShadowColor: isDark ? colors.background.overlay : 'transparent',
+      textShadowColor: isDark ? colors.background.overlay : "transparent",
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 2,
     },
 
     // Navigation Section
     navigationSection: {
-      width: '100%',
-      alignItems: 'center',
+      width: "100%",
+      alignItems: "center",
       gap: spacing[3],
       paddingBottom: spacing[4],
     },
 
     // Base navigation button (adapts to theme)
     navButton: {
-      width: '90%',
+      width: "90%",
       maxWidth: 320,
       height: 56,
       borderRadius: borderRadius.md,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       borderWidth: 1,
       ...shadows.base,
     },
 
     // Prayer Requests Button (Blue theme) - Better contrast
     requestsButton: {
-      backgroundColor: isDark 
-        ? `${colors.primary[500]}30` 
-        : `${colors.primary[100]}`,  // Lighter background for light theme
-      borderColor: isDark 
-        ? `${colors.primary[500]}60` 
-        : `${colors.primary[400]}`,  // Stronger border for light theme
+      backgroundColor: isDark
+        ? `${colors.primary[500]}30`
+        : `${colors.primary[100]}`, // Lighter background for light theme
+      borderColor: isDark
+        ? `${colors.primary[500]}60`
+        : `${colors.primary[400]}`, // Stronger border for light theme
     },
 
     // Warrior Book Button (Purple theme) - Better contrast
     warriorBookButton: {
-      backgroundColor: isDark 
-        ? `${colors.warrior[500]}30` 
-        : `${colors.warrior[100]}`,  // Lighter background for light theme
-      borderColor: isDark 
-        ? `${colors.warrior[500]}60` 
-        : `${colors.warrior[400]}`,  // Stronger border for light theme
+      backgroundColor: isDark
+        ? `${colors.warrior[500]}30`
+        : `${colors.warrior[100]}`, // Lighter background for light theme
+      borderColor: isDark
+        ? `${colors.warrior[500]}60`
+        : `${colors.warrior[400]}`, // Stronger border for light theme
     },
 
     // Settings Button (Gray theme) - Better contrast
     settingsButton: {
-      backgroundColor: isDark 
-        ? `${colors.neutral[500]}30` 
-        : `${colors.neutral[200]}`,  // Lighter background for light theme
-      borderColor: isDark 
-        ? `${colors.neutral[500]}60` 
-        : `${colors.neutral[400]}`,  // Stronger border for light theme
+      backgroundColor: isDark
+        ? `${colors.neutral[500]}30`
+        : `${colors.neutral[200]}`, // Lighter background for light theme
+      borderColor: isDark
+        ? `${colors.neutral[500]}60`
+        : `${colors.neutral[400]}`, // Stronger border for light theme
     },
 
     // Button text (better contrast for both themes)
     buttonText: {
-      color: isDark ? colors.text.primary : colors.text.primary,  // Dark text in light theme
+      color: isDark ? colors.text.primary : colors.text.primary, // Dark text in light theme
       fontSize: typography.fontSizes.base,
       fontWeight: typography.fontWeights.semibold,
       letterSpacing: typography.letterSpacing.wide,
-      textAlign: 'center',
-      textShadowColor: isDark ? 'rgba(0, 0, 0, 0.3)' : 'transparent',  // Only shadow in dark theme
+      textAlign: "center",
+      textShadowColor: isDark ? "rgba(0, 0, 0, 0.3)" : "transparent", // Only shadow in dark theme
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 2,
     },
@@ -209,11 +209,11 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar 
-        barStyle={isDark ? "light-content" : "dark-content"} 
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
         backgroundColor={colors.background.dark}
       />
-      
+
       {/* Logo Section */}
       <View style={styles.logoContainer}>
         <ImageBackground
@@ -225,7 +225,6 @@ export default function HomeScreen({ navigation }) {
 
       {/* Main Content */}
       <View style={styles.mainContent}>
-        
         {/* Big Red SOS Button */}
         <View style={styles.sosButtonContainer}>
           <TouchableOpacity
@@ -239,15 +238,10 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.sosButtonText}>SOS</Text>
             </View>
           </TouchableOpacity>
-          
-          <Text style={styles.sosButtonSubtext}>
-            Emergency Prayer Request
-          </Text>
         </View>
 
         {/* Navigation Buttons */}
         <View style={styles.navigationSection}>
-          
           {/* Prayer Requests Button */}
           <TouchableOpacity
             style={[styles.navButton, styles.requestsButton]}
@@ -274,7 +268,6 @@ export default function HomeScreen({ navigation }) {
           >
             <Text style={styles.buttonText}>SETTINGS</Text>
           </TouchableOpacity>
-
         </View>
       </View>
     </SafeAreaView>

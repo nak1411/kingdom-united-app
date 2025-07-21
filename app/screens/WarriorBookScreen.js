@@ -14,14 +14,8 @@ import { useState, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
 
 export default function WarriorBookScreen({ navigation }) {
-  const { 
-    colors, 
-    typography, 
-    spacing, 
-    borderRadius, 
-    shadows, 
-    isDark 
-  } = useTheme();
+  const { colors, typography, spacing, borderRadius, shadows, isDark } =
+    useTheme();
 
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -35,174 +29,174 @@ export default function WarriorBookScreen({ navigation }) {
       verses: [
         {
           reference: "Proverbs 29:25 ESV",
-          text: "The fear of man lays a snare, but whoever trusts in the Lord is safe."
+          text: "The fear of man lays a snare, but whoever trusts in the Lord is safe.",
         },
         {
           reference: "2 Timothy 1:7 ESV",
-          text: "For God gave us a spirit not of fear but of power and love and self-control."
+          text: "For God gave us a spirit not of fear but of power and love and self-control.",
         },
         {
           reference: "Deuteronomy 3:22 ESV",
-          text: "You shall not fear them, for it is the Lord your God who fights for you."
+          text: "You shall not fear them, for it is the Lord your God who fights for you.",
         },
         {
           reference: "Psalm 31:24 ESV",
-          text: "Be strong, and let your heart take courage, all you who wait for the Lord!"
+          text: "Be strong, and let your heart take courage, all you who wait for the Lord!",
         },
         {
           reference: "Isaiah 41:10 ESV",
-          text: "Fear not, for I am with you; be not dismayed, for I am your God; I will strengthen you, I will help you, I will uphold you with my righteous right hand."
+          text: "Fear not, for I am with you; be not dismayed, for I am your God; I will strengthen you, I will help you, I will uphold you with my righteous right hand.",
         },
         {
           reference: "Isaiah 12:2 ESV",
-          text: "Behold, God is my salvation; I will trust, and will not be afraid; for the Lord God is my strength and my song, and he has become my salvation."
-        }
-      ]
+          text: "Behold, God is my salvation; I will trust, and will not be afraid; for the Lord God is my strength and my song, and he has become my salvation.",
+        },
+      ],
     },
     "Pride / Humility": {
       color: colors.warrior[500],
       verses: [
         {
           reference: "Proverbs 16:18 ESV",
-          text: "Pride goes before destruction, and a haughty spirit before a fall"
+          text: "Pride goes before destruction, and a haughty spirit before a fall",
         },
         {
           reference: "Jeremiah 9:23 ESV",
-          text: "Thus says the Lord: 'Let not the wise man boast in his wisdom, let not the mighty man boast in his might, let not the rich man boast in his riches,'"
+          text: "Thus says the Lord: 'Let not the wise man boast in his wisdom, let not the mighty man boast in his might, let not the rich man boast in his riches,'",
         },
         {
           reference: "Isaiah 5:21 ESV",
-          text: "Woe to those who are wise in their own eyes, and shrewd in their own sight!"
+          text: "Woe to those who are wise in their own eyes, and shrewd in their own sight!",
         },
         {
           reference: "James 4:6 ESV",
-          text: "God opposes the proud but gives grace to the humble."
+          text: "God opposes the proud but gives grace to the humble.",
         },
         {
           reference: "Psalm 25:9 ESV",
-          text: "He leads the humble in what is right, and teaches the humble his way."
+          text: "He leads the humble in what is right, and teaches the humble his way.",
         },
         {
           reference: "James 4:10 ESV",
-          text: "Humble yourselves before the Lord, and he will exalt you."
-        }
-      ]
+          text: "Humble yourselves before the Lord, and he will exalt you.",
+        },
+      ],
     },
     "Anger / Love": {
       color: colors.emergency[600],
       verses: [
         {
           reference: "James 1:20 ESV",
-          text: "For the anger of man does not produce the righteousness of God."
+          text: "For the anger of man does not produce the righteousness of God.",
         },
         {
           reference: "Psalm 37:8 ESV",
-          text: "Refrain from anger, and forsake wrath! Fret not yourself; it tends only to evil."
+          text: "Refrain from anger, and forsake wrath! Fret not yourself; it tends only to evil.",
         },
         {
           reference: "Ecclesiastes 7:9 ESV",
-          text: "Be not quick in your spirit to become angry, for anger lodges in the heart of fools."
+          text: "Be not quick in your spirit to become angry, for anger lodges in the heart of fools.",
         },
         {
           reference: "1 Corinthians 13:4-8 ESV",
-          text: "Love is patient and kind; love does not envy or boast; it is not arrogant or rude. It does not insist on its own way; it is not irritable or resentful; it does not rejoice at wrongdoing, but rejoices with the truth. Love bears all things, believes all things, hopes all things, endures all things. Love never ends."
+          text: "Love is patient and kind; love does not envy or boast; it is not arrogant or rude. It does not insist on its own way; it is not irritable or resentful; it does not rejoice at wrongdoing, but rejoices with the truth. Love bears all things, believes all things, hopes all things, endures all things. Love never ends.",
         },
         {
           reference: "1 Peter 4:8 ESV",
-          text: "Above all, keep loving one another earnestly, since love covers a multitude of sins."
+          text: "Above all, keep loving one another earnestly, since love covers a multitude of sins.",
         },
         {
           reference: "1 Corinthians 16:14 ESV",
-          text: "Let all that you do be done in love."
-        }
-      ]
+          text: "Let all that you do be done in love.",
+        },
+      ],
     },
     "Lust / Purity": {
       color: colors.success[500],
       verses: [
         {
           reference: "Matthew 5:28 ESV",
-          text: "But I say to you that everyone who looks at a woman/man with lustful intent has already committed adultery with her/him in his heart."
+          text: "But I say to you that everyone who looks at a woman/man with lustful intent has already committed adultery with her/him in his heart.",
         },
         {
           reference: "Ephesians 5:3 ESV",
-          text: "But sexual immorality and all impurity or covetousness must not even be named among you, as is proper among saints."
+          text: "But sexual immorality and all impurity or covetousness must not even be named among you, as is proper among saints.",
         },
         {
           reference: "1 Corinthians 6:18 ESV",
-          text: "Flee from sexual immorality. Every other sin a person commits is outside the body, but the sexually immoral person sins against his own body."
+          text: "Flee from sexual immorality. Every other sin a person commits is outside the body, but the sexually immoral person sins against his own body.",
         },
         {
           reference: "Psalm 51:10 ESV",
-          text: "Create in me a clean heart, O God, and renew a right spirit within me."
+          text: "Create in me a clean heart, O God, and renew a right spirit within me.",
         },
         {
           reference: "Matthew 5:8 ESV",
-          text: "Blessed are the pure in heart, for they shall see God."
+          text: "Blessed are the pure in heart, for they shall see God.",
         },
         {
           reference: "Romans 13:14 ESV",
-          text: "But put on the Lord Jesus Christ, and make no provision for the flesh, to gratify its desires."
-        }
-      ]
+          text: "But put on the Lord Jesus Christ, and make no provision for the flesh, to gratify its desires.",
+        },
+      ],
     },
     "Discouragement / Hope": {
       color: colors.warning[500],
       verses: [
         {
           reference: "Psalm 42:5 ESV",
-          text: "Why are you cast down, O my soul, and why are you in turmoil within me? Hope in God; for I shall again praise him, my salvation"
+          text: "Why are you cast down, O my soul, and why are you in turmoil within me? Hope in God; for I shall again praise him, my salvation",
         },
         {
           reference: "2 Corinthians 4:8 ESV",
-          text: "We are afflicted in every way, but not crushed; perplexed, but not driven to despair;"
+          text: "We are afflicted in every way, but not crushed; perplexed, but not driven to despair;",
         },
         {
           reference: "Psalm 34:18 ESV",
-          text: "The Lord is near to the brokenhearted and saves the crushed in spirit."
+          text: "The Lord is near to the brokenhearted and saves the crushed in spirit.",
         },
         {
           reference: "Jeremiah 29:11 ESV",
-          text: "For I know the plans I have for you, declares the Lord, plans for welfare and not for evil, to give you a future and a hope."
+          text: "For I know the plans I have for you, declares the Lord, plans for welfare and not for evil, to give you a future and a hope.",
         },
         {
           reference: "Romans 15:13 ESV",
-          text: "May the God of hope fill you with all joy and peace in believing, so that by the power of the Holy Spirit you may abound in hope."
+          text: "May the God of hope fill you with all joy and peace in believing, so that by the power of the Holy Spirit you may abound in hope.",
         },
         {
           reference: "Isaiah 40:31 ESV",
-          text: "But they who wait for the Lord shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint."
-        }
-      ]
+          text: "But they who wait for the Lord shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint.",
+        },
+      ],
     },
     "Doubt / Faith": {
       color: colors.primary[500],
       verses: [
         {
           reference: "Hebrews 3:12 ESV",
-          text: "Take care, brothers, lest there be in any of you an evil, unbelieving heart, leading you to fall away from the living God."
+          text: "Take care, brothers, lest there be in any of you an evil, unbelieving heart, leading you to fall away from the living God.",
         },
         {
           reference: "James 1:6 ESV",
-          text: "But let him ask in faith, with no doubting, for the one who doubts is like a wave of the sea that is driven and tossed by the wind."
+          text: "But let him ask in faith, with no doubting, for the one who doubts is like a wave of the sea that is driven and tossed by the wind.",
         },
         {
           reference: "Hebrews 3:8 ESV",
-          text: "Do not harden your hearts as in the rebellion, on the day of testing in the wilderness,"
+          text: "Do not harden your hearts as in the rebellion, on the day of testing in the wilderness,",
         },
         {
           reference: "2 Corinthians 5:7 ESV",
-          text: "For we walk by faith, not by sight."
+          text: "For we walk by faith, not by sight.",
         },
         {
           reference: "1 Corinthians 16:13 ESV",
-          text: "Be watchful, stand firm in the faith, act like men, be strong."
+          text: "Be watchful, stand firm in the faith, act like men, be strong.",
         },
         {
           reference: "Romans 1:17 ESV",
-          text: "For in it the righteousness of God is revealed from faith for faith, as it is written, 'The righteous shall live by faith.'"
-        }
-      ]
+          text: "For in it the righteousness of God is revealed from faith for faith, as it is written, 'The righteous shall live by faith.'",
+        },
+      ],
     },
   };
 
@@ -211,12 +205,14 @@ export default function WarriorBookScreen({ navigation }) {
     if (searchText.trim() === "") {
       setFilteredCategories(Object.keys(warriorBookData));
     } else {
-      const filtered = Object.keys(warriorBookData).filter(category =>
-        category.toLowerCase().includes(searchText.toLowerCase()) ||
-        warriorBookData[category].verses.some(verse =>
-          verse.text.toLowerCase().includes(searchText.toLowerCase()) ||
-          verse.reference.toLowerCase().includes(searchText.toLowerCase())
-        )
+      const filtered = Object.keys(warriorBookData).filter(
+        (category) =>
+          category.toLowerCase().includes(searchText.toLowerCase()) ||
+          warriorBookData[category].verses.some(
+            (verse) =>
+              verse.text.toLowerCase().includes(searchText.toLowerCase()) ||
+              verse.reference.toLowerCase().includes(searchText.toLowerCase())
+          )
       );
       setFilteredCategories(filtered);
     }
@@ -254,15 +250,15 @@ export default function WarriorBookScreen({ navigation }) {
     },
 
     titleContainer: {
-      alignItems: 'center',
+      alignItems: "center",
     },
 
     title: {
       color: colors.text.primary,
       fontWeight: typography.fontWeights.bold,
-      fontSize: typography.fontSizes['4xl'],
+      fontSize: typography.fontSizes["4xl"],
       marginBottom: spacing[2],
-      textShadowColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'transparent',
+      textShadowColor: isDark ? "rgba(0, 0, 0, 0.5)" : "transparent",
       textShadowOffset: { width: 0, height: 2 },
       textShadowRadius: 4,
     },
@@ -270,7 +266,7 @@ export default function WarriorBookScreen({ navigation }) {
     subtitle: {
       color: colors.text.secondary,
       fontSize: typography.fontSizes.base,
-      textAlign: 'center',
+      textAlign: "center",
       fontWeight: typography.fontWeights.medium,
     },
 
@@ -313,8 +309,8 @@ export default function WarriorBookScreen({ navigation }) {
     },
 
     categoryHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
     },
 
     categoryIconContainer: {
@@ -322,14 +318,14 @@ export default function WarriorBookScreen({ navigation }) {
       height: 50,
       borderRadius: 25,
       backgroundColor: colors.background.secondary,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       marginRight: spacing[4],
       ...shadows.sm,
     },
 
     categoryIcon: {
-      fontSize: typography.fontSizes['2xl'],
+      fontSize: typography.fontSizes["2xl"],
     },
 
     categoryInfo: {
@@ -350,7 +346,7 @@ export default function WarriorBookScreen({ navigation }) {
     },
 
     categoryArrow: {
-      fontSize: typography.fontSizes['2xl'],
+      fontSize: typography.fontSizes["2xl"],
       color: colors.text.secondary,
     },
 
@@ -366,7 +362,7 @@ export default function WarriorBookScreen({ navigation }) {
       paddingVertical: spacing[4],
       paddingHorizontal: spacing[8],
       borderRadius: borderRadius.md,
-      alignItems: 'center',
+      alignItems: "center",
       ...shadows.base,
     },
 
@@ -380,23 +376,23 @@ export default function WarriorBookScreen({ navigation }) {
     // Modal styles
     modalOverlay: {
       flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      justifyContent: 'flex-end',
+      backgroundColor: "rgba(0, 0, 0, 0.8)",
+      justifyContent: "flex-end",
     },
 
     modalContent: {
       backgroundColor: colors.background.card,
       borderTopLeftRadius: borderRadius.xl,
       borderTopRightRadius: borderRadius.xl,
-      maxHeight: '85%',
-      minHeight: '60%',
+      maxHeight: "85%",
+      minHeight: "60%",
       ...shadows.xl,
     },
 
     modalHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       padding: spacing[6],
       borderBottomWidth: 1,
       borderBottomColor: colors.border.light,
@@ -418,8 +414,8 @@ export default function WarriorBookScreen({ navigation }) {
       height: 36,
       borderRadius: 18,
       backgroundColor: colors.background.secondary,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       ...shadows.sm,
     },
 
@@ -454,7 +450,7 @@ export default function WarriorBookScreen({ navigation }) {
       fontSize: typography.fontSizes.base,
       lineHeight: typography.lineHeights.normal,
       color: colors.text.primary,
-      fontStyle: 'italic',
+      fontStyle: "italic",
       fontWeight: typography.fontWeights.normal,
     },
   });
@@ -469,9 +465,6 @@ export default function WarriorBookScreen({ navigation }) {
         activeOpacity={0.7}
       >
         <View style={styles.categoryHeader}>
-          <View style={styles.categoryIconContainer}>
-            <Text style={styles.categoryIcon}>{item.charAt(0)}</Text>
-          </View>
           <View style={styles.categoryInfo}>
             <Text style={styles.categoryTitle}>{item}</Text>
             <Text style={styles.categorySubtitle}>
@@ -494,8 +487,8 @@ export default function WarriorBookScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar 
-        barStyle={isDark ? "light-content" : "dark-content"} 
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
         backgroundColor={colors.background.dark}
       />
 
@@ -503,7 +496,9 @@ export default function WarriorBookScreen({ navigation }) {
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Warrior Book</Text>
-          <Text style={styles.subtitle}>Biblical verses for life's battles</Text>
+          <Text style={styles.subtitle}>
+            Biblical verses for life's battles
+          </Text>
         </View>
       </View>
 

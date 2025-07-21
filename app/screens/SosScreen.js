@@ -26,14 +26,8 @@ import {
 import { userUtils } from "../utils/user.js";
 
 export default function SosScreen({ navigation }) {
-  const { 
-    colors, 
-    typography, 
-    spacing, 
-    borderRadius, 
-    shadows, 
-    isDark 
-  } = useTheme();
+  const { colors, typography, spacing, borderRadius, shadows, isDark } =
+    useTheme();
 
   const [prayer, setPrayer] = useState("");
   const [savedPrayer, setSavedPrayer] = useState("");
@@ -107,13 +101,19 @@ export default function SosScreen({ navigation }) {
         if (text.trim().length > 3) {
           try {
             const quickResult = validation.quickValidatePrayerText(text);
-            if (quickResult && typeof quickResult.isValid === 'boolean' && !quickResult.isValid) {
-              setContentWarning(quickResult.error || 'Please review your content');
+            if (
+              quickResult &&
+              typeof quickResult.isValid === "boolean" &&
+              !quickResult.isValid
+            ) {
+              setContentWarning(
+                quickResult.error || "Please review your content"
+              );
             } else {
               setContentWarning("");
             }
           } catch (error) {
-            console.error('Quick validation error:', error);
+            console.error("Quick validation error:", error);
             setContentWarning("");
           }
         } else {
@@ -127,8 +127,8 @@ export default function SosScreen({ navigation }) {
   // Enhanced prayer validation with content filtering
   const validatePrayer = useCallback((text) => {
     // Ensure we have a string to work with
-    const textToValidate = String(text || '').trim();
-    
+    const textToValidate = String(text || "").trim();
+
     const result = validation.validatePrayerText(
       textToValidate,
       MIN_CHARACTERS,
@@ -137,8 +137,8 @@ export default function SosScreen({ navigation }) {
 
     // Ensure proper return types
     return {
-      error: result.isValid ? null : (result.error || 'Invalid prayer request'),
-      suggestions: Array.isArray(result.suggestions) ? result.suggestions : []
+      error: result.isValid ? null : result.error || "Invalid prayer request",
+      suggestions: Array.isArray(result.suggestions) ? result.suggestions : [],
     };
   }, []);
 
@@ -159,10 +159,15 @@ export default function SosScreen({ navigation }) {
         MIN_CHARACTERS,
         MAX_CHARACTERS
       );
-      
+
       if (!prayerValidation.isValid) {
-        const error = new Error(prayerValidation.error || 'Invalid prayer request');
-        if (prayerValidation.suggestions && Array.isArray(prayerValidation.suggestions)) {
+        const error = new Error(
+          prayerValidation.error || "Invalid prayer request"
+        );
+        if (
+          prayerValidation.suggestions &&
+          Array.isArray(prayerValidation.suggestions)
+        ) {
           error.suggestions = prayerValidation.suggestions;
         }
         if (prayerValidation.hasInappropriateContent === true) {
@@ -184,7 +189,7 @@ export default function SosScreen({ navigation }) {
       };
     } catch (error) {
       console.error("Prayer submission failed:", error);
-      
+
       // If it's a content filter error, preserve the suggestions
       if (error.suggestions) {
         const filterError = new Error(error.message);
@@ -192,7 +197,7 @@ export default function SosScreen({ navigation }) {
         filterError.hasInappropriateContent = error.hasInappropriateContent;
         throw filterError;
       }
-      
+
       throw new Error(errorHandler.getErrorMessage(error));
     }
   };
@@ -260,10 +265,14 @@ export default function SosScreen({ navigation }) {
       console.error("Failed to send prayer:", error);
 
       // Handle content filter errors specially
-      if (error.hasInappropriateContent === true && error.suggestions && Array.isArray(error.suggestions)) {
-        setPrayerError(error.message || 'Please review your prayer request');
+      if (
+        error.hasInappropriateContent === true &&
+        error.suggestions &&
+        Array.isArray(error.suggestions)
+      ) {
+        setPrayerError(error.message || "Please review your prayer request");
         setPrayerSuggestions(error.suggestions);
-        
+
         // Show a gentle alert for content issues
         Alert.alert(
           "Content Review Needed",
@@ -381,8 +390,8 @@ export default function SosScreen({ navigation }) {
 
     loadingContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       backgroundColor: colors.background.dark,
     },
 
@@ -394,18 +403,18 @@ export default function SosScreen({ navigation }) {
     },
 
     header: {
-      alignItems: 'center',
+      alignItems: "center",
       marginBottom: spacing[10],
       paddingTop: spacing[6],
     },
 
     title: {
       color: colors.text.primary,
-      fontSize: typography.fontSizes['4xl'],
+      fontSize: typography.fontSizes["4xl"],
       fontWeight: typography.fontWeights.bold,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: spacing[3],
-      textShadowColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'transparent',
+      textShadowColor: isDark ? "rgba(0, 0, 0, 0.5)" : "transparent",
       textShadowOffset: { width: 0, height: 2 },
       textShadowRadius: 4,
     },
@@ -413,7 +422,7 @@ export default function SosScreen({ navigation }) {
     subtitle: {
       color: colors.text.secondary,
       fontSize: typography.fontSizes.lg,
-      textAlign: 'center',
+      textAlign: "center",
       lineHeight: typography.lineHeights.relaxed,
       paddingHorizontal: spacing[4],
       fontWeight: typography.fontWeights.medium,
@@ -422,9 +431,9 @@ export default function SosScreen({ navigation }) {
     zipInfo: {
       color: colors.text.secondary,
       fontSize: typography.fontSizes.base,
-      textAlign: 'center',
+      textAlign: "center",
       marginTop: spacing[2],
-      fontStyle: 'italic',
+      fontStyle: "italic",
       opacity: 0.9,
     },
 
@@ -442,9 +451,9 @@ export default function SosScreen({ navigation }) {
     },
 
     inputHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       marginBottom: spacing[4],
     },
 
@@ -473,7 +482,7 @@ export default function SosScreen({ navigation }) {
       fontSize: typography.fontSizes.base,
       lineHeight: typography.lineHeights.normal,
       minHeight: 160,
-      textAlignVertical: 'top',
+      textAlignVertical: "top",
       color: colors.text.primary,
       ...shadows.sm,
     },
@@ -486,7 +495,9 @@ export default function SosScreen({ navigation }) {
 
     inputError: {
       borderColor: colors.emergency[500],
-      backgroundColor: isDark ? `${colors.emergency[500]}20` : colors.emergency[50],
+      backgroundColor: isDark
+        ? `${colors.emergency[500]}20`
+        : colors.emergency[50],
     },
 
     inputWarning: {
@@ -578,7 +589,7 @@ export default function SosScreen({ navigation }) {
       paddingVertical: spacing[3],
       paddingHorizontal: spacing[6],
       borderRadius: borderRadius.md,
-      alignItems: 'center',
+      alignItems: "center",
       ...shadows.base,
     },
 
@@ -594,7 +605,7 @@ export default function SosScreen({ navigation }) {
       paddingVertical: spacing[6],
       paddingHorizontal: spacing[8],
       borderRadius: borderRadius.lg,
-      alignItems: 'center',
+      alignItems: "center",
       ...shadows.xl,
       shadowColor: colors.emergency[500],
       shadowOpacity: 0.4,
@@ -606,13 +617,13 @@ export default function SosScreen({ navigation }) {
     },
 
     sendingContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
     },
 
     sendingText: {
-      color: '#ffffff',
+      color: "#ffffff",
       fontSize: typography.fontSizes.lg,
       fontWeight: typography.fontWeights.bold,
       marginLeft: spacing[3],
@@ -620,11 +631,11 @@ export default function SosScreen({ navigation }) {
     },
 
     sendButtonText: {
-      color: '#ffffff',
+      color: "#ffffff",
       fontSize: typography.fontSizes.lg,
       fontWeight: typography.fontWeights.bold,
       letterSpacing: typography.letterSpacing.wide,
-      textShadowColor: 'rgba(0, 0, 0, 0.3)',
+      textShadowColor: "rgba(0, 0, 0, 0.3)",
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 2,
     },
@@ -640,7 +651,7 @@ export default function SosScreen({ navigation }) {
       paddingVertical: spacing[4],
       paddingHorizontal: spacing[6],
       borderRadius: borderRadius.md,
-      alignItems: 'center',
+      alignItems: "center",
     },
 
     backButtonText: {
@@ -651,15 +662,15 @@ export default function SosScreen({ navigation }) {
     },
 
     emergencyIndicator: {
-      position: 'absolute',
+      position: "absolute",
       top: spacing[4],
       right: spacing[4],
       backgroundColor: colors.emergency[500],
       borderRadius: borderRadius.full,
       paddingVertical: spacing[2],
       paddingHorizontal: spacing[3],
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       ...shadows.base,
     },
 
@@ -667,19 +678,19 @@ export default function SosScreen({ navigation }) {
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: '#ffffff',
+      backgroundColor: "#ffffff",
       marginRight: spacing[2],
     },
 
     emergencyText: {
-      color: '#ffffff',
+      color: "#ffffff",
       fontSize: typography.fontSizes.xs,
       fontWeight: typography.fontWeights.bold,
     },
 
     tipsSection: {
-      backgroundColor: isDark 
-        ? `${colors.primary[500]}20` 
+      backgroundColor: isDark
+        ? `${colors.primary[500]}20`
         : `${colors.primary[100]}`,
       borderRadius: borderRadius.md,
       padding: spacing[5],
@@ -716,8 +727,8 @@ export default function SosScreen({ navigation }) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
-        <StatusBar 
-          barStyle={isDark ? "light-content" : "dark-content"} 
+        <StatusBar
+          barStyle={isDark ? "light-content" : "dark-content"}
           backgroundColor={colors.background.dark}
         />
 
@@ -726,7 +737,6 @@ export default function SosScreen({ navigation }) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Emergency Prayer Request</Text>
@@ -765,7 +775,9 @@ export default function SosScreen({ navigation }) {
                 style={[
                   styles.input,
                   Boolean(prayerError) ? styles.inputError : null,
-                  Boolean(contentWarning && !prayerError) ? styles.inputWarning : null,
+                  Boolean(contentWarning && !prayerError)
+                    ? styles.inputWarning
+                    : null,
                 ]}
                 placeholder="Please share what you need prayer for. Be as specific as you'd like - your community is here to support you."
                 placeholderTextColor={colors.text.placeholder}
@@ -776,7 +788,9 @@ export default function SosScreen({ navigation }) {
               />
 
               {/* Error Messages */}
-              {Boolean(prayerError) && <Text style={styles.errorText}>{prayerError}</Text>}
+              {Boolean(prayerError) && (
+                <Text style={styles.errorText}>{prayerError}</Text>
+              )}
 
               {/* Content Warning (real-time) */}
               {Boolean(contentWarning && !prayerError) && (
@@ -784,9 +798,11 @@ export default function SosScreen({ navigation }) {
               )}
 
               {/* Success Message */}
-              {Boolean(characterCount >= MIN_CHARACTERS && !prayerError && !contentWarning) && (
-                <Text style={styles.helperText}>Ready to send</Text>
-              )}
+              {Boolean(
+                characterCount >= MIN_CHARACTERS &&
+                  !prayerError &&
+                  !contentWarning
+              ) && <Text style={styles.helperText}>Ready to send</Text>}
 
               {/* Content Suggestions */}
               {Boolean(prayerSuggestions.length > 0) && (
@@ -808,17 +824,10 @@ export default function SosScreen({ navigation }) {
               Prayer Request Guidelines:
             </Text>
             <Text style={styles.guidelinesText}>
-              Be respectful and honest{"\n"}Share what kind of support you
-              need{"\n"}Include any urgent timing if applicable{"\n"}Your
-              request will be shared anonymously{"\n"}Keep language appropriate for all community members
-            </Text>
-          </View>
-
-          {/* Community Tips */}
-          <View style={styles.tipsSection}>
-            <Text style={styles.tipsTitle}>Community Guidelines:</Text>
-            <Text style={styles.tipsText}>
-              Our prayer community welcomes requests about any life situation including sensitive topics like addiction, mental health, family issues, and personal struggles. Please share authentically while keeping your language respectful for all members.
+              Be respectful and honest{"\n"}Share what kind of support you need
+              {"\n"}Include any urgent timing if applicable{"\n"}Your request
+              will be shared anonymously{"\n"}Keep language appropriate for all
+              community members
             </Text>
           </View>
         </ScrollView>
@@ -867,10 +876,10 @@ export default function SosScreen({ navigation }) {
               <Text
                 style={[
                   styles.sendButtonText,
-                  (Boolean(!prayer.trim()) || 
-                   Boolean(prayer.trim().length < MIN_CHARACTERS) ||
-                   Boolean(prayerError) ||
-                   Boolean(contentWarning)) &&
+                  (Boolean(!prayer.trim()) ||
+                    Boolean(prayer.trim().length < MIN_CHARACTERS) ||
+                    Boolean(prayerError) ||
+                    Boolean(contentWarning)) &&
                     styles.sendButtonTextDisabled,
                 ]}
               >

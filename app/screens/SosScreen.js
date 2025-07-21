@@ -1,4 +1,4 @@
-// app/screens/SosScreen.js - Theme-Aware Version
+// app/screens/SosScreen.js - Updated with Content Filter Integration
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -42,7 +42,9 @@ export default function SosScreen({ navigation }) {
   const [characterCount, setCharacterCount] = useState(0);
   const [userZip, setUserZip] = useState("");
   const [prayerError, setPrayerError] = useState("");
+  const [prayerSuggestions, setPrayerSuggestions] = useState([]);
   const [userId, setUserId] = useState("");
+  const [contentWarning, setContentWarning] = useState(""); // For real-time feedback
 
   const MAX_CHARACTERS = 125;
   const MIN_CHARACTERS = 5;
@@ -87,7 +89,7 @@ export default function SosScreen({ navigation }) {
     }
   };
 
-  // Handle prayer text change
+  // Handle prayer text change with enhanced validation
   const handlePrayerChange = useCallback(
     (text) => {
       if (text.length <= MAX_CHARACTERS) {
@@ -95,36 +97,49 @@ export default function SosScreen({ navigation }) {
         setCharacterCount(text.length);
         storePrayer(text);
 
+        // Clear previous errors and suggestions
         if (prayerError) {
           setPrayerError("");
+          setPrayerSuggestions([]);
+        }
+
+        // Real-time content validation (quick check)
+        if (text.trim().length > 3) {
+          try {
+            const quickResult = validation.quickValidatePrayerText(text);
+            if (quickResult && typeof quickResult.isValid === 'boolean' && !quickResult.isValid) {
+              setContentWarning(quickResult.error || 'Please review your content');
+            } else {
+              setContentWarning("");
+            }
+          } catch (error) {
+            console.error('Quick validation error:', error);
+            setContentWarning("");
+          }
+        } else {
+          setContentWarning("");
         }
       }
     },
     [prayerError]
   );
 
-  // Validate prayer text using utility function
+  // Enhanced prayer validation with content filtering
   const validatePrayer = useCallback((text) => {
+    // Ensure we have a string to work with
+    const textToValidate = String(text || '').trim();
+    
     const result = validation.validatePrayerText(
-      text,
+      textToValidate,
       MIN_CHARACTERS,
       MAX_CHARACTERS
     );
 
-    if (!text.trim()) {
-      return "Please enter your prayer request";
-    }
-
-    if (!result.isValid) {
-      if (result.length < result.minLength) {
-        return `Prayer request must be at least ${result.minLength} characters`;
-      }
-      if (result.length > result.maxLength) {
-        return `Prayer request must be no more than ${result.maxLength} characters`;
-      }
-    }
-
-    return null;
+    // Ensure proper return types
+    return {
+      error: result.isValid ? null : (result.error || 'Invalid prayer request'),
+      suggestions: Array.isArray(result.suggestions) ? result.suggestions : []
+    };
   }, []);
 
   // Submit prayer request to API
@@ -138,13 +153,22 @@ export default function SosScreen({ navigation }) {
         throw new Error("Invalid zip code");
       }
 
+      // Enhanced validation with content filtering
       const prayerValidation = validation.validatePrayerText(
         prayerText,
         MIN_CHARACTERS,
         MAX_CHARACTERS
       );
+      
       if (!prayerValidation.isValid) {
-        throw new Error("Invalid prayer text length");
+        const error = new Error(prayerValidation.error || 'Invalid prayer request');
+        if (prayerValidation.suggestions && Array.isArray(prayerValidation.suggestions)) {
+          error.suggestions = prayerValidation.suggestions;
+        }
+        if (prayerValidation.hasInappropriateContent === true) {
+          error.hasInappropriateContent = true;
+        }
+        throw error;
       }
 
       const result = await prayerAPI.submit({
@@ -160,17 +184,27 @@ export default function SosScreen({ navigation }) {
       };
     } catch (error) {
       console.error("Prayer submission failed:", error);
+      
+      // If it's a content filter error, preserve the suggestions
+      if (error.suggestions) {
+        const filterError = new Error(error.message);
+        filterError.suggestions = error.suggestions;
+        filterError.hasInappropriateContent = error.hasInappropriateContent;
+        throw filterError;
+      }
+      
       throw new Error(errorHandler.getErrorMessage(error));
     }
   };
 
-  // Handle send button press
+  // Handle send button press with enhanced error handling
   const handleSendPressed = async () => {
     Keyboard.dismiss();
 
-    const validationError = validatePrayer(prayer);
-    if (validationError) {
-      setPrayerError(validationError);
+    const validationResult = validatePrayer(prayer);
+    if (validationResult.error) {
+      setPrayerError(validationResult.error);
+      setPrayerSuggestions(validationResult.suggestions);
       return;
     }
 
@@ -190,6 +224,8 @@ export default function SosScreen({ navigation }) {
     }
 
     setIsSending(true);
+    setPrayerError("");
+    setPrayerSuggestions([]);
 
     try {
       console.log("=== DEBUGGING CONNECTION BEFORE PRAYER SUBMISSION ===");
@@ -206,6 +242,7 @@ export default function SosScreen({ navigation }) {
         setPrayer("");
         setSavedPrayer("");
         setCharacterCount(0);
+        setContentWarning("");
         await AsyncStorage.removeItem("prayer");
 
         Alert.alert(
@@ -221,6 +258,20 @@ export default function SosScreen({ navigation }) {
       }
     } catch (error) {
       console.error("Failed to send prayer:", error);
+
+      // Handle content filter errors specially
+      if (error.hasInappropriateContent === true && error.suggestions && Array.isArray(error.suggestions)) {
+        setPrayerError(error.message || 'Please review your prayer request');
+        setPrayerSuggestions(error.suggestions);
+        
+        // Show a gentle alert for content issues
+        Alert.alert(
+          "Content Review Needed",
+          "Please review your prayer request and make sure it follows our community guidelines. Check the suggestions below for guidance.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
 
       let errorMessage = errorHandler.getErrorMessage(error);
       let alertButtons = [{ text: "OK" }];
@@ -294,8 +345,10 @@ export default function SosScreen({ navigation }) {
           onPress: () => {
             setPrayer("");
             setCharacterCount(0);
-            storePrayer("");
             setPrayerError("");
+            setPrayerSuggestions([]);
+            setContentWarning("");
+            storePrayer("");
           },
         },
       ]
@@ -436,8 +489,22 @@ export default function SosScreen({ navigation }) {
       backgroundColor: isDark ? `${colors.emergency[500]}20` : colors.emergency[50],
     },
 
+    inputWarning: {
+      borderColor: colors.warning[500],
+      backgroundColor: isDark ? `${colors.warning[500]}20` : colors.warning[50],
+    },
+
+    // Error and warning text styles
     errorText: {
       color: colors.emergency[600],
+      fontSize: typography.fontSizes.sm,
+      fontWeight: typography.fontWeights.medium,
+      marginTop: spacing[2],
+      marginLeft: spacing[1],
+    },
+
+    warningText: {
+      color: colors.warning[600],
       fontSize: typography.fontSizes.sm,
       fontWeight: typography.fontWeights.medium,
       marginTop: spacing[2],
@@ -450,6 +517,30 @@ export default function SosScreen({ navigation }) {
       fontWeight: typography.fontWeights.medium,
       marginTop: spacing[2],
       marginLeft: spacing[1],
+    },
+
+    // Suggestions section
+    suggestionsSection: {
+      backgroundColor: isDark ? `${colors.primary[500]}20` : colors.primary[50],
+      borderRadius: borderRadius.md,
+      padding: spacing[4],
+      marginTop: spacing[3],
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary[500],
+    },
+
+    suggestionsTitle: {
+      color: colors.primary[700],
+      fontSize: typography.fontSizes.sm,
+      fontWeight: typography.fontWeights.semibold,
+      marginBottom: spacing[2],
+    },
+
+    suggestionItem: {
+      color: colors.primary[600],
+      fontSize: typography.fontSizes.sm,
+      lineHeight: typography.lineHeights.normal,
+      marginBottom: spacing[1],
     },
 
     guidelinesSection: {
@@ -657,7 +748,7 @@ export default function SosScreen({ navigation }) {
                 <Text
                   style={[
                     styles.characterCount,
-                    characterCount > MAX_CHARACTERS * 0.9 &&
+                    Boolean(characterCount > MAX_CHARACTERS * 0.9) &&
                       styles.characterCountWarning,
                   ]}
                 >
@@ -671,19 +762,42 @@ export default function SosScreen({ navigation }) {
                 multiline={true}
                 numberOfLines={6}
                 maxLength={MAX_CHARACTERS}
-                style={[styles.input, prayerError ? styles.inputError : null]}
+                style={[
+                  styles.input,
+                  Boolean(prayerError) ? styles.inputError : null,
+                  Boolean(contentWarning && !prayerError) ? styles.inputWarning : null,
+                ]}
                 placeholder="Please share what you need prayer for. Be as specific as you'd like - your community is here to support you."
                 placeholderTextColor={colors.text.placeholder}
                 textAlignVertical="top"
-                editable={!isSending}
+                editable={Boolean(!isSending)}
                 accessibilityLabel="Prayer request input"
                 accessibilityHint="Enter your prayer request text"
               />
 
-              {prayerError && <Text style={styles.errorText}>{prayerError}</Text>}
+              {/* Error Messages */}
+              {Boolean(prayerError) && <Text style={styles.errorText}>{prayerError}</Text>}
 
-              {characterCount >= MIN_CHARACTERS && !prayerError && (
+              {/* Content Warning (real-time) */}
+              {Boolean(contentWarning && !prayerError) && (
+                <Text style={styles.warningText}>{contentWarning}</Text>
+              )}
+
+              {/* Success Message */}
+              {Boolean(characterCount >= MIN_CHARACTERS && !prayerError && !contentWarning) && (
                 <Text style={styles.helperText}>Ready to send</Text>
+              )}
+
+              {/* Content Suggestions */}
+              {Boolean(prayerSuggestions.length > 0) && (
+                <View style={styles.suggestionsSection}>
+                  <Text style={styles.suggestionsTitle}>Suggestions:</Text>
+                  {prayerSuggestions.map((suggestion, index) => (
+                    <Text key={index} style={styles.suggestionItem}>
+                      • {suggestion}
+                    </Text>
+                  ))}
+                </View>
               )}
             </View>
           </View>
@@ -696,18 +810,26 @@ export default function SosScreen({ navigation }) {
             <Text style={styles.guidelinesText}>
               Be respectful and honest{"\n"}Share what kind of support you
               need{"\n"}Include any urgent timing if applicable{"\n"}Your
-              request will be shared anonymously
+              request will be shared anonymously{"\n"}Keep language appropriate for all community members
+            </Text>
+          </View>
+
+          {/* Community Tips */}
+          <View style={styles.tipsSection}>
+            <Text style={styles.tipsTitle}>Community Guidelines:</Text>
+            <Text style={styles.tipsText}>
+              Our prayer community welcomes requests about any life situation including sensitive topics like addiction, mental health, family issues, and personal struggles. Please share authentically while keeping your language respectful for all members.
             </Text>
           </View>
         </ScrollView>
 
         {/* Button Section */}
         <View style={styles.buttonSection}>
-          {prayer.trim().length > 0 && (
+          {Boolean(prayer.trim().length > 0) && (
             <TouchableOpacity
               style={styles.clearButton}
               onPress={handleClearPressed}
-              disabled={isSending}
+              disabled={Boolean(isSending)}
               accessibilityRole="button"
               accessibilityLabel="Clear prayer text"
             >
@@ -718,16 +840,20 @@ export default function SosScreen({ navigation }) {
           <TouchableOpacity
             style={[
               styles.sendButton,
-              (!prayer.trim() ||
-                prayer.trim().length < MIN_CHARACTERS ||
-                isSending) &&
+              (Boolean(!prayer.trim()) ||
+                Boolean(prayer.trim().length < MIN_CHARACTERS) ||
+                Boolean(isSending) ||
+                Boolean(prayerError) ||
+                Boolean(contentWarning)) &&
                 styles.sendButtonDisabled,
             ]}
             onPress={handleSendPressed}
             disabled={
-              !prayer.trim() ||
-              prayer.trim().length < MIN_CHARACTERS ||
-              isSending
+              Boolean(!prayer.trim()) ||
+              Boolean(prayer.trim().length < MIN_CHARACTERS) ||
+              Boolean(isSending) ||
+              Boolean(prayerError) ||
+              Boolean(contentWarning)
             }
             accessibilityRole="button"
             accessibilityLabel="Send prayer request"
@@ -741,7 +867,10 @@ export default function SosScreen({ navigation }) {
               <Text
                 style={[
                   styles.sendButtonText,
-                  (!prayer.trim() || prayer.trim().length < MIN_CHARACTERS) &&
+                  (Boolean(!prayer.trim()) || 
+                   Boolean(prayer.trim().length < MIN_CHARACTERS) ||
+                   Boolean(prayerError) ||
+                   Boolean(contentWarning)) &&
                     styles.sendButtonTextDisabled,
                 ]}
               >
@@ -753,7 +882,7 @@ export default function SosScreen({ navigation }) {
           <TouchableOpacity
             style={styles.backButton}
             onPress={handleBackPressed}
-            disabled={isSending}
+            disabled={Boolean(isSending)}
             accessibilityRole="button"
             accessibilityLabel="Go back to home"
           >

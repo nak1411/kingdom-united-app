@@ -1,5 +1,6 @@
 // Production-ready API Configuration - Updated for Database Integration
 import { Platform } from 'react-native';
+import { validatePrayerContent, quickValidateContent } from '../utils/contentFilter.js';
 
 const getBaseURL = () => {
   if (__DEV__) {
@@ -251,23 +252,117 @@ export const prayerAPI = {
 export const validation = {
   validateZipCode: (zip) => {
     const zipRegex = /^\d{5}$/;
-    return zipRegex.test(String(zip));
+    return zipRegex.test(String(zip || ''));
   },
   
   validatePrayerText: (text, minLength = 10, maxLength = 500) => {
-    const trimmed = String(text).trim();
-    
-    // Additional production validations
-    if (trimmed.includes('<script>') || trimmed.includes('</script>')) {
-      return { isValid: false, error: 'Invalid content detected' };
+    try {
+      const trimmed = String(text || '').trim();
+      
+      // First check basic length requirements
+      if (trimmed.length < minLength) {
+        return { 
+          isValid: false, 
+          error: `Prayer request must be at least ${minLength} characters`,
+          length: trimmed.length,
+          minLength,
+          maxLength,
+          suggestions: [],
+          hasInappropriateContent: false
+        };
+      }
+      
+      if (trimmed.length > maxLength) {
+        return { 
+          isValid: false, 
+          error: `Prayer request must be no more than ${maxLength} characters`,
+          length: trimmed.length,
+          minLength,
+          maxLength,
+          suggestions: [],
+          hasInappropriateContent: false
+        };
+      }
+      
+      // Check for basic security issues
+      if (trimmed.includes('<script>') || trimmed.includes('</script>')) {
+        return { 
+          isValid: false, 
+          error: 'Invalid content detected',
+          suggestions: [],
+          hasInappropriateContent: false
+        };
+      }
+      
+      // Content filter validation
+      try {
+        const contentResult = validatePrayerContent(trimmed);
+        if (contentResult && !contentResult.isValid) {
+          return {
+            isValid: false,
+            error: contentResult.error || 'Content not appropriate',
+            suggestions: Array.isArray(contentResult.suggestions) ? contentResult.suggestions : [],
+            length: trimmed.length,
+            minLength,
+            maxLength,
+            hasInappropriateContent: Boolean(contentResult.hasInappropriateContent)
+          };
+        }
+      } catch (contentError) {
+        console.error('Content filter error:', contentError);
+        // Continue without content filtering if it fails
+      }
+      
+      return {
+        isValid: true,
+        length: trimmed.length,
+        minLength,
+        maxLength,
+        suggestions: [],
+        hasInappropriateContent: false
+      };
+      
+    } catch (error) {
+      console.error('Prayer text validation error:', error);
+      return {
+        isValid: false,
+        error: 'Validation error occurred',
+        length: 0,
+        minLength,
+        maxLength,
+        suggestions: [],
+        hasInappropriateContent: false
+      };
     }
-    
-    return {
-      isValid: trimmed.length >= minLength && trimmed.length <= maxLength,
-      length: trimmed.length,
-      minLength,
-      maxLength,
-    };
+  },
+  
+  // Quick validation for real-time input feedback
+  quickValidatePrayerText: (text) => {
+    try {
+      if (!text || typeof text !== 'string') {
+        return { isValid: true, error: null };
+      }
+      
+      const trimmed = text.trim();
+      if (trimmed.length === 0) {
+        return { isValid: true, error: null };
+      }
+      
+      try {
+        const quickResult = quickValidateContent(trimmed);
+        return {
+          isValid: Boolean(quickResult && quickResult.isValid !== false),
+          error: (quickResult && quickResult.message) || null
+        };
+      } catch (quickError) {
+        console.error('Quick validation error:', quickError);
+        return { isValid: true, error: null };
+      }
+      
+    } catch (error) {
+      console.error('Quick prayer validation error:', error);
+      return { isValid: true, error: null };
+    }
   },
   
   validateUserId: (userId) => {

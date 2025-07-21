@@ -1,13 +1,7 @@
-// app/utils/contentFilter.js - Moderate Content Filter for Prayer Requests
+// app/utils/contentFilter.js - Optimized Content Filter for Prayer Requests
 
-/**
- * Content Filter for Prayer Requests
- * Provides moderate filtering that blocks inappropriate content while
- * allowing discussion of sensitive topics in a respectful manner
- */
-
-// Basic profanity words - common inappropriate language
-const PROFANITY_WORDS = [
+// Basic profanity words - optimized as Set for O(1) lookup
+const PROFANITY_SET = new Set([
   // Strong profanity
   'fuck', 'fucking', 'shit', 'bitch', 'damn', 'hell', 'ass', 'crap',
   'bastard', 'whore', 'slut', 'piss', 'cock', 'dick', 'pussy',
@@ -16,9 +10,9 @@ const PROFANITY_WORDS = [
   'fck', 'fuk', 'sht', 'btch', 'dmn', 'ars', 'azz',
   // Intentional character substitutions
   'f4ck', 'sh1t', 'b1tch', 'd4mn', '@ss', '$hit', 'fu©k'
-];
+]);
 
-// Inappropriate content patterns - content that's not appropriate for prayer community
+// Compiled regex patterns for better performance
 const INAPPROPRIATE_PATTERNS = [
   // Sexual content (not including appropriate discussion of intimacy issues)
   /\b(porn|pornography|sex tape|nude|naked|horny|sexy time)\b/gi,
@@ -43,41 +37,57 @@ const INAPPROPRIATE_PATTERNS = [
   /\b(drug dealer|selling drugs|buy weed|cocaine|heroin)\b/gi
 ];
 
-// Sensitive topics that ARE allowed when discussed appropriately
-const ALLOWED_SENSITIVE_TOPICS = [
-  // These won't be filtered - important for prayer requests
+// Sensitive topics that ARE allowed when discussed appropriately - as Set for performance
+const ALLOWED_SENSITIVE_TOPICS = new Set([
   'abuse', 'addiction', 'depression', 'anxiety', 'suicide thoughts', 
   'self harm', 'eating disorder', 'alcoholism', 'divorce', 'death',
   'cancer', 'illness', 'miscarriage', 'infertility', 'unemployment',
   'homeless', 'poverty', 'domestic violence', 'sexual assault',
   'trauma', 'ptsd', 'mental health', 'therapy', 'counseling'
-];
+]);
 
-// Spam patterns - repetitive or suspicious content
+// Spam patterns - compiled for performance
 const SPAM_PATTERNS = [
-  // Excessive repetition
   /(.)\1{10,}/g, // Same character repeated 10+ times
   /\b(\w+)\s+\1\s+\1/gi, // Same word repeated 3+ times
-  
-  // Excessive capitalization
   /[A-Z]{20,}/g, // 20+ consecutive capital letters
-  
-  // Excessive punctuation
   /[!?]{5,}/g, // 5+ consecutive exclamation/question marks
   /\.{10,}/g, // 10+ consecutive periods
 ];
 
+// Cache for validation results to improve performance
+const validationCache = new Map();
+const CACHE_SIZE_LIMIT = 500;
+const CACHE_CLEANUP_THRESHOLD = 400;
+
+// Helper function to manage cache size
+const manageCacheSize = () => {
+  if (validationCache.size > CACHE_SIZE_LIMIT) {
+    // Remove oldest entries
+    const keysToDelete = Array.from(validationCache.keys()).slice(0, CACHE_CLEANUP_THRESHOLD);
+    keysToDelete.forEach(key => validationCache.delete(key));
+  }
+};
+
+// Helper function to create cache key
+const createCacheKey = (text, type = 'full') => {
+  // Use first 100 chars + length for cache key to balance uniqueness and performance
+  const truncated = text.slice(0, 100);
+  return `${type}_${truncated}_${text.length}`;
+};
+
 /**
- * Content Filter Class
+ * Optimized Content Filter Class
  */
 export class ContentFilter {
   constructor(options = {}) {
     this.strictness = options.strictness || 'moderate';
     this.allowSensitiveTopics = options.allowSensitiveTopics !== false;
+    this.cacheEnabled = options.cacheEnabled !== false;
   }
 
   /**
-   * Main filtering function
+   * Main filtering function with caching
    * @param {string} text - Text to filter
    * @returns {Object} - Filter result with isClean, reason, and suggestions
    */
@@ -100,26 +110,51 @@ export class ContentFilter {
       };
     }
 
+    // Check cache first
+    if (this.cacheEnabled) {
+      const cacheKey = createCacheKey(cleanText, 'full');
+      if (validationCache.has(cacheKey)) {
+        return validationCache.get(cacheKey);
+      }
+    }
+
+    // Perform validation
+    const result = this._performValidation(cleanText);
+
+    // Cache result if enabled
+    if (this.cacheEnabled) {
+      manageCacheSize();
+      const cacheKey = createCacheKey(cleanText, 'full');
+      validationCache.set(cacheKey, result);
+    }
+
+    return result;
+  }
+
+  /**
+   * Internal validation logic
+   */
+  _performValidation(text) {
     // Check for profanity
-    const profanityResult = this.checkProfanity(cleanText);
+    const profanityResult = this.checkProfanity(text);
     if (!profanityResult.isClean) {
       return profanityResult;
     }
 
     // Check for inappropriate content patterns
-    const inappropriateResult = this.checkInappropriateContent(cleanText);
+    const inappropriateResult = this.checkInappropriateContent(text);
     if (!inappropriateResult.isClean) {
       return inappropriateResult;
     }
 
     // Check for spam patterns
-    const spamResult = this.checkSpamPatterns(cleanText);
+    const spamResult = this.checkSpamPatterns(text);
     if (!spamResult.isClean) {
       return spamResult;
     }
 
     // Check content length and quality
-    const qualityResult = this.checkContentQuality(cleanText);
+    const qualityResult = this.checkContentQuality(text);
     if (!qualityResult.isClean) {
       return qualityResult;
     }
@@ -132,18 +167,20 @@ export class ContentFilter {
   }
 
   /**
-   * Check for profanity words
+   * Optimized profanity check using Set lookup
    */
   checkProfanity(text) {
     if (!text || typeof text !== 'string') {
       return { isClean: true };
     }
 
-    const lowerText = text.toLowerCase();
+    const words = text.toLowerCase().split(/\s+/);
     
-    for (const word of PROFANITY_WORDS) {
-      const regex = new RegExp(`\\b${word}\\b`, 'gi');
-      if (regex.test(lowerText)) {
+    // Use Set.has() for O(1) lookup instead of Array.includes()
+    for (const word of words) {
+      // Remove common punctuation
+      const cleanWord = word.replace(/[^\w]/g, '');
+      if (PROFANITY_SET.has(cleanWord)) {
         return {
           isClean: false,
           reason: 'Please keep your prayer request respectful',
@@ -160,18 +197,19 @@ export class ContentFilter {
   }
 
   /**
-   * Check for inappropriate content patterns
+   * Optimized inappropriate content check
    */
   checkInappropriateContent(text) {
     if (!text || typeof text !== 'string') {
       return { isClean: true };
     }
 
+    const lowerText = text.toLowerCase();
+
     for (const pattern of INAPPROPRIATE_PATTERNS) {
       if (pattern.test(text)) {
         // Check if it's a sensitive topic that should be allowed
-        const lowerText = text.toLowerCase();
-        const isSensitiveTopicDiscussion = ALLOWED_SENSITIVE_TOPICS.some(topic => 
+        const isSensitiveTopicDiscussion = Array.from(ALLOWED_SENSITIVE_TOPICS).some(topic => 
           lowerText.includes(topic.toLowerCase())
         );
 
@@ -194,7 +232,7 @@ export class ContentFilter {
   }
 
   /**
-   * Check for spam patterns
+   * Optimized spam pattern check
    */
   checkSpamPatterns(text) {
     if (!text || typeof text !== 'string') {
@@ -202,6 +240,8 @@ export class ContentFilter {
     }
 
     for (const pattern of SPAM_PATTERNS) {
+      // Reset regex lastIndex to ensure consistent behavior
+      pattern.lastIndex = 0;
       if (pattern.test(text)) {
         return {
           isClean: false,
@@ -232,7 +272,7 @@ export class ContentFilter {
   }
 
   /**
-   * Check content quality and length
+   * Optimized content quality check
    */
   checkContentQuality(text) {
     if (!text || typeof text !== 'string') {
@@ -274,10 +314,9 @@ export class ContentFilter {
   }
 
   /**
-   * Quick validation for real-time feedback
+   * Quick validation for real-time feedback with caching
    */
   quickValidate(text) {
-    // Ensure we always return boolean values
     if (!text || typeof text !== 'string') {
       return { isValid: true };
     }
@@ -286,44 +325,99 @@ export class ContentFilter {
     if (trimmed.length === 0) {
       return { isValid: true };
     }
+
+    // Check cache first for quick validation
+    if (this.cacheEnabled) {
+      const cacheKey = createCacheKey(trimmed, 'quick');
+      if (validationCache.has(cacheKey)) {
+        return validationCache.get(cacheKey);
+      }
+    }
     
     const lowerText = trimmed.toLowerCase();
+    const words = lowerText.split(/\s+/);
     
     // Quick profanity check (first 10 words for performance)
-    for (const word of PROFANITY_WORDS.slice(0, 10)) {
-      if (lowerText.includes(word)) {
-        return { 
+    const wordsToCheck = words.slice(0, 10);
+    for (const word of wordsToCheck) {
+      const cleanWord = word.replace(/[^\w]/g, '');
+      if (PROFANITY_SET.has(cleanWord)) {
+        const result = { 
           isValid: false, 
           message: 'Please keep your language respectful' 
         };
+        
+        if (this.cacheEnabled) {
+          manageCacheSize();
+          const cacheKey = createCacheKey(trimmed, 'quick');
+          validationCache.set(cacheKey, result);
+        }
+        
+        return result;
       }
     }
 
-    // Quick inappropriate content check
-    const hasInappropriate = INAPPROPRIATE_PATTERNS.slice(0, 3).some(pattern => 
-      pattern.test(trimmed)
-    );
+    // Quick inappropriate content check (first 3 patterns)
+    const patternsToCheck = INAPPROPRIATE_PATTERNS.slice(0, 3);
+    const hasInappropriate = patternsToCheck.some(pattern => {
+      pattern.lastIndex = 0;
+      return pattern.test(trimmed);
+    });
     
     if (hasInappropriate) {
-      return {
+      const result = {
         isValid: false,
         message: 'Please keep your content appropriate'
       };
+      
+      if (this.cacheEnabled) {
+        manageCacheSize();
+        const cacheKey = createCacheKey(trimmed, 'quick');
+        validationCache.set(cacheKey, result);
+      }
+      
+      return result;
     }
 
-    return { isValid: true };
+    const result = { isValid: true };
+    
+    if (this.cacheEnabled) {
+      manageCacheSize();
+      const cacheKey = createCacheKey(trimmed, 'quick');
+      validationCache.set(cacheKey, result);
+    }
+    
+    return result;
+  }
+
+  /**
+   * Clear validation cache
+   */
+  clearCache() {
+    validationCache.clear();
+  }
+
+  /**
+   * Get cache statistics
+   */
+  getCacheStats() {
+    return {
+      size: validationCache.size,
+      limit: CACHE_SIZE_LIMIT,
+      enabled: this.cacheEnabled
+    };
   }
 }
 
 // Default content filter instance
 export const contentFilter = new ContentFilter({
   strictness: 'moderate',
-  allowSensitiveTopics: true
+  allowSensitiveTopics: true,
+  cacheEnabled: true
 });
 
-// Validation helper for forms
+// Validation helper for forms with caching
 export const validatePrayerContent = (text) => {
-  // Ensure proper type handling
   if (!text || typeof text !== 'string') {
     return {
       isValid: false,
@@ -336,16 +430,15 @@ export const validatePrayerContent = (text) => {
   const result = contentFilter.filterContent(text);
   
   return {
-    isValid: Boolean(result.isClean), // Ensure boolean
+    isValid: Boolean(result.isClean),
     error: result.reason || null,
     suggestions: Array.isArray(result.suggestions) ? result.suggestions : [],
     hasInappropriateContent: Boolean(!result.isClean)
   };
 };
 
-// Quick validation for real-time input
+// Quick validation for real-time input with caching
 export const quickValidateContent = (text) => {
-  // Ensure proper type handling
   if (!text || typeof text !== 'string') {
     return { isValid: true };
   }
@@ -353,12 +446,26 @@ export const quickValidateContent = (text) => {
   const result = contentFilter.quickValidate(text);
   
   return {
-    isValid: Boolean(result.isValid), // Ensure boolean
+    isValid: Boolean(result.isValid),
     message: result.message || null
   };
 };
 
+// Clear all caches - useful for memory management
+export const clearContentFilterCache = () => {
+  contentFilter.clearCache();
+};
+
+// Get cache statistics - useful for debugging
+export const getContentFilterStats = () => {
+  return contentFilter.getCacheStats();
+};
+
 // Export for testing and configuration
-export { PROFANITY_WORDS, INAPPROPRIATE_PATTERNS, ALLOWED_SENSITIVE_TOPICS };
+export { 
+  PROFANITY_SET as PROFANITY_WORDS, 
+  INAPPROPRIATE_PATTERNS, 
+  ALLOWED_SENSITIVE_TOPICS 
+};
 
 export default contentFilter;

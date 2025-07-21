@@ -1,6 +1,12 @@
-// app/screens/SosScreen.js - Updated with Content Filter Integration
+// app/screens/SosScreen.js - Optimized with Content Filter Integration
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useState, useEffect, useCallback } from "react";
 import {
   StatusBar,
   Text,
@@ -25,10 +31,63 @@ import {
 } from "../config/api.js";
 import { userUtils } from "../utils/user.js";
 
-export default function SosScreen({ navigation }) {
+// Memoized components for better performance
+const CharacterCounter = React.memo(
+  ({ count, max, colors, typography, isWarning }) => (
+    <Text
+      style={[
+        {
+          color: colors.text.secondary,
+          fontSize: typography.fontSizes.sm,
+          fontWeight: typography.fontWeights.medium,
+        },
+        isWarning && { color: colors.emergency[500] },
+      ]}
+    >
+      {count}/{max}
+    </Text>
+  )
+);
+
+CharacterCounter.displayName = "CharacterCounter";
+
+const ValidationMessage = React.memo(({ type, message, styles }) => {
+  if (!message) return null;
+
+  const style =
+    type === "error"
+      ? styles.errorText
+      : type === "warning"
+      ? styles.warningText
+      : styles.helperText;
+
+  return <Text style={style}>{message}</Text>;
+});
+
+ValidationMessage.displayName = "ValidationMessage";
+
+const SuggestionsList = React.memo(({ suggestions, styles }) => {
+  if (!suggestions?.length) return null;
+
+  return (
+    <View style={styles.suggestionsSection}>
+      <Text style={styles.suggestionsTitle}>Suggestions:</Text>
+      {suggestions.map((suggestion, index) => (
+        <Text key={index} style={styles.suggestionItem}>
+          • {suggestion}
+        </Text>
+      ))}
+    </View>
+  );
+});
+
+SuggestionsList.displayName = "SuggestionsList";
+
+const SosScreen = React.memo(({ navigation }) => {
   const { colors, typography, spacing, borderRadius, shadows, isDark } =
     useTheme();
 
+  // State management
   const [prayer, setPrayer] = useState("");
   const [savedPrayer, setSavedPrayer] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -40,24 +99,52 @@ export default function SosScreen({ navigation }) {
   const [userId, setUserId] = useState("");
   const [contentWarning, setContentWarning] = useState(""); // For real-time feedback
 
+  // Refs for cleanup
+  const isMountedRef = useRef(true);
+  const validationTimeoutRef = useRef(null);
+
+  // Constants
   const MAX_CHARACTERS = 125;
   const MIN_CHARACTERS = 5;
 
-  // Store prayer in AsyncStorage
-  const storePrayer = async (value) => {
+  // Memoized validation check
+  const isCharacterWarning = useMemo(
+    () => characterCount > MAX_CHARACTERS * 0.9,
+    [characterCount]
+  );
+
+  // Memoized input validation state
+  const inputValidationState = useMemo(() => {
+    if (prayerError) return "error";
+    if (contentWarning && !prayerError) return "warning";
+    return "normal";
+  }, [prayerError, contentWarning]);
+
+  // Memoized send button disabled state
+  const isSendDisabled = useMemo(() => {
+    return (
+      !prayer.trim() ||
+      prayer.trim().length < MIN_CHARACTERS ||
+      isSending ||
+      Boolean(prayerError) ||
+      Boolean(contentWarning)
+    );
+  }, [prayer, isSending, prayerError, contentWarning]);
+
+  // Optimized AsyncStorage operations
+  const storePrayer = useCallback(async (value) => {
     try {
       await AsyncStorage.setItem("prayer", value);
       setSavedPrayer(value);
     } catch (error) {
       console.error("Failed to store prayer:", error);
     }
-  };
+  }, []);
 
-  // Read saved prayer from AsyncStorage
-  const readPrayer = async () => {
+  const readPrayer = useCallback(async () => {
     try {
       const savedPrayerText = await AsyncStorage.getItem("prayer");
-      if (savedPrayerText) {
+      if (savedPrayerText && isMountedRef.current) {
         setPrayer(savedPrayerText);
         setSavedPrayer(savedPrayerText);
         setCharacterCount(savedPrayerText.length);
@@ -65,25 +152,61 @@ export default function SosScreen({ navigation }) {
     } catch (error) {
       console.error("Failed to read prayer:", error);
     }
-  };
+  }, []);
 
-  // Read user's data using utility function
-  const readUserData = async () => {
+  const readUserData = useCallback(async () => {
     try {
       const userData = await userUtils.getUserData();
-      setUserZip(userData.zip || "");
-      setUserId(userData.userId);
+      if (isMountedRef.current) {
+        setUserZip(userData.zip || "");
+        setUserId(userData.userId);
 
-      if (!userData.zip) {
-        console.warn("User has not set zip code yet");
+        if (!userData.zip) {
+          console.warn("User has not set zip code yet");
+        }
       }
     } catch (error) {
       console.error("Failed to read user data:", error);
-      setUserId(`temp_${Date.now()}`);
+      if (isMountedRef.current) {
+        setUserId(`temp_${Date.now()}`);
+      }
     }
-  };
+  }, []);
 
-  // Handle prayer text change with enhanced validation
+  // Debounced validation for real-time feedback
+  const performRealTimeValidation = useCallback((text) => {
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current);
+    }
+
+    validationTimeoutRef.current = setTimeout(() => {
+      if (!isMountedRef.current) return;
+
+      if (text.trim().length > 3) {
+        try {
+          const quickResult = validation.quickValidatePrayerText(text);
+          if (
+            quickResult &&
+            typeof quickResult.isValid === "boolean" &&
+            !quickResult.isValid
+          ) {
+            setContentWarning(
+              quickResult.error || "Please review your content"
+            );
+          } else {
+            setContentWarning("");
+          }
+        } catch (error) {
+          console.error("Quick validation error:", error);
+          setContentWarning("");
+        }
+      } else {
+        setContentWarning("");
+      }
+    }, 300);
+  }, []);
+
+  // Optimized prayer text change handler
   const handlePrayerChange = useCallback(
     (text) => {
       if (text.length <= MAX_CHARACTERS) {
@@ -97,45 +220,22 @@ export default function SosScreen({ navigation }) {
           setPrayerSuggestions([]);
         }
 
-        // Real-time content validation (quick check)
-        if (text.trim().length > 3) {
-          try {
-            const quickResult = validation.quickValidatePrayerText(text);
-            if (
-              quickResult &&
-              typeof quickResult.isValid === "boolean" &&
-              !quickResult.isValid
-            ) {
-              setContentWarning(
-                quickResult.error || "Please review your content"
-              );
-            } else {
-              setContentWarning("");
-            }
-          } catch (error) {
-            console.error("Quick validation error:", error);
-            setContentWarning("");
-          }
-        } else {
-          setContentWarning("");
-        }
+        // Real-time content validation (debounced)
+        performRealTimeValidation(text);
       }
     },
-    [prayerError]
+    [prayerError, storePrayer, performRealTimeValidation]
   );
 
   // Enhanced prayer validation with content filtering
   const validatePrayer = useCallback((text) => {
-    // Ensure we have a string to work with
     const textToValidate = String(text || "").trim();
-
     const result = validation.validatePrayerText(
       textToValidate,
       MIN_CHARACTERS,
       MAX_CHARACTERS
     );
 
-    // Ensure proper return types
     return {
       error: result.isValid ? null : result.error || "Invalid prayer request",
       suggestions: Array.isArray(result.suggestions) ? result.suggestions : [],
@@ -143,67 +243,68 @@ export default function SosScreen({ navigation }) {
   }, []);
 
   // Submit prayer request to API
-  const submitPrayerRequest = async (prayerText, zipCode, userId) => {
-    try {
-      if (!validation.validateUserId(userId)) {
-        throw new Error("Invalid user ID");
-      }
+  const submitPrayerRequest = useCallback(
+    async (prayerText, zipCode, userId) => {
+      try {
+        if (!validation.validateUserId(userId)) {
+          throw new Error("Invalid user ID");
+        }
 
-      if (!validation.validateZipCode(zipCode)) {
-        throw new Error("Invalid zip code");
-      }
+        if (!validation.validateZipCode(zipCode)) {
+          throw new Error("Invalid zip code");
+        }
 
-      // Enhanced validation with content filtering
-      const prayerValidation = validation.validatePrayerText(
-        prayerText,
-        MIN_CHARACTERS,
-        MAX_CHARACTERS
-      );
-
-      if (!prayerValidation.isValid) {
-        const error = new Error(
-          prayerValidation.error || "Invalid prayer request"
+        const prayerValidation = validation.validatePrayerText(
+          prayerText,
+          MIN_CHARACTERS,
+          MAX_CHARACTERS
         );
-        if (
-          prayerValidation.suggestions &&
-          Array.isArray(prayerValidation.suggestions)
-        ) {
-          error.suggestions = prayerValidation.suggestions;
+
+        if (!prayerValidation.isValid) {
+          const error = new Error(
+            prayerValidation.error || "Invalid prayer request"
+          );
+          if (
+            prayerValidation.suggestions &&
+            Array.isArray(prayerValidation.suggestions)
+          ) {
+            error.suggestions = prayerValidation.suggestions;
+          }
+          if (prayerValidation.hasInappropriateContent === true) {
+            error.hasInappropriateContent = true;
+          }
+          throw error;
         }
-        if (prayerValidation.hasInappropriateContent === true) {
-          error.hasInappropriateContent = true;
+
+        const result = await prayerAPI.submit({
+          userId: userId,
+          zip: parseInt(zipCode),
+          prayerText: prayerText.trim(),
+        });
+
+        return {
+          success: true,
+          message: "Prayer request sent successfully",
+          data: result,
+        };
+      } catch (error) {
+        console.error("Prayer submission failed:", error);
+
+        if (error.suggestions) {
+          const filterError = new Error(error.message);
+          filterError.suggestions = error.suggestions;
+          filterError.hasInappropriateContent = error.hasInappropriateContent;
+          throw filterError;
         }
-        throw error;
+
+        throw new Error(errorHandler.getErrorMessage(error));
       }
-
-      const result = await prayerAPI.submit({
-        userId: userId,
-        zip: parseInt(zipCode),
-        prayerText: prayerText.trim(),
-      });
-
-      return {
-        success: true,
-        message: "Prayer request sent successfully",
-        data: result,
-      };
-    } catch (error) {
-      console.error("Prayer submission failed:", error);
-
-      // If it's a content filter error, preserve the suggestions
-      if (error.suggestions) {
-        const filterError = new Error(error.message);
-        filterError.suggestions = error.suggestions;
-        filterError.hasInappropriateContent = error.hasInappropriateContent;
-        throw filterError;
-      }
-
-      throw new Error(errorHandler.getErrorMessage(error));
-    }
-  };
+    },
+    []
+  );
 
   // Handle send button press with enhanced error handling
-  const handleSendPressed = async () => {
+  const handleSendPressed = useCallback(async () => {
     Keyboard.dismiss();
 
     const validationResult = validatePrayer(prayer);
@@ -264,7 +365,6 @@ export default function SosScreen({ navigation }) {
     } catch (error) {
       console.error("Failed to send prayer:", error);
 
-      // Handle content filter errors specially
       if (
         error.hasInappropriateContent === true &&
         error.suggestions &&
@@ -273,7 +373,6 @@ export default function SosScreen({ navigation }) {
         setPrayerError(error.message || "Please review your prayer request");
         setPrayerSuggestions(error.suggestions);
 
-        // Show a gentle alert for content issues
         Alert.alert(
           "Content Review Needed",
           "Please review your prayer request and make sure it follows our community guidelines. Check the suggestions below for guidance.",
@@ -308,12 +407,21 @@ export default function SosScreen({ navigation }) {
 
       Alert.alert("Send Failed", errorMessage, alertButtons);
     } finally {
-      setIsSending(false);
+      if (isMountedRef.current) {
+        setIsSending(false);
+      }
     }
-  };
+  }, [
+    prayer,
+    userZip,
+    userId,
+    validatePrayer,
+    submitPrayerRequest,
+    navigation,
+  ]);
 
   // Handle back button press
-  const handleBackPressed = () => {
+  const handleBackPressed = useCallback(() => {
     if (prayer !== savedPrayer) {
       Alert.alert(
         "Unsaved Changes",
@@ -339,10 +447,10 @@ export default function SosScreen({ navigation }) {
     } else {
       navigation.navigate("Home");
     }
-  };
+  }, [prayer, savedPrayer, navigation, storePrayer]);
 
   // Clear prayer text
-  const handleClearPressed = () => {
+  const handleClearPressed = useCallback(() => {
     Alert.alert(
       "Clear Prayer",
       "Are you sure you want to clear your prayer text?",
@@ -362,357 +470,351 @@ export default function SosScreen({ navigation }) {
         },
       ]
     );
-  };
+  }, [storePrayer]);
 
+  // Component mount and cleanup
   useEffect(() => {
+    isMountedRef.current = true;
     setIsLoading(true);
-    Promise.all([readPrayer(), readUserData()]).finally(() =>
-      setIsLoading(false)
-    );
-  }, []);
+    Promise.all([readPrayer(), readUserData()]).finally(() => {
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
+    });
 
-  // Dynamic styles based on current theme
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background.dark,
-      paddingTop: StatusBar.currentHeight || 0,
-    },
+    return () => {
+      isMountedRef.current = false;
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+  }, [readPrayer, readUserData]);
 
-    scrollView: {
-      flex: 1,
-    },
+  // Memoized styles for performance
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.background.dark,
+          paddingTop: StatusBar.currentHeight || 0,
+        },
 
-    scrollContent: {
-      padding: spacing[6],
-      paddingBottom: spacing[4],
-    },
+        scrollView: {
+          flex: 1,
+        },
 
-    loadingContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: colors.background.dark,
-    },
+        scrollContent: {
+          padding: spacing[6],
+          paddingBottom: spacing[4],
+        },
 
-    loadingText: {
-      color: colors.text.primary,
-      fontSize: typography.fontSizes.lg,
-      fontWeight: typography.fontWeights.medium,
-      marginTop: spacing[4],
-    },
+        loadingContainer: {
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: colors.background.dark,
+        },
 
-    header: {
-      alignItems: "center",
-      marginBottom: spacing[10],
-      paddingTop: spacing[6],
-    },
+        loadingText: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.lg,
+          fontWeight: typography.fontWeights.medium,
+          marginTop: spacing[4],
+        },
 
-    title: {
-      color: colors.text.primary,
-      fontSize: typography.fontSizes["4xl"],
-      fontWeight: typography.fontWeights.bold,
-      textAlign: "center",
-      marginBottom: spacing[3],
-      textShadowColor: isDark ? "rgba(0, 0, 0, 0.5)" : "transparent",
-      textShadowOffset: { width: 0, height: 2 },
-      textShadowRadius: 4,
-    },
+        header: {
+          alignItems: "center",
+          marginBottom: spacing[10],
+          paddingTop: spacing[6],
+        },
 
-    subtitle: {
-      color: colors.text.secondary,
-      fontSize: typography.fontSizes.lg,
-      textAlign: "center",
-      lineHeight: typography.lineHeights.relaxed,
-      paddingHorizontal: spacing[4],
-      fontWeight: typography.fontWeights.medium,
-    },
+        title: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes["4xl"],
+          fontWeight: typography.fontWeights.bold,
+          textAlign: "center",
+          marginBottom: spacing[3],
+          textShadowColor: isDark ? "rgba(0, 0, 0, 0.5)" : "transparent",
+          textShadowOffset: { width: 0, height: 2 },
+          textShadowRadius: 4,
+        },
 
-    zipInfo: {
-      color: colors.text.secondary,
-      fontSize: typography.fontSizes.base,
-      textAlign: "center",
-      marginTop: spacing[2],
-      fontStyle: "italic",
-      opacity: 0.9,
-    },
+        subtitle: {
+          color: colors.text.secondary,
+          fontSize: typography.fontSizes.lg,
+          textAlign: "center",
+          lineHeight: typography.lineHeights.relaxed,
+          paddingHorizontal: spacing[4],
+          fontWeight: typography.fontWeights.medium,
+        },
 
-    inputSection: {
-      marginBottom: spacing[6],
-    },
+        zipInfo: {
+          color: colors.text.secondary,
+          fontSize: typography.fontSizes.base,
+          textAlign: "center",
+          marginTop: spacing[2],
+          fontStyle: "italic",
+          opacity: 0.9,
+        },
 
-    inputCard: {
-      backgroundColor: colors.background.card,
-      borderRadius: borderRadius.xl,
-      padding: spacing[6],
-      ...shadows.lg,
-      borderWidth: 1,
-      borderColor: colors.border.light,
-    },
+        inputSection: {
+          marginBottom: spacing[6],
+        },
 
-    inputHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: spacing[4],
-    },
+        inputCard: {
+          backgroundColor: colors.background.card,
+          borderRadius: borderRadius.xl,
+          padding: spacing[6],
+          ...shadows.lg,
+          borderWidth: 1,
+          borderColor: colors.border.light,
+        },
 
-    inputLabel: {
-      color: colors.text.primary,
-      fontSize: typography.fontSizes.lg,
-      fontWeight: typography.fontWeights.semibold,
-    },
+        inputHeader: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: spacing[4],
+        },
 
-    characterCount: {
-      color: colors.text.secondary,
-      fontSize: typography.fontSizes.sm,
-      fontWeight: typography.fontWeights.medium,
-    },
+        inputLabel: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.lg,
+          fontWeight: typography.fontWeights.semibold,
+        },
 
-    characterCountWarning: {
-      color: colors.emergency[500],
-    },
+        input: {
+          backgroundColor: colors.background.secondary,
+          borderWidth: 2,
+          borderColor: colors.border.light,
+          borderRadius: borderRadius.md,
+          padding: spacing[4],
+          fontSize: typography.fontSizes.base,
+          lineHeight: typography.lineHeights.normal,
+          minHeight: 160,
+          textAlignVertical: "top",
+          color: colors.text.primary,
+          ...shadows.sm,
+        },
 
-    input: {
-      backgroundColor: colors.background.secondary,
-      borderWidth: 2,
-      borderColor: colors.border.light,
-      borderRadius: borderRadius.md,
-      padding: spacing[4],
-      fontSize: typography.fontSizes.base,
-      lineHeight: typography.lineHeights.normal,
-      minHeight: 160,
-      textAlignVertical: "top",
-      color: colors.text.primary,
-      ...shadows.sm,
-    },
+        inputFocused: {
+          borderColor: colors.primary[500],
+          backgroundColor: colors.background.primary,
+          ...shadows.base,
+        },
 
-    inputFocused: {
-      borderColor: colors.primary[500],
-      backgroundColor: colors.background.primary,
-      ...shadows.base,
-    },
+        inputError: {
+          borderColor: colors.emergency[500],
+          backgroundColor: isDark
+            ? `${colors.emergency[500]}20`
+            : colors.emergency[50],
+        },
 
-    inputError: {
-      borderColor: colors.emergency[500],
-      backgroundColor: isDark
-        ? `${colors.emergency[500]}20`
-        : colors.emergency[50],
-    },
+        inputWarning: {
+          borderColor: colors.warning[500],
+          backgroundColor: isDark
+            ? `${colors.warning[500]}20`
+            : colors.warning[50],
+        },
 
-    inputWarning: {
-      borderColor: colors.warning[500],
-      backgroundColor: isDark ? `${colors.warning[500]}20` : colors.warning[50],
-    },
+        // Error and warning text styles
+        errorText: {
+          color: colors.emergency[600],
+          fontSize: typography.fontSizes.sm,
+          fontWeight: typography.fontWeights.medium,
+          marginTop: spacing[2],
+          marginLeft: spacing[1],
+        },
 
-    // Error and warning text styles
-    errorText: {
-      color: colors.emergency[600],
-      fontSize: typography.fontSizes.sm,
-      fontWeight: typography.fontWeights.medium,
-      marginTop: spacing[2],
-      marginLeft: spacing[1],
-    },
+        warningText: {
+          color: colors.warning[600],
+          fontSize: typography.fontSizes.sm,
+          fontWeight: typography.fontWeights.medium,
+          marginTop: spacing[2],
+          marginLeft: spacing[1],
+        },
 
-    warningText: {
-      color: colors.warning[600],
-      fontSize: typography.fontSizes.sm,
-      fontWeight: typography.fontWeights.medium,
-      marginTop: spacing[2],
-      marginLeft: spacing[1],
-    },
+        helperText: {
+          color: colors.success[600],
+          fontSize: typography.fontSizes.sm,
+          fontWeight: typography.fontWeights.medium,
+          marginTop: spacing[2],
+          marginLeft: spacing[1],
+        },
 
-    helperText: {
-      color: colors.success[600],
-      fontSize: typography.fontSizes.sm,
-      fontWeight: typography.fontWeights.medium,
-      marginTop: spacing[2],
-      marginLeft: spacing[1],
-    },
+        // Suggestions section
+        suggestionsSection: {
+          backgroundColor: isDark
+            ? `${colors.primary[500]}20`
+            : colors.primary[50],
+          borderRadius: borderRadius.md,
+          padding: spacing[4],
+          marginTop: spacing[3],
+          borderLeftWidth: 4,
+          borderLeftColor: colors.primary[500],
+        },
 
-    // Suggestions section
-    suggestionsSection: {
-      backgroundColor: isDark ? `${colors.primary[500]}20` : colors.primary[50],
-      borderRadius: borderRadius.md,
-      padding: spacing[4],
-      marginTop: spacing[3],
-      borderLeftWidth: 4,
-      borderLeftColor: colors.primary[500],
-    },
+        suggestionsTitle: {
+          color: colors.primary[700],
+          fontSize: typography.fontSizes.sm,
+          fontWeight: typography.fontWeights.semibold,
+          marginBottom: spacing[2],
+        },
 
-    suggestionsTitle: {
-      color: colors.primary[700],
-      fontSize: typography.fontSizes.sm,
-      fontWeight: typography.fontWeights.semibold,
-      marginBottom: spacing[2],
-    },
+        suggestionItem: {
+          color: colors.primary[600],
+          fontSize: typography.fontSizes.sm,
+          lineHeight: typography.lineHeights.normal,
+          marginBottom: spacing[1],
+        },
 
-    suggestionItem: {
-      color: colors.primary[600],
-      fontSize: typography.fontSizes.sm,
-      lineHeight: typography.lineHeights.normal,
-      marginBottom: spacing[1],
-    },
+        guidelinesSection: {
+          backgroundColor: colors.background.glassMedium,
+          borderRadius: borderRadius.md,
+          padding: spacing[5],
+          marginBottom: spacing[6],
+          borderWidth: 1,
+          borderColor: colors.border.light,
+        },
 
-    guidelinesSection: {
-      backgroundColor: colors.background.glassMedium,
-      borderRadius: borderRadius.md,
-      padding: spacing[5],
-      marginBottom: spacing[6],
-      borderWidth: 1,
-      borderColor: colors.border.light,
-    },
+        guidelinesTitle: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.lg,
+          fontWeight: typography.fontWeights.semibold,
+          marginBottom: spacing[3],
+        },
 
-    guidelinesTitle: {
-      color: colors.text.primary,
-      fontSize: typography.fontSizes.lg,
-      fontWeight: typography.fontWeights.semibold,
-      marginBottom: spacing[3],
-    },
+        guidelinesText: {
+          color: colors.text.secondary,
+          fontSize: typography.fontSizes.base,
+          lineHeight: typography.lineHeights.normal,
+        },
 
-    guidelinesText: {
-      color: colors.text.secondary,
-      fontSize: typography.fontSizes.base,
-      lineHeight: typography.lineHeights.normal,
-    },
+        buttonSection: {
+          padding: spacing[6],
+          paddingTop: spacing[4],
+          gap: spacing[4],
+        },
 
-    buttonSection: {
-      padding: spacing[6],
-      paddingTop: spacing[4],
-      gap: spacing[4],
-    },
+        clearButton: {
+          backgroundColor: colors.background.glassMedium,
+          borderWidth: 1,
+          borderColor: colors.border.light,
+          paddingVertical: spacing[3],
+          paddingHorizontal: spacing[6],
+          borderRadius: borderRadius.md,
+          alignItems: "center",
+          ...shadows.base,
+        },
 
-    clearButton: {
-      backgroundColor: colors.background.glassMedium,
-      borderWidth: 1,
-      borderColor: colors.border.light,
-      paddingVertical: spacing[3],
-      paddingHorizontal: spacing[6],
-      borderRadius: borderRadius.md,
-      alignItems: "center",
-      ...shadows.base,
-    },
+        clearButtonText: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.semibold,
+          letterSpacing: typography.letterSpacing.wide,
+        },
 
-    clearButtonText: {
-      color: colors.text.primary,
-      fontSize: typography.fontSizes.base,
-      fontWeight: typography.fontWeights.semibold,
-      letterSpacing: typography.letterSpacing.wide,
-    },
+        sendButton: {
+          backgroundColor: colors.emergency[500],
+          paddingVertical: spacing[6],
+          paddingHorizontal: spacing[8],
+          borderRadius: borderRadius.lg,
+          alignItems: "center",
+          ...shadows.xl,
+          shadowColor: colors.emergency[500],
+          shadowOpacity: 0.4,
+        },
 
-    sendButton: {
-      backgroundColor: colors.emergency[500],
-      paddingVertical: spacing[6],
-      paddingHorizontal: spacing[8],
-      borderRadius: borderRadius.lg,
-      alignItems: "center",
-      ...shadows.xl,
-      shadowColor: colors.emergency[500],
-      shadowOpacity: 0.4,
-    },
+        sendButtonDisabled: {
+          backgroundColor: colors.neutral[400],
+          ...shadows.sm,
+        },
 
-    sendButtonDisabled: {
-      backgroundColor: colors.neutral[400],
-      ...shadows.sm,
-    },
+        sendingContainer: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+        },
 
-    sendingContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-    },
+        sendingText: {
+          color: "#ffffff",
+          fontSize: typography.fontSizes.lg,
+          fontWeight: typography.fontWeights.bold,
+          marginLeft: spacing[3],
+          letterSpacing: typography.letterSpacing.wide,
+        },
 
-    sendingText: {
-      color: "#ffffff",
-      fontSize: typography.fontSizes.lg,
-      fontWeight: typography.fontWeights.bold,
-      marginLeft: spacing[3],
-      letterSpacing: typography.letterSpacing.wide,
-    },
+        sendButtonText: {
+          color: "#ffffff",
+          fontSize: typography.fontSizes.lg,
+          fontWeight: typography.fontWeights.bold,
+          letterSpacing: typography.letterSpacing.wide,
+          textShadowColor: "rgba(0, 0, 0, 0.3)",
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: 2,
+        },
 
-    sendButtonText: {
-      color: "#ffffff",
-      fontSize: typography.fontSizes.lg,
-      fontWeight: typography.fontWeights.bold,
-      letterSpacing: typography.letterSpacing.wide,
-      textShadowColor: "rgba(0, 0, 0, 0.3)",
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
-    },
+        sendButtonTextDisabled: {
+          color: colors.text.disabled,
+        },
 
-    sendButtonTextDisabled: {
-      color: colors.text.disabled,
-    },
+        backButton: {
+          backgroundColor: colors.background.glassMedium,
+          borderWidth: 1,
+          borderColor: colors.border.light,
+          paddingVertical: spacing[4],
+          paddingHorizontal: spacing[6],
+          borderRadius: borderRadius.md,
+          alignItems: "center",
+        },
 
-    backButton: {
-      backgroundColor: colors.background.glassMedium,
-      borderWidth: 1,
-      borderColor: colors.border.light,
-      paddingVertical: spacing[4],
-      paddingHorizontal: spacing[6],
-      borderRadius: borderRadius.md,
-      alignItems: "center",
-    },
+        backButtonText: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.semibold,
+          letterSpacing: typography.letterSpacing.wide,
+        },
 
-    backButtonText: {
-      color: colors.text.primary,
-      fontSize: typography.fontSizes.base,
-      fontWeight: typography.fontWeights.semibold,
-      letterSpacing: typography.letterSpacing.wide,
-    },
+        tipsSection: {
+          backgroundColor: isDark
+            ? `${colors.primary[500]}20`
+            : `${colors.primary[100]}`,
+          borderRadius: borderRadius.md,
+          padding: spacing[5],
+          marginBottom: spacing[6],
+          borderLeftWidth: 4,
+          borderLeftColor: colors.primary[500],
+        },
 
-    emergencyIndicator: {
-      position: "absolute",
-      top: spacing[4],
-      right: spacing[4],
-      backgroundColor: colors.emergency[500],
-      borderRadius: borderRadius.full,
-      paddingVertical: spacing[2],
-      paddingHorizontal: spacing[3],
-      flexDirection: "row",
-      alignItems: "center",
-      ...shadows.base,
-    },
+        tipsTitle: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.semibold,
+          marginBottom: spacing[2],
+        },
 
-    emergencyDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: "#ffffff",
-      marginRight: spacing[2],
-    },
+        tipsText: {
+          color: colors.text.secondary,
+          fontSize: typography.fontSizes.sm,
+          lineHeight: typography.lineHeights.normal,
+        },
+      }),
+    [colors, typography, spacing, borderRadius, shadows, isDark]
+  );
 
-    emergencyText: {
-      color: "#ffffff",
-      fontSize: typography.fontSizes.xs,
-      fontWeight: typography.fontWeights.bold,
-    },
+  // Memoized input style based on validation state
+  const inputStyle = useMemo(() => {
+    const baseStyle = [styles.input];
+    if (inputValidationState === "error") {
+      baseStyle.push(styles.inputError);
+    } else if (inputValidationState === "warning") {
+      baseStyle.push(styles.inputWarning);
+    }
+    return baseStyle;
+  }, [styles, inputValidationState]);
 
-    tipsSection: {
-      backgroundColor: isDark
-        ? `${colors.primary[500]}20`
-        : `${colors.primary[100]}`,
-      borderRadius: borderRadius.md,
-      padding: spacing[5],
-      marginBottom: spacing[6],
-      borderLeftWidth: 4,
-      borderLeftColor: colors.primary[500],
-    },
-
-    tipsTitle: {
-      color: colors.text.primary,
-      fontSize: typography.fontSizes.base,
-      fontWeight: typography.fontWeights.semibold,
-      marginBottom: spacing[2],
-    },
-
-    tipsText: {
-      color: colors.text.secondary,
-      fontSize: typography.fontSizes.sm,
-      lineHeight: typography.lineHeights.normal,
-    },
-  });
-
+  // Show loading screen
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -739,14 +841,10 @@ export default function SosScreen({ navigation }) {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Emergency Prayer Request</Text>
-            <Text style={styles.subtitle}>
-              Share your prayer request with your local community
-            </Text>
+            <Text style={styles.title}>Prayer Request</Text>
+
             {userZip && (
-              <Text style={styles.zipInfo}>
-                Sending to community in {userZip}
-              </Text>
+              <Text style={styles.zipInfo}>Sharing to {userZip}</Text>
             )}
           </View>
 
@@ -755,15 +853,13 @@ export default function SosScreen({ navigation }) {
             <View style={styles.inputCard}>
               <View style={styles.inputHeader}>
                 <Text style={styles.inputLabel}>Your Prayer Request</Text>
-                <Text
-                  style={[
-                    styles.characterCount,
-                    Boolean(characterCount > MAX_CHARACTERS * 0.9) &&
-                      styles.characterCountWarning,
-                  ]}
-                >
-                  {characterCount}/{MAX_CHARACTERS}
-                </Text>
+                <CharacterCounter
+                  count={characterCount}
+                  max={MAX_CHARACTERS}
+                  colors={colors}
+                  typography={typography}
+                  isWarning={isCharacterWarning}
+                />
               </View>
 
               <TextInput
@@ -772,49 +868,44 @@ export default function SosScreen({ navigation }) {
                 multiline={true}
                 numberOfLines={6}
                 maxLength={MAX_CHARACTERS}
-                style={[
-                  styles.input,
-                  Boolean(prayerError) ? styles.inputError : null,
-                  Boolean(contentWarning && !prayerError)
-                    ? styles.inputWarning
-                    : null,
-                ]}
+                style={inputStyle}
                 placeholder="Please share what you need prayer for. Be as specific as you'd like - your community is here to support you."
                 placeholderTextColor={colors.text.placeholder}
                 textAlignVertical="top"
-                editable={Boolean(!isSending)}
+                editable={!isSending}
                 accessibilityLabel="Prayer request input"
                 accessibilityHint="Enter your prayer request text"
               />
 
-              {/* Error Messages */}
-              {Boolean(prayerError) && (
-                <Text style={styles.errorText}>{prayerError}</Text>
-              )}
+              {/* Validation Messages */}
+              <ValidationMessage
+                type="error"
+                message={prayerError}
+                styles={styles}
+              />
 
-              {/* Content Warning (real-time) */}
-              {Boolean(contentWarning && !prayerError) && (
-                <Text style={styles.warningText}>{contentWarning}</Text>
-              )}
+              <ValidationMessage
+                type="warning"
+                message={contentWarning && !prayerError ? contentWarning : null}
+                styles={styles}
+              />
 
               {/* Success Message */}
-              {Boolean(
-                characterCount >= MIN_CHARACTERS &&
-                  !prayerError &&
-                  !contentWarning
-              ) && <Text style={styles.helperText}>Ready to send</Text>}
+              {characterCount >= MIN_CHARACTERS &&
+                !prayerError &&
+                !contentWarning && (
+                  <ValidationMessage
+                    type="success"
+                    message="Ready to send"
+                    styles={styles}
+                  />
+                )}
 
               {/* Content Suggestions */}
-              {Boolean(prayerSuggestions.length > 0) && (
-                <View style={styles.suggestionsSection}>
-                  <Text style={styles.suggestionsTitle}>Suggestions:</Text>
-                  {prayerSuggestions.map((suggestion, index) => (
-                    <Text key={index} style={styles.suggestionItem}>
-                      • {suggestion}
-                    </Text>
-                  ))}
-                </View>
-              )}
+              <SuggestionsList
+                suggestions={prayerSuggestions}
+                styles={styles}
+              />
             </View>
           </View>
 
@@ -834,11 +925,11 @@ export default function SosScreen({ navigation }) {
 
         {/* Button Section */}
         <View style={styles.buttonSection}>
-          {Boolean(prayer.trim().length > 0) && (
+          {prayer.trim().length > 0 && (
             <TouchableOpacity
               style={styles.clearButton}
               onPress={handleClearPressed}
-              disabled={Boolean(isSending)}
+              disabled={isSending}
               accessibilityRole="button"
               accessibilityLabel="Clear prayer text"
             >
@@ -849,21 +940,10 @@ export default function SosScreen({ navigation }) {
           <TouchableOpacity
             style={[
               styles.sendButton,
-              (Boolean(!prayer.trim()) ||
-                Boolean(prayer.trim().length < MIN_CHARACTERS) ||
-                Boolean(isSending) ||
-                Boolean(prayerError) ||
-                Boolean(contentWarning)) &&
-                styles.sendButtonDisabled,
+              isSendDisabled && styles.sendButtonDisabled,
             ]}
             onPress={handleSendPressed}
-            disabled={
-              Boolean(!prayer.trim()) ||
-              Boolean(prayer.trim().length < MIN_CHARACTERS) ||
-              Boolean(isSending) ||
-              Boolean(prayerError) ||
-              Boolean(contentWarning)
-            }
+            disabled={isSendDisabled}
             accessibilityRole="button"
             accessibilityLabel="Send prayer request"
           >
@@ -876,11 +956,7 @@ export default function SosScreen({ navigation }) {
               <Text
                 style={[
                   styles.sendButtonText,
-                  (Boolean(!prayer.trim()) ||
-                    Boolean(prayer.trim().length < MIN_CHARACTERS) ||
-                    Boolean(prayerError) ||
-                    Boolean(contentWarning)) &&
-                    styles.sendButtonTextDisabled,
+                  isSendDisabled && styles.sendButtonTextDisabled,
                 ]}
               >
                 SEND PRAYER REQUEST
@@ -891,7 +967,7 @@ export default function SosScreen({ navigation }) {
           <TouchableOpacity
             style={styles.backButton}
             onPress={handleBackPressed}
-            disabled={Boolean(isSending)}
+            disabled={isSending}
             accessibilityRole="button"
             accessibilityLabel="Go back to home"
           >
@@ -901,4 +977,8 @@ export default function SosScreen({ navigation }) {
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );
-}
+});
+
+SosScreen.displayName = "SosScreen";
+
+export default SosScreen;

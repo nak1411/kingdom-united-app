@@ -1,4 +1,5 @@
-// app/screens/HomeScreen.js - Theme-Aware Version
+// app/screens/HomeScreen.js - Optimized with Memoization
+import React, { useEffect, useMemo, useCallback } from "react";
 import {
   StatusBar,
   Text,
@@ -8,11 +9,53 @@ import {
   ImageBackground,
   StyleSheet,
 } from "react-native";
-import { useEffect } from "react";
 import logoimage from "../../assets/logo.png";
 import { useTheme } from "../context/ThemeContext";
 
-export default function HomeScreen({ navigation }) {
+// Memoized navigation button component
+const NavigationButton = React.memo(({ 
+  onPress, 
+  style, 
+  textStyle, 
+  children, 
+  accessibilityLabel,
+  testID 
+}) => (
+  <TouchableOpacity
+    style={style}
+    onPress={onPress}
+    activeOpacity={0.8}
+    accessibilityRole="button"
+    accessibilityLabel={accessibilityLabel}
+    testID={testID}
+  >
+    <Text style={textStyle}>{children}</Text>
+  </TouchableOpacity>
+));
+
+NavigationButton.displayName = 'NavigationButton';
+
+// Memoized SOS button component
+const SOSButton = React.memo(({ onPress, styles }) => (
+  <View style={styles.sosButtonContainer}>
+    <TouchableOpacity
+      style={styles.sosButton}
+      onPress={onPress}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel="Emergency SOS Button"
+      testID="sos-button"
+    >
+      <View style={styles.sosButtonInner}>
+        <Text style={styles.sosButtonText}>SOS</Text>
+      </View>
+    </TouchableOpacity>
+  </View>
+));
+
+SOSButton.displayName = 'SOSButton';
+
+const HomeScreen = React.memo(({ navigation }) => {
   const {
     colors,
     typography,
@@ -20,40 +63,40 @@ export default function HomeScreen({ navigation }) {
     borderRadius,
     shadows,
     isDark,
-    commonStyles,
   } = useTheme();
 
-  const runOnboarding = async () => {
-    console.log("ONBOARDING");
-    // Add your existing readOnboarded logic here if needed
-  };
-
-  const sosPressed = () => {
+  // Memoized navigation handlers to prevent recreation on every render
+  const handleSOSPress = useCallback(() => {
     console.log("SOS");
     navigation.navigate("Sos");
-  };
+  }, [navigation]);
 
-  const requestsPressed = () => {
+  const handleRequestsPress = useCallback(() => {
     console.log("REQUESTS");
     navigation.navigate("Requests");
-  };
+  }, [navigation]);
 
-  const settingsPressed = () => {
+  const handleSettingsPress = useCallback(() => {
     console.log("SETTINGS");
     navigation.navigate("Settings");
-  };
+  }, [navigation]);
 
-  const warriorBookPressed = () => {
+  const handleWarriorBookPress = useCallback(() => {
     console.log("WARRIOR BOOK");
     navigation.navigate("WarriorBook");
-  };
+  }, [navigation]);
+
+  const runOnboarding = useCallback(async () => {
+    console.log("ONBOARDING");
+    // Add your existing readOnboarded logic here if needed
+  }, []);
 
   useEffect(() => {
     runOnboarding();
-  }, []);
+  }, [runOnboarding]);
 
-  // Dynamic styles based on current theme
-  const styles = StyleSheet.create({
+  // Memoized styles to prevent recreation on every render
+  const styles = useMemo(() => StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.background.dark,
@@ -131,19 +174,6 @@ export default function HomeScreen({ navigation }) {
       textAlign: "center",
     },
 
-    sosButtonSubtext: {
-      color: isDark ? colors.text.secondary : colors.text.primary, // Dark text in light theme
-      fontSize: typography.fontSizes.xs,
-      fontWeight: typography.fontWeights.semibold,
-      marginTop: spacing[1],
-      textAlign: "center",
-      position: "absolute",
-      bottom: -spacing[6],
-      textShadowColor: isDark ? colors.background.overlay : "transparent",
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
-    },
-
     // Navigation Section
     navigationSection: {
       width: "100%",
@@ -196,7 +226,7 @@ export default function HomeScreen({ navigation }) {
 
     // Button text (better contrast for both themes)
     buttonText: {
-      color: isDark ? colors.text.primary : colors.text.primary, // Dark text in light theme
+      color: colors.text.primary, // Adapts to theme
       fontSize: typography.fontSizes.base,
       fontWeight: typography.fontWeights.semibold,
       letterSpacing: typography.letterSpacing.wide,
@@ -205,7 +235,14 @@ export default function HomeScreen({ navigation }) {
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 2,
     },
-  });
+  }), [colors, typography, spacing, borderRadius, shadows, isDark]);
+
+  // Memoized button styles to prevent recreation
+  const buttonStyles = useMemo(() => ({
+    requests: [styles.navButton, styles.requestsButton],
+    warriorBook: [styles.navButton, styles.warriorBookButton],
+    settings: [styles.navButton, styles.settingsButton],
+  }), [styles]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -226,50 +263,48 @@ export default function HomeScreen({ navigation }) {
       {/* Main Content */}
       <View style={styles.mainContent}>
         {/* Big Red SOS Button */}
-        <View style={styles.sosButtonContainer}>
-          <TouchableOpacity
-            style={styles.sosButton}
-            onPress={sosPressed}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Emergency SOS Button"
-          >
-            <View style={styles.sosButtonInner}>
-              <Text style={styles.sosButtonText}>SOS</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+        <SOSButton onPress={handleSOSPress} styles={styles} />
 
         {/* Navigation Buttons */}
         <View style={styles.navigationSection}>
           {/* Prayer Requests Button */}
-          <TouchableOpacity
-            style={[styles.navButton, styles.requestsButton]}
-            onPress={requestsPressed}
-            activeOpacity={0.8}
+          <NavigationButton
+            style={buttonStyles.requests}
+            textStyle={styles.buttonText}
+            onPress={handleRequestsPress}
+            accessibilityLabel="Navigate to Prayer Requests"
+            testID="requests-button"
           >
-            <Text style={styles.buttonText}>PRAYER REQUESTS</Text>
-          </TouchableOpacity>
+            PRAYER REQUESTS
+          </NavigationButton>
 
           {/* Warrior Book Button */}
-          <TouchableOpacity
-            style={[styles.navButton, styles.warriorBookButton]}
-            onPress={warriorBookPressed}
-            activeOpacity={0.8}
+          <NavigationButton
+            style={buttonStyles.warriorBook}
+            textStyle={styles.buttonText}
+            onPress={handleWarriorBookPress}
+            accessibilityLabel="Navigate to Warrior Book"
+            testID="warrior-book-button"
           >
-            <Text style={styles.buttonText}>WARRIOR BOOK</Text>
-          </TouchableOpacity>
+            WARRIOR BOOK
+          </NavigationButton>
 
           {/* Settings Button */}
-          <TouchableOpacity
-            style={[styles.navButton, styles.settingsButton]}
-            onPress={settingsPressed}
-            activeOpacity={0.8}
+          <NavigationButton
+            style={buttonStyles.settings}
+            textStyle={styles.buttonText}
+            onPress={handleSettingsPress}
+            accessibilityLabel="Navigate to Settings"
+            testID="settings-button"
           >
-            <Text style={styles.buttonText}>SETTINGS</Text>
-          </TouchableOpacity>
+            SETTINGS
+          </NavigationButton>
         </View>
       </View>
     </SafeAreaView>
   );
-}
+});
+
+HomeScreen.displayName = 'HomeScreen';
+
+export default HomeScreen;

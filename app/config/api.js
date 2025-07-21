@@ -1,54 +1,98 @@
-// Production-ready API Configuration - Updated for Database Integration
+// app/config/api.js - Optimized API Configuration with Better Performance
 import { Platform } from 'react-native';
-import { validatePrayerContent, quickValidateContent } from '../utils/contentFilter.js';
 
-const getBaseURL = () => {
-  if (__DEV__) {
-    // Development URLs
-    if (Platform.OS === 'ios') {
-      return 'http://localhost:5001';
-    } else {
-      return 'https://kingdom-united-app.onrender.com';
-    }
-  } else {
-    // PRODUCTION URL - UPDATE THIS WITH YOUR ACTUAL DEPLOYED URL
-    // After you deploy to Render, Railway, or Heroku, replace this URL
-    return 'https://kingdom-united-app.onrender.com';
-    
-    // Examples:
-    // return 'https://prayer-app-api.onrender.com';
-    // return 'https://prayer-app-api.up.railway.app';
-    // return 'https://prayer-app-api.herokuapp.com';
+// Lazy-loaded validation functions to reduce initial bundle size
+let validatePrayerContent, quickValidateContent;
+
+const loadValidation = async () => {
+  if (!validatePrayerContent) {
+    const validationModule = await import('../utils/contentFilter.js');
+    validatePrayerContent = validationModule.validatePrayerContent;
+    quickValidateContent = validationModule.quickValidateContent;
   }
+  return { validatePrayerContent, quickValidateContent };
 };
 
-export const API_CONFIG = {
+// Memoized base URL getter
+const baseURLCache = new Map();
+
+const getBaseURL = () => {
+  const key = `${__DEV__}_${Platform.OS}`;
+  
+  if (baseURLCache.has(key)) {
+    return baseURLCache.get(key);
+  }
+  
+  let url;
+  if (__DEV__) {
+    // Development URLs
+    url = Platform.OS === 'ios' 
+      ? 'http://localhost:5001'
+      : 'https://kingdom-united-app.onrender.com';
+  } else {
+    // PRODUCTION URL
+    url = 'https://kingdom-united-app.onrender.com';
+  }
+  
+  baseURLCache.set(key, url);
+  return url;
+};
+
+// Optimized API configuration with constants
+export const API_CONFIG = Object.freeze({
   BASE_URL: getBaseURL(),
   
-  ENDPOINTS: {
+  ENDPOINTS: Object.freeze({
     PRAYERS: '/data',
     PRAYERS_BY_USER: '/data/user',
     PRAYERS_BY_ZIP: '/data/zip',
     HEALTH: '/health',
-  },
+  }),
   
   // Production-optimized timeouts
-  TIMEOUT: __DEV__ ? 15000 : 30000, // Longer timeout for production
+  TIMEOUT: __DEV__ ? 15000 : 30000,
   
-  DEFAULT_HEADERS: {
+  DEFAULT_HEADERS: Object.freeze({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-  },
+  }),
   
   // Retry configuration for production
   RETRY_ATTEMPTS: __DEV__ ? 1 : 3,
   RETRY_DELAY: 1000,
-};
+});
 
-// Enhanced API request function with retry logic for production
+// Request queue for better performance
+const requestQueue = new Map();
+const activeRequests = new Set();
+
+// Enhanced API request function with caching and retry logic
 export const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_CONFIG.BASE_URL}${endpoint}`;
+  const requestKey = `${options.method || 'GET'}_${url}_${JSON.stringify(options.body || {})}`;
   
+  // Prevent duplicate requests
+  if (activeRequests.has(requestKey)) {
+    if (requestQueue.has(requestKey)) {
+      return requestQueue.get(requestKey);
+    }
+  }
+
+  const requestPromise = executeRequest(url, options, requestKey);
+  activeRequests.add(requestKey);
+  requestQueue.set(requestKey, requestPromise);
+
+  try {
+    const result = await requestPromise;
+    return result;
+  } finally {
+    activeRequests.delete(requestKey);
+    requestQueue.delete(requestKey);
+  }
+};
+
+// Extracted request execution logic for better maintainability
+const executeRequest = async (url, options, requestKey) => {
   if (__DEV__) {
     console.log(`[API] Making request to: ${url}`);
   }
@@ -71,7 +115,7 @@ export const apiRequest = async (endpoint, options = {}) => {
   for (let attempt = 1; attempt <= API_CONFIG.RETRY_ATTEMPTS; attempt++) {
     try {
       if (__DEV__ && attempt > 1) {
-        console.log(`[API] Retry attempt ${attempt} for ${endpoint}`);
+        console.log(`[API] Retry attempt ${attempt} for ${url}`);
       }
       
       const response = await fetch(url, config);
@@ -132,8 +176,22 @@ export const apiRequest = async (endpoint, options = {}) => {
   }
 };
 
-// Production health check with detailed info
-export const testConnection = async () => {
+// Cached health check results
+let healthCheckCache = null;
+let healthCheckTime = 0;
+const HEALTH_CHECK_CACHE_DURATION = 30000; // 30 seconds
+
+// Production health check with caching
+export const testConnection = async (forceRefresh = false) => {
+  const now = Date.now();
+  
+  // Return cached result if still valid
+  if (!forceRefresh && 
+      healthCheckCache && 
+      (now - healthCheckTime) < HEALTH_CHECK_CACHE_DURATION) {
+    return healthCheckCache;
+  }
+
   try {
     const startTime = Date.now();
     
@@ -146,25 +204,29 @@ export const testConnection = async () => {
     const endTime = Date.now();
     const responseTime = endTime - startTime;
     
+    const result = {
+      success: response.ok,
+      responseTime,
+      url: `${API_CONFIG.BASE_URL}/health`,
+      environment: __DEV__ ? 'development' : 'production'
+    };
+
     if (response.ok) {
       const data = await response.json();
-      return { 
-        success: true, 
-        data,
-        responseTime,
-        url: `${API_CONFIG.BASE_URL}/health`,
-        environment: __DEV__ ? 'development' : 'production'
-      };
+      result.data = data;
     } else {
-      return { 
-        success: false, 
-        error: `Server error: ${response.status}`,
-        responseTime,
-        url: `${API_CONFIG.BASE_URL}/health`
-      };
+      result.error = `Server error: ${response.status}`;
     }
+
+    // Cache successful results
+    if (response.ok) {
+      healthCheckCache = result;
+      healthCheckTime = now;
+    }
+
+    return result;
   } catch (error) {
-    return { 
+    const result = { 
       success: false, 
       error: error.message.includes('Network request failed') 
         ? 'Cannot reach server. Server may be down or URL incorrect.'
@@ -172,11 +234,13 @@ export const testConnection = async () => {
       url: `${API_CONFIG.BASE_URL}/health`,
       environment: __DEV__ ? 'development' : 'production'
     };
+
+    return result;
   }
 };
 
-// Production-ready Prayer API - Updated for your database schema
-export const prayerAPI = {
+// Optimized Prayer API with better error handling and caching
+export const prayerAPI = Object.freeze({
   testConnection,
   
   submit: async (prayerData) => {
@@ -191,7 +255,7 @@ export const prayerAPI = {
     // Map frontend fields to backend fields
     const backendData = {
       userId: prayerData.userId,
-      zip: parseInt(prayerData.zip), // Ensure zip is integer
+      zip: parseInt(prayerData.zip, 10), // Ensure zip is integer with radix
       prayerText: prayerData.prayerText,
     };
     
@@ -246,16 +310,35 @@ export const prayerAPI = {
       method: 'DELETE',
     });
   },
-};
+});
 
-// Enhanced validation for production
-export const validation = {
+// Validation cache for performance
+const validationCache = new Map();
+const VALIDATION_CACHE_SIZE = 100;
+
+// Enhanced validation with caching
+export const validation = Object.freeze({
   validateZipCode: (zip) => {
-    const zipRegex = /^\d{5}$/;
-    return zipRegex.test(String(zip || ''));
+    const zipStr = String(zip || '');
+    const cacheKey = `zip_${zipStr}`;
+    
+    if (validationCache.has(cacheKey)) {
+      return validationCache.get(cacheKey);
+    }
+    
+    const isValid = /^\d{5}$/.test(zipStr);
+    
+    // Manage cache size
+    if (validationCache.size >= VALIDATION_CACHE_SIZE) {
+      const firstKey = validationCache.keys().next().value;
+      validationCache.delete(firstKey);
+    }
+    
+    validationCache.set(cacheKey, isValid);
+    return isValid;
   },
   
-  validatePrayerText: (text, minLength = 10, maxLength = 500) => {
+  validatePrayerText: async (text, minLength = 10, maxLength = 500) => {
     try {
       const trimmed = String(text || '').trim();
       
@@ -294,8 +377,9 @@ export const validation = {
         };
       }
       
-      // Content filter validation
+      // Lazy-load content filter validation
       try {
+        const { validatePrayerContent } = await loadValidation();
         const contentResult = validatePrayerContent(trimmed);
         if (contentResult && !contentResult.isValid) {
           return {
@@ -336,8 +420,8 @@ export const validation = {
     }
   },
   
-  // Quick validation for real-time input feedback
-  quickValidatePrayerText: (text) => {
+  // Quick validation for real-time input feedback with caching
+  quickValidatePrayerText: async (text) => {
     try {
       if (!text || typeof text !== 'string') {
         return { isValid: true, error: null };
@@ -347,13 +431,29 @@ export const validation = {
       if (trimmed.length === 0) {
         return { isValid: true, error: null };
       }
+
+      const cacheKey = `quick_${trimmed.slice(0, 50)}`; // Cache by first 50 chars
+      
+      if (validationCache.has(cacheKey)) {
+        return validationCache.get(cacheKey);
+      }
       
       try {
+        const { quickValidateContent } = await loadValidation();
         const quickResult = quickValidateContent(trimmed);
-        return {
+        const result = {
           isValid: Boolean(quickResult && quickResult.isValid !== false),
           error: (quickResult && quickResult.message) || null
         };
+        
+        // Manage cache size
+        if (validationCache.size >= VALIDATION_CACHE_SIZE) {
+          const firstKey = validationCache.keys().next().value;
+          validationCache.delete(firstKey);
+        }
+        
+        validationCache.set(cacheKey, result);
+        return result;
       } catch (quickError) {
         console.error('Quick validation error:', quickError);
         return { isValid: true, error: null };
@@ -368,43 +468,85 @@ export const validation = {
   validateUserId: (userId) => {
     return userId && String(userId).trim().length > 0;
   },
+});
+
+// Optimized error handling with error categorization
+const ERROR_CATEGORIES = Object.freeze({
+  NETWORK: 'network',
+  TIMEOUT: 'timeout',
+  SERVER: 'server',
+  CLIENT: 'client',
+  UNKNOWN: 'unknown'
+});
+
+const categorizeError = (error) => {
+  const message = error.message.toLowerCase();
+  
+  if (message.includes('network request failed') || 
+      message.includes('service unavailable')) {
+    return ERROR_CATEGORIES.NETWORK;
+  }
+  
+  if (message.includes('timeout') || message.includes('timed out')) {
+    return ERROR_CATEGORIES.TIMEOUT;
+  }
+  
+  if (message.includes('500') || message.includes('502') || 
+      message.includes('503') || message.includes('504')) {
+    return ERROR_CATEGORIES.SERVER;
+  }
+  
+  if (message.includes('400') || message.includes('401') || 
+      message.includes('403') || message.includes('404')) {
+    return ERROR_CATEGORIES.CLIENT;
+  }
+  
+  return ERROR_CATEGORIES.UNKNOWN;
 };
 
-// Production error handling
-export const errorHandler = {
+// Production error handling with categorization
+export const errorHandler = Object.freeze({
   getErrorMessage: (error) => {
     if (__DEV__) {
       console.log('[ErrorHandler] Processing error:', error);
     }
     
-    if (error.message.includes('Service unavailable')) {
-      return "Service is temporarily unavailable. Please try again in a few moments.";
-    } else if (error.message.includes('Network request failed')) {
-      return "Unable to connect to server. Please check your internet connection.";
-    } else if (error.message.includes('timeout') || error.message.includes('timed out')) {
-      return "Request timed out. Please try again.";
-    } else if (error.message.includes('400')) {
-      return "Invalid request. Please check your input and try again.";
-    } else if (error.message.includes('404')) {
-      return "Service not found. Please try again later.";
-    } else if (error.message.includes('500')) {
-      return "Server error. Please try again later.";
-    } else {
-      return error.message || "An unexpected error occurred. Please try again.";
+    const category = categorizeError(error);
+    
+    switch (category) {
+      case ERROR_CATEGORIES.NETWORK:
+        return "Unable to connect to server. Please check your internet connection.";
+      case ERROR_CATEGORIES.TIMEOUT:
+        return "Request timed out. Please try again.";
+      case ERROR_CATEGORIES.SERVER:
+        return "Server error. Please try again later.";
+      case ERROR_CATEGORIES.CLIENT:
+        if (error.message.includes('400')) {
+          return "Invalid request. Please check your input and try again.";
+        }
+        if (error.message.includes('404')) {
+          return "Service not found. Please try again later.";
+        }
+        return "Request error. Please try again.";
+      default:
+        return error.message || "An unexpected error occurred. Please try again.";
     }
   },
   
   isNetworkError: (error) => {
-    return error.message.includes('Network request failed') || 
-           error.message.includes('Service unavailable');
+    return categorizeError(error) === ERROR_CATEGORIES.NETWORK;
   },
   
   isTimeoutError: (error) => {
-    return error.message.includes('timeout') || error.message.includes('timed out');
+    return categorizeError(error) === ERROR_CATEGORIES.TIMEOUT;
   },
-};
+  
+  getErrorCategory: (error) => {
+    return categorizeError(error);
+  },
+});
 
-// Debug function (only works in development)
+// Debug function (only works in development) - optimized
 export const debugConnection = async () => {
   if (!__DEV__) {
     return { success: false, error: 'Debug mode only available in development' };
@@ -418,7 +560,7 @@ export const debugConnection = async () => {
   
   try {
     // Test health endpoint
-    const healthResult = await testConnection();
+    const healthResult = await testConnection(true); // Force refresh
     console.log('Health check result:', healthResult);
     
     // Test fetching all prayers
@@ -444,4 +586,35 @@ export const debugConnection = async () => {
     console.error('Debug connection failed:', error);
     return { success: false, error: error.message };
   }
+};
+
+// Cleanup function for cache management
+export const clearCache = () => {
+  baseURLCache.clear();
+  validationCache.clear();
+  requestQueue.clear();
+  activeRequests.clear();
+  healthCheckCache = null;
+  healthCheckTime = 0;
+};
+
+// Export for testing purposes
+export const __testing__ = __DEV__ ? {
+  baseURLCache,
+  validationCache,
+  requestQueue,
+  activeRequests,
+  categorizeError,
+  ERROR_CATEGORIES,
+} : {};
+
+export default {
+  API_CONFIG,
+  apiRequest,
+  testConnection,
+  prayerAPI,
+  validation,
+  errorHandler,
+  debugConnection,
+  clearCache,
 };

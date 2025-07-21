@@ -1,10 +1,19 @@
-// app/styles/theme.js - Enhanced Theme System with Dark/Light Mode
+// app/styles/theme.js - Optimized Theme System with Better Performance
 import { Dimensions } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
-// Base color palette
-const colors = {
+// Cached dimension calculations
+const dimensionCache = {
+  width,
+  height,
+  isSmallScreen: width < 375,
+  isMediumScreen: width >= 375 && width < 414,
+  isLargeScreen: width >= 414,
+};
+
+// Base color palette - optimized structure
+const baseColors = {
   // Primary brand colors
   primary: {
     50: '#f0f9ff',
@@ -90,107 +99,94 @@ const colors = {
   },
 };
 
-// Dark theme configuration
-const darkTheme = {
-  colors: {
-    ...colors,
-    
-    // Text colors for dark theme
+// Optimized theme creator function
+const createThemeColors = (isDark) => {
+  if (isDark) {
+    return {
+      ...baseColors,
+      text: {
+        primary: '#ffffff',
+        secondary: '#e5e7eb',
+        tertiary: '#9ca3af',
+        inverse: '#111827',
+        light: 'rgba(255, 255, 255, 0.9)',
+        medium: 'rgba(255, 255, 255, 0.7)',
+        disabled: '#6b7280',
+        placeholder: 'rgba(255, 255, 255, 0.5)',
+        placeholderInverse: 'rgba(0, 0, 0, 0.5)',
+      },
+      background: {
+        primary: '#1f2937',
+        secondary: '#374151',
+        tertiary: '#4b5563',
+        dark: '#2c3e50', // Main app background
+        darker: '#1a252f',
+        black: '#000000',
+        overlay: 'rgba(0, 0, 0, 0.7)',
+        overlayLight: 'rgba(0, 0, 0, 0.5)',
+        overlayDark: 'rgba(0, 0, 0, 0.9)',
+        glass: 'rgba(255, 255, 255, 0.95)',
+        glassLight: 'rgba(255, 255, 255, 0.1)',
+        glassMedium: 'rgba(255, 255, 255, 0.15)',
+        glassDark: 'rgba(0, 0, 0, 0.4)',
+        card: '#374151',
+      },
+      border: {
+        light: '#4b5563',
+        medium: '#6b7280',
+        dark: '#9ca3af',
+        inverse: 'rgba(255, 255, 255, 0.3)',
+        focus: '#3b82f6',
+        error: '#ef4444',
+        success: '#22c55e',
+      },
+    };
+  }
+  
+  // Light theme colors
+  return {
+    ...baseColors,
     text: {
-      primary: '#ffffff',
-      secondary: '#e5e7eb',
-      tertiary: '#9ca3af',
-      inverse: '#111827',
-      light: 'rgba(255, 255, 255, 0.9)',
-      medium: 'rgba(255, 255, 255, 0.7)',
-      disabled: '#6b7280',
-      placeholder: 'rgba(255, 255, 255, 0.5)',
-      placeholderInverse: 'rgba(0, 0, 0, 0.5)',
-    },
-    
-    // Background colors for dark theme
-    background: {
-      primary: '#1f2937',
+      primary: '#111827',
       secondary: '#374151',
-      tertiary: '#4b5563',
-      dark: '#2c3e50', // Main app background
-      darker: '#1a252f',
-      black: '#000000',
-      overlay: 'rgba(0, 0, 0, 0.7)',
-      overlayLight: 'rgba(0, 0, 0, 0.5)',
-      overlayDark: 'rgba(0, 0, 0, 0.9)',
-      glass: 'rgba(255, 255, 255, 0.95)',
-      glassLight: 'rgba(255, 255, 255, 0.1)',
-      glassMedium: 'rgba(255, 255, 255, 0.15)',
-      glassDark: 'rgba(0, 0, 0, 0.4)',
-      card: '#374151', // Dark theme cards
-    },
-    
-    // Border colors for dark theme
-    border: {
-      light: '#4b5563',          // Lighter borders for dark theme
-      medium: '#6b7280',         // Medium borders
-      dark: '#9ca3af',           // Darker borders for contrast
-      inverse: 'rgba(255, 255, 255, 0.3)',  // Light borders on dark
-      focus: '#3b82f6',
-      error: '#ef4444',
-      success: '#22c55e',
-    },
-  },
-};
-
-// Light theme configuration
-const lightTheme = {
-  colors: {
-    ...colors,
-    
-    // Text colors for light theme - FIXED for readability
-    text: {
-      primary: '#111827',        // Dark text on light backgrounds
-      secondary: '#374151',      // Medium dark for secondary text
-      tertiary: '#6b7280',       // Gray for tertiary text
-      inverse: '#ffffff',        // White text (for dark buttons/cards)
-      light: '#6b7280',          // Gray text instead of light
-      medium: '#9ca3af',         // Medium gray
-      disabled: '#d1d5db',       // Light gray for disabled
-      placeholder: '#9ca3af',    // Gray placeholder text
+      tertiary: '#6b7280',
+      inverse: '#ffffff',
+      light: '#6b7280',
+      medium: '#9ca3af',
+      disabled: '#d1d5db',
+      placeholder: '#9ca3af',
       placeholderInverse: 'rgba(255, 255, 255, 0.6)',
     },
-    
-    // Background colors for light theme
     background: {
-      primary: '#ffffff',        // Pure white
-      secondary: '#f9fafb',      // Very light gray
-      tertiary: '#f3f4f6',       // Light gray
-      dark: '#ffffff',           // Main app background (white)
-      darker: '#f9fafb',         // Slightly gray
-      black: '#111827',          // Dark for contrast
+      primary: '#ffffff',
+      secondary: '#f9fafb',
+      tertiary: '#f3f4f6',
+      dark: '#ffffff',
+      darker: '#f9fafb',
+      black: '#111827',
       overlay: 'rgba(0, 0, 0, 0.5)',
       overlayLight: 'rgba(0, 0, 0, 0.3)',
       overlayDark: 'rgba(0, 0, 0, 0.8)',
       glass: 'rgba(255, 255, 255, 0.95)',
-      glassLight: 'rgba(0, 0, 0, 0.05)',      // Very subtle
-      glassMedium: 'rgba(0, 0, 0, 0.08)',     // Slightly more visible
-      glassDark: 'rgba(0, 0, 0, 0.15)',       // More noticeable
+      glassLight: 'rgba(0, 0, 0, 0.05)',
+      glassMedium: 'rgba(0, 0, 0, 0.08)',
+      glassDark: 'rgba(0, 0, 0, 0.15)',
       card: '#ffffff',
     },
-    
-    // Border colors for light theme
     border: {
-      light: '#e5e7eb',          // Light gray borders
-      medium: '#d1d5db',         // Medium gray borders
-      dark: '#9ca3af',           // Darker borders for contrast
-      inverse: 'rgba(0, 0, 0, 0.15)',  // Dark borders on light
+      light: '#e5e7eb',
+      medium: '#d1d5db',
+      dark: '#9ca3af',
+      inverse: 'rgba(0, 0, 0, 0.15)',
       focus: '#3b82f6',
       error: '#ef4444',
       success: '#22c55e',
     },
-  },
+  };
 };
 
-// Shared theme properties (same for both themes)
+// Shared theme properties (cached for performance)
 const sharedTheme = {
-  // Typography scale
   typography: {
     fontSizes: {
       xs: 12,
@@ -205,7 +201,6 @@ const sharedTheme = {
       '6xl': 48,
       '7xl': 60,
     },
-    
     fontWeights: {
       thin: '100',
       light: '300',
@@ -216,14 +211,12 @@ const sharedTheme = {
       extrabold: '800',
       black: '900',
     },
-    
     lineHeights: {
       tight: 20,
       normal: 24,
       relaxed: 28,
       loose: 32,
     },
-    
     letterSpacing: {
       tight: -0.5,
       normal: 0,
@@ -302,150 +295,387 @@ const sharedTheme = {
     },
   },
   
-  // Screen dimensions
-  dimensions: {
-    width,
-    height,
-    isSmallScreen: width < 375,
-    isMediumScreen: width >= 375 && width < 414,
-    isLargeScreen: width >= 414,
-  },
+  // Cached screen dimensions
+  dimensions: dimensionCache,
 };
 
-// Create complete themes by merging shared properties
+// Theme cache for performance
+const themeCache = new Map();
+
+// Optimized theme creation with caching
+const createTheme = (isDark) => {
+  const cacheKey = isDark ? 'dark' : 'light';
+  
+  if (themeCache.has(cacheKey)) {
+    return themeCache.get(cacheKey);
+  }
+  
+  const theme = {
+    ...sharedTheme,
+    colors: createThemeColors(isDark),
+    isDark,
+  };
+  
+  themeCache.set(cacheKey, theme);
+  return theme;
+};
+
+// Export themes
 export const themes = {
-  dark: {
-    ...sharedTheme,
-    ...darkTheme,
-    isDark: true,
+  get dark() {
+    return createTheme(true);
   },
-  light: {
-    ...sharedTheme,
-    ...lightTheme,
-    isDark: false,
+  get light() {
+    return createTheme(false);
   },
 };
 
-// Default theme (dark)
+// Default theme (dark) - cached
 export const theme = themes.dark;
 
-// Common component styles that adapt to theme
-export const createCommonStyles = (currentTheme) => ({
-  // Container styles
-  container: {
-    flex: 1,
-    backgroundColor: currentTheme.colors.background.dark,
-  },
+// Common component styles creator - optimized with memoization
+const styleCache = new Map();
+
+export const createCommonStyles = (currentTheme) => {
+  const cacheKey = `${currentTheme.isDark ? 'dark' : 'light'}_common`;
   
-  safeArea: {
-    flex: 1,
-    backgroundColor: currentTheme.colors.background.dark,
-  },
+  if (styleCache.has(cacheKey)) {
+    return styleCache.get(cacheKey);
+  }
   
-  content: {
-    flex: 1,
-    paddingHorizontal: currentTheme.spacing[6],
-  },
+  const commonStyles = {
+    // Container styles
+    container: {
+      flex: 1,
+      backgroundColor: currentTheme.colors.background.dark,
+    },
+    
+    safeArea: {
+      flex: 1,
+      backgroundColor: currentTheme.colors.background.dark,
+    },
+    
+    content: {
+      flex: 1,
+      paddingHorizontal: currentTheme.spacing[6],
+    },
+    
+    // Header styles
+    header: {
+      paddingHorizontal: currentTheme.spacing[6],
+      paddingVertical: currentTheme.spacing[5],
+      alignItems: 'center',
+    },
+    
+    headerTitle: {
+      color: currentTheme.colors.text.primary,
+      fontSize: currentTheme.typography.fontSizes['4xl'],
+      fontWeight: currentTheme.typography.fontWeights.bold,
+      textAlign: 'center',
+      marginBottom: currentTheme.spacing[2],
+    },
+    
+    headerSubtitle: {
+      color: currentTheme.colors.text.secondary,
+      fontSize: currentTheme.typography.fontSizes.lg,
+      textAlign: 'center',
+      fontWeight: currentTheme.typography.fontWeights.medium,
+    },
+    
+    // Section styles
+    section: {
+      marginBottom: currentTheme.spacing[8],
+    },
+    
+    sectionTitle: {
+      color: currentTheme.colors.text.primary,
+      fontSize: currentTheme.typography.fontSizes.xl,
+      fontWeight: currentTheme.typography.fontWeights.semibold,
+      marginBottom: currentTheme.spacing[5],
+      paddingHorizontal: currentTheme.spacing[2],
+    },
+    
+    // Card styles
+    card: {
+      backgroundColor: currentTheme.colors.background.card,
+      borderRadius: currentTheme.borderRadius.lg,
+      padding: currentTheme.spacing[6],
+      marginBottom: currentTheme.spacing[5],
+      ...currentTheme.shadows.lg,
+      borderWidth: 1,
+      borderColor: currentTheme.colors.border.light,
+    },
+    
+    cardTitle: {
+      fontSize: currentTheme.typography.fontSizes.lg,
+      fontWeight: currentTheme.typography.fontWeights.semibold,
+      color: currentTheme.colors.text.primary,
+      marginBottom: currentTheme.spacing[1],
+    },
+    
+    cardSubtitle: {
+      fontSize: currentTheme.typography.fontSizes.sm,
+      color: currentTheme.colors.text.secondary,
+      fontWeight: currentTheme.typography.fontWeights.medium,
+    },
+    
+    // Button styles
+    button: {
+      borderRadius: currentTheme.borderRadius.md,
+      paddingVertical: currentTheme.spacing[4],
+      paddingHorizontal: currentTheme.spacing[6],
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 56,
+      ...currentTheme.shadows.base,
+    },
+    
+    buttonPrimary: {
+      backgroundColor: currentTheme.colors.primary[500],
+    },
+    
+    buttonEmergency: {
+      backgroundColor: currentTheme.colors.emergency[500],
+      ...currentTheme.shadows.xl,
+    },
+    
+    buttonSuccess: {
+      backgroundColor: currentTheme.colors.success[500],
+    },
+    
+    buttonWarrior: {
+      backgroundColor: currentTheme.colors.warrior[500],
+    },
+    
+    buttonSecondary: {
+      backgroundColor: currentTheme.colors.background.glassMedium,
+      borderWidth: 1,
+      borderColor: currentTheme.colors.border.inverse,
+    },
+    
+    buttonGhost: {
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderColor: currentTheme.colors.border.light,
+    },
+    
+    buttonDisabled: {
+      backgroundColor: currentTheme.colors.neutral[400],
+      ...currentTheme.shadows.sm,
+    },
+    
+    // Button text styles
+    buttonText: {
+      fontSize: currentTheme.typography.fontSizes.base,
+      fontWeight: currentTheme.typography.fontWeights.semibold,
+      letterSpacing: currentTheme.typography.letterSpacing.wide,
+    },
+    
+    buttonTextPrimary: {
+      color: currentTheme.colors.text.inverse,
+    },
+    
+    buttonTextSecondary: {
+      color: currentTheme.colors.text.primary,
+    },
+    
+    buttonTextLarge: {
+      fontSize: currentTheme.typography.fontSizes.lg,
+      fontWeight: currentTheme.typography.fontWeights.bold,
+      letterSpacing: currentTheme.typography.letterSpacing.wide,
+    },
+    
+    buttonTextDisabled: {
+      color: currentTheme.colors.text.disabled,
+    },
+    
+    // Input styles
+    input: {
+      backgroundColor: currentTheme.colors.background.secondary,
+      borderWidth: 2,
+      borderColor: currentTheme.colors.border.light,
+      borderRadius: currentTheme.borderRadius.md,
+      paddingVertical: currentTheme.spacing[4],
+      paddingHorizontal: currentTheme.spacing[4],
+      fontSize: currentTheme.typography.fontSizes.base,
+      color: currentTheme.colors.text.primary,
+      ...currentTheme.shadows.sm,
+    },
+    
+    inputFocused: {
+      borderColor: currentTheme.colors.border.focus,
+      backgroundColor: currentTheme.colors.background.primary,
+      ...currentTheme.shadows.base,
+    },
+    
+    inputError: {
+      borderColor: currentTheme.colors.border.error,
+      backgroundColor: currentTheme.isDark 
+        ? `${currentTheme.colors.emergency[500]}20` 
+        : currentTheme.colors.emergency[50],
+    },
+    
+    inputSuccess: {
+      borderColor: currentTheme.colors.border.success,
+      backgroundColor: currentTheme.isDark 
+        ? `${currentTheme.colors.success[500]}20` 
+        : currentTheme.colors.success[50],
+    },
+    
+    // Text styles
+    textPrimary: {
+      color: currentTheme.colors.text.primary,
+      fontSize: currentTheme.typography.fontSizes.base,
+      lineHeight: currentTheme.typography.lineHeights.normal,
+    },
+    
+    textSecondary: {
+      color: currentTheme.colors.text.secondary,
+      fontSize: currentTheme.typography.fontSizes.sm,
+      lineHeight: currentTheme.typography.lineHeights.normal,
+    },
+    
+    textLight: {
+      color: currentTheme.colors.text.light,
+      fontSize: currentTheme.typography.fontSizes.sm,
+      lineHeight: currentTheme.typography.lineHeights.normal,
+    },
+    
+    textError: {
+      color: currentTheme.colors.emergency[600],
+      fontSize: currentTheme.typography.fontSizes.sm,
+      fontWeight: currentTheme.typography.fontWeights.medium,
+    },
+    
+    textSuccess: {
+      color: currentTheme.colors.success[600],
+      fontSize: currentTheme.typography.fontSizes.sm,
+      fontWeight: currentTheme.typography.fontWeights.semibold,
+    },
+    
+    textHelper: {
+      color: currentTheme.colors.text.secondary,
+      fontSize: currentTheme.typography.fontSizes.sm,
+      fontWeight: currentTheme.typography.fontWeights.medium,
+    },
+    
+    // Badge styles
+    badge: {
+      borderRadius: currentTheme.borderRadius.full,
+      paddingVertical: currentTheme.spacing[1],
+      paddingHorizontal: currentTheme.spacing[2],
+      ...currentTheme.shadows.sm,
+    },
+    
+    badgeEmergency: {
+      backgroundColor: currentTheme.colors.emergency[500],
+    },
+    
+    badgeSuccess: {
+      backgroundColor: currentTheme.colors.success[500],
+    },
+    
+    badgeText: {
+      color: currentTheme.colors.text.inverse,
+      fontSize: currentTheme.typography.fontSizes.xs,
+      fontWeight: currentTheme.typography.fontWeights.bold,
+    },
+    
+    // Loading styles
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    
+    loadingText: {
+      color: currentTheme.colors.text.primary,
+      fontSize: currentTheme.typography.fontSizes.lg,
+      fontWeight: currentTheme.typography.fontWeights.medium,
+      marginTop: currentTheme.spacing[4],
+    },
+    
+    // Modal styles
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    
+    modalContent: {
+      backgroundColor: currentTheme.colors.background.card,
+      marginHorizontal: currentTheme.spacing[6],
+      borderRadius: currentTheme.borderRadius.xl,
+      maxHeight: '85%',
+      width: '90%',
+      ...currentTheme.shadows.xl,
+    },
+    
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: currentTheme.spacing[6],
+      borderBottomWidth: 1,
+      borderBottomColor: currentTheme.colors.border.light,
+    },
+    
+    modalTitle: {
+      fontSize: currentTheme.typography.fontSizes.xl,
+      fontWeight: currentTheme.typography.fontWeights.bold,
+      color: currentTheme.colors.text.primary,
+    },
+    
+    modalCloseButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: currentTheme.colors.background.secondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...currentTheme.shadows.sm,
+    },
+    
+    modalCloseText: {
+      fontSize: currentTheme.typography.fontSizes.base,
+      color: currentTheme.colors.text.secondary,
+      fontWeight: currentTheme.typography.fontWeights.bold,
+    },
+    
+    // Bottom section
+    bottomSection: {
+      padding: currentTheme.spacing[6],
+      paddingTop: currentTheme.spacing[4],
+    },
+    
+    backButton: {
+      backgroundColor: currentTheme.colors.background.glassMedium,
+      borderWidth: 1,
+      borderColor: currentTheme.colors.border.light,
+      paddingVertical: currentTheme.spacing[4],
+      paddingHorizontal: currentTheme.spacing[6],
+      borderRadius: currentTheme.borderRadius.md,
+      alignItems: 'center',
+      ...currentTheme.shadows.base,
+    },
+    
+    backButtonText: {
+      color: currentTheme.colors.text.primary,
+      fontSize: currentTheme.typography.fontSizes.base,
+      fontWeight: currentTheme.typography.fontWeights.semibold,
+      letterSpacing: currentTheme.typography.letterSpacing.wide,
+    },
+  };
   
-  // Header styles
-  header: {
-    paddingHorizontal: currentTheme.spacing[6],
-    paddingVertical: currentTheme.spacing[5],
-    alignItems: 'center',
-  },
-  
-  headerTitle: {
-    color: currentTheme.colors.text.primary,
-    fontSize: currentTheme.typography.fontSizes['4xl'],
-    fontWeight: currentTheme.typography.fontWeights.bold,
-    textAlign: 'center',
-    marginBottom: currentTheme.spacing[2],
-  },
-  
-  headerSubtitle: {
-    color: currentTheme.colors.text.secondary,
-    fontSize: currentTheme.typography.fontSizes.lg,
-    textAlign: 'center',
-    fontWeight: currentTheme.typography.fontWeights.medium,
-  },
-  
-  // Card styles
-  card: {
-    backgroundColor: currentTheme.colors.background.card,
-    borderRadius: currentTheme.borderRadius.lg,
-    padding: currentTheme.spacing[6],
-    marginBottom: currentTheme.spacing[5],
-    ...currentTheme.shadows.lg,
-    borderWidth: 1,
-    borderColor: currentTheme.colors.border.light,
-  },
-  
-  // Button styles
-  button: {
-    borderRadius: currentTheme.borderRadius.md,
-    paddingVertical: currentTheme.spacing[4],
-    paddingHorizontal: currentTheme.spacing[6],
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 56,
-    ...currentTheme.shadows.base,
-  },
-  
-  buttonPrimary: {
-    backgroundColor: currentTheme.colors.primary[500],
-  },
-  
-  buttonEmergency: {
-    backgroundColor: currentTheme.colors.emergency[500],
-    ...currentTheme.shadows.xl,
-  },
-  
-  buttonSuccess: {
-    backgroundColor: currentTheme.colors.success[500],
-  },
-  
-  buttonWarrior: {
-    backgroundColor: currentTheme.colors.warrior[500],
-  },
-  
-  buttonSecondary: {
-    backgroundColor: currentTheme.colors.background.glassMedium,
-    borderWidth: 1,
-    borderColor: currentTheme.colors.border.inverse,
-  },
-  
-  buttonText: {
-    fontSize: currentTheme.typography.fontSizes.base,
-    fontWeight: currentTheme.typography.fontWeights.semibold,
-    letterSpacing: currentTheme.typography.letterSpacing.wide,
-    color: currentTheme.colors.text.inverse,
-  },
-  
-  // Input styles
-  input: {
-    backgroundColor: currentTheme.colors.background.secondary,
-    borderWidth: 2,
-    borderColor: currentTheme.colors.border.light,
-    borderRadius: currentTheme.borderRadius.md,
-    paddingVertical: currentTheme.spacing[4],
-    paddingHorizontal: currentTheme.spacing[4],
-    fontSize: currentTheme.typography.fontSizes.base,
-    color: currentTheme.colors.text.primary,
-    ...currentTheme.shadows.sm,
-  },
-  
-  // Text styles
-  textPrimary: {
-    color: currentTheme.colors.text.primary,
-    fontSize: currentTheme.typography.fontSizes.base,
-    lineHeight: currentTheme.typography.lineHeights.normal,
-  },
-  
-  textSecondary: {
-    color: currentTheme.colors.text.secondary,
-    fontSize: currentTheme.typography.fontSizes.sm,
-    lineHeight: currentTheme.typography.lineHeights.normal,
-  },
-});
+  styleCache.set(cacheKey, commonStyles);
+  return commonStyles;
+};
+
+// Clear caches when needed (for development/testing)
+export const clearThemeCache = () => {
+  themeCache.clear();
+  styleCache.clear();
+};
 
 export default theme;

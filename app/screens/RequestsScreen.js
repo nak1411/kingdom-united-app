@@ -1,4 +1,11 @@
-// app/screens/RequestsScreen.js - Theme-Aware Version
+// app/screens/RequestsScreen.js - Optimized with Performance Improvements
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import {
   StatusBar,
   Text,
@@ -14,23 +21,232 @@ import {
   AppState,
   StyleSheet,
 } from "react-native";
-import { useState, useEffect, useCallback, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useTheme } from "../context/ThemeContext";
 import { prayerAPI, errorHandler } from "../config/api.js";
 import { userUtils } from "../utils/user.js";
 
-export default function RequestsScreen({ navigation }) {
-  const { 
-    colors, 
-    typography, 
-    spacing, 
-    borderRadius, 
-    shadows, 
-    isDark 
-  } = useTheme();
+// Memoized components for better performance
+const RealTimeToggle = React.memo(({ isActive, onToggle, styles }) => (
+  <TouchableOpacity style={styles.realTimeToggle} onPress={onToggle}>
+    <Text style={styles.realTimeToggleText}>
+      {isActive ? "LIVE" : "MANUAL"}
+    </Text>
+  </TouchableOpacity>
+));
 
+RealTimeToggle.displayName = 'RealTimeToggle';
+
+const StatusIndicator = React.memo(({ isActive, lastUpdate, colors, styles, formatTimestamp }) => (
+  <View style={styles.statusContainer}>
+    <View
+      style={[
+        styles.statusDot,
+        { backgroundColor: isActive ? colors.success[500] : colors.neutral[500] },
+      ]}
+    />
+    <Text style={styles.statusText}>
+      {isActive ? "Live updates" : "Manual refresh"}
+    </Text>
+    {lastUpdate && (
+      <Text style={styles.lastUpdateText}>
+        Last: {formatTimestamp(lastUpdate)}
+      </Text>
+    )}
+  </View>
+));
+
+StatusIndicator.displayName = 'StatusIndicator';
+
+const NewPrayersNotification = React.memo(({ count, onClear, styles }) => {
+  if (count <= 0) return null;
+  
+  return (
+    <TouchableOpacity style={styles.newPrayersNotification} onPress={onClear}>
+      <Text style={styles.newPrayersText}>
+        {count} new prayer{count !== 1 ? "s" : ""}
+      </Text>
+    </TouchableOpacity>
+  );
+});
+
+NewPrayersNotification.displayName = 'NewPrayersNotification';
+
+const PrayerItemBadges = React.memo(({ isRecent, styles }) => (
+  <View style={styles.badges}>
+    {isRecent && (
+      <View style={styles.newBadge}>
+        <Text style={styles.newBadgeText}>NEW</Text>
+      </View>
+    )}
+    <View style={styles.prayerBadge}>
+      <Text style={styles.prayerBadgeText}>Prayer Request</Text>
+    </View>
+  </View>
+));
+
+PrayerItemBadges.displayName = 'PrayerItemBadges';
+
+const PrayerItemContent = React.memo(({ prayerText, onReadMore, styles }) => {
+  const truncatedText = useMemo(() => {
+    if (!prayerText || prayerText.length <= 150) return prayerText;
+    return prayerText.substring(0, 150) + "...";
+  }, [prayerText]);
+
+  const showReadMore = prayerText && prayerText.length > 150;
+
+  return (
+    <View style={styles.prayerContent}>
+      <Text style={styles.prayerText}>{truncatedText}</Text>
+      {showReadMore && (
+        <Text style={styles.readMore} onPress={onReadMore}>
+          Read more...
+        </Text>
+      )}
+    </View>
+  );
+});
+
+PrayerItemContent.displayName = 'PrayerItemContent';
+
+const PrayerItem = React.memo(({ 
+  item, 
+  index, 
+  userZip, 
+  lastFetchTime, 
+  onPress, 
+  styles, 
+  formatTimestamp 
+}) => {
+  const isRecent = useMemo(() => {
+    if (!lastFetchTime) return false;
+    const prayerTime = new Date(item.createdAt || item.created_at);
+    return prayerTime > new Date(Date.now() - 5 * 60 * 1000);
+  }, [item, lastFetchTime]);
+
+  const prayerText = item.prayerText || item.prayer || item.text || "Prayer request";
+  const timestamp = item.createdAt || item.created_at;
+
+  const handlePress = useCallback(() => {
+    onPress(item);
+  }, [item, onPress]);
+
+  const handleReadMore = useCallback(() => {
+    onPress(item);
+  }, [item, onPress]);
+
+  return (
+    <TouchableOpacity
+      style={[styles.prayerItem, isRecent && styles.recentPrayerItem]}
+      onPress={handlePress}
+      activeOpacity={0.7}
+    >
+      <View style={styles.prayerHeader}>
+        <View style={styles.userInfo}>
+          <View style={styles.userDetails}>
+            <Text style={styles.userName}>Community Member</Text>
+            <Text style={styles.timestamp}>
+              {formatTimestamp(timestamp)} • Zip {item.zip || userZip}
+            </Text>
+          </View>
+        </View>
+        <PrayerItemBadges isRecent={isRecent} styles={styles} />
+      </View>
+
+      <PrayerItemContent
+        prayerText={prayerText}
+        onReadMore={handleReadMore}
+        styles={styles}
+      />
+    </TouchableOpacity>
+  );
+});
+
+PrayerItem.displayName = 'PrayerItem';
+
+const EmptyState = React.memo(({ userZip, navigation, styles }) => (
+  <View style={styles.emptyState}>
+    <Text style={styles.emptyStateTitle}>No Prayer Requests Yet</Text>
+    <Text style={styles.emptyStateText}>
+      {userZip
+        ? `Be the first to share a prayer request in the ${userZip} area, or check back later for community updates.`
+        : "Set your zip code in Settings to view and connect with local prayer requests."}
+    </Text>
+    {!userZip && (
+      <TouchableOpacity
+        style={styles.settingsButton}
+        onPress={() => navigation.navigate("Settings")}
+      >
+        <Text style={styles.settingsButtonText}>Go to Settings</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+));
+
+EmptyState.displayName = 'EmptyState';
+
+const ErrorState = React.memo(({ error, onRetry, styles }) => (
+  <View style={styles.errorState}>
+    <Text style={styles.errorStateTitle}>Unable to Load Prayers</Text>
+    <Text style={styles.errorStateText}>{error}</Text>
+    <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
+      <Text style={styles.retryButtonText}>Try Again</Text>
+    </TouchableOpacity>
+  </View>
+));
+
+ErrorState.displayName = 'ErrorState';
+
+const PrayerModal = React.memo(({ 
+  visible, 
+  prayer, 
+  onClose, 
+  styles, 
+  formatTimestamp 
+}) => {
+  if (!prayer) return null;
+
+  return (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Prayer Request</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalBody}>
+            <View style={styles.modalPrayerHeader}>
+              <Text style={styles.modalTimestamp}>
+                {formatTimestamp(prayer.createdAt || prayer.created_at)}
+              </Text>
+              <Text style={styles.modalPrayerId}>Prayer ID: {prayer.id}</Text>
+            </View>
+
+            <Text style={styles.modalPrayerText}>
+              {prayer.prayerText || prayer.prayer || prayer.text || "Prayer request"}
+            </Text>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+});
+
+PrayerModal.displayName = 'PrayerModal';
+
+const RequestsScreen = React.memo(({ navigation }) => {
+  const { colors, typography, spacing, borderRadius, shadows, isDark } = useTheme();
+
+  // State management
   const [prayers, setPrayers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -51,10 +267,26 @@ export default function RequestsScreen({ navigation }) {
   // Real-time polling configuration
   const POLL_INTERVAL = 15000;
   const BACKGROUND_POLL_INTERVAL = 60000;
-  const MAX_RETRIES = 3;
+
+  // Memoized timestamp formatter
+  const formatTimestamp = useCallback((timestamp) => {
+    if (!timestamp) return "Recently";
+
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInMinutes < 1) return "Just now";
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    return date.toLocaleDateString();
+  }, []);
 
   // Fetch prayers from database with real-time capabilities
-  const fetchPrayersFromDatabase = async (
+  const fetchPrayersFromDatabase = useCallback(async (
     showLoading = true,
     isBackgroundFetch = false
   ) => {
@@ -142,7 +374,7 @@ export default function RequestsScreen({ navigation }) {
         setIsRefreshing(false);
       }
     }
-  };
+  }, [isRealTimeActive]);
 
   // Setup real-time polling
   const startRealTimePolling = useCallback(() => {
@@ -163,7 +395,7 @@ export default function RequestsScreen({ navigation }) {
     }, interval);
 
     console.log(`[RealTime] Started polling every ${interval / 1000} seconds`);
-  }, [isRealTimeActive]);
+  }, [isRealTimeActive, fetchPrayersFromDatabase]);
 
   // Stop real-time polling
   const stopRealTimePolling = useCallback(() => {
@@ -198,7 +430,7 @@ export default function RequestsScreen({ navigation }) {
         startRealTimePolling();
       }
     },
-    [startRealTimePolling, isRealTimeActive]
+    [startRealTimePolling, isRealTimeActive, fetchPrayersFromDatabase]
   );
 
   // Handle manual refresh
@@ -206,7 +438,7 @@ export default function RequestsScreen({ navigation }) {
     setIsRefreshing(true);
     setNewPrayersCount(0);
     fetchPrayersFromDatabase(false, false);
-  }, []);
+  }, [fetchPrayersFromDatabase]);
 
   // Toggle real-time updates
   const toggleRealTimeUpdates = useCallback(() => {
@@ -221,37 +453,12 @@ export default function RequestsScreen({ navigation }) {
     });
   }, [startRealTimePolling, stopRealTimePolling]);
 
-  // Format timestamp
-  const formatTimestamp = (timestamp) => {
-    if (!timestamp) return "Recently";
-
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    const diffInDays = Math.floor(diffInHours / 24);
-
-    if (diffInMinutes < 1) return "Just now";
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInDays < 7) return `${diffInDays}d ago`;
-    return date.toLocaleDateString();
-  };
-
-  // Truncate text
-  const truncateText = (text, maxLength = 150) => {
-    if (!text) return "";
-    return text.length > maxLength
-      ? text.substring(0, maxLength) + "..."
-      : text;
-  };
-
   // Handle prayer item press
-  const handlePrayerPress = (prayer) => {
+  const handlePrayerPress = useCallback((prayer) => {
     setSelectedPrayer(prayer);
     setModalVisible(true);
     console.log(`[RealTime] Prayer viewed: ${prayer.id || "unknown"}`);
-  };
+  }, []);
 
   // Clear new prayers notification
   const clearNewPrayersNotification = useCallback(() => {
@@ -259,12 +466,94 @@ export default function RequestsScreen({ navigation }) {
   }, []);
 
   // Back button handler
-  const backPressed = () => {
+  const handleBackPressed = useCallback(() => {
     navigation.navigate("Home");
-  };
+  }, [navigation]);
 
-  // Dynamic styles based on current theme
-  const styles = StyleSheet.create({
+  // Retry handler
+  const handleRetry = useCallback(() => {
+    fetchPrayersFromDatabase(true, false);
+  }, [fetchPrayersFromDatabase]);
+
+  // Modal close handler
+  const handleModalClose = useCallback(() => {
+    setModalVisible(false);
+    setSelectedPrayer(null);
+  }, []);
+
+  // FlatList optimization callbacks
+  const renderPrayerItem = useCallback(({ item, index }) => (
+    <PrayerItem
+      item={item}
+      index={index}
+      userZip={userZip}
+      lastFetchTime={lastFetchTimeRef.current}
+      onPress={handlePrayerPress}
+      styles={styles}
+      formatTimestamp={formatTimestamp}
+    />
+  ), [userZip, handlePrayerPress, formatTimestamp]);
+
+  const keyExtractor = useCallback((item, index) =>
+    `${item.id || item._id || index}-${item.timestamp || index}`,
+    []
+  );
+
+  const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
+
+  // Component mount and cleanup
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      stopRealTimePolling();
+    };
+  }, [stopRealTimePolling]);
+
+  // Setup app state listener
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
+    return () => subscription?.remove();
+  }, [handleAppStateChange]);
+
+  // Initial load and start real-time updates
+  useEffect(() => {
+    fetchPrayersFromDatabase(true, false);
+
+    const startPollingTimer = setTimeout(() => {
+      if (mountedRef.current && isRealTimeActive) {
+        startRealTimePolling();
+      }
+    }, 2000);
+
+    return () => clearTimeout(startPollingTimer);
+  }, [fetchPrayersFromDatabase, startRealTimePolling, isRealTimeActive]);
+
+  // Handle navigation focus/blur for real-time updates
+  useEffect(() => {
+    const unsubscribeFocus = navigation.addListener("focus", () => {
+      console.log("[RealTime] Screen focused - starting updates");
+      setIsRealTimeActive(true);
+      fetchPrayersFromDatabase(false, false);
+    });
+
+    const unsubscribeBlur = navigation.addListener("blur", () => {
+      console.log("[RealTime] Screen blurred - stopping updates");
+      setIsRealTimeActive(false);
+      stopRealTimePolling();
+    });
+
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+    };
+  }, [navigation, stopRealTimePolling, fetchPrayersFromDatabase]);
+
+  // Memoized styles for performance
+  const styles = useMemo(() => StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.background.dark,
@@ -434,6 +723,7 @@ export default function RequestsScreen({ navigation }) {
 
     avatarText: {
       fontSize: typography.fontSizes.lg,
+      color: colors.text.secondary,
     },
 
     userDetails: {
@@ -690,176 +980,26 @@ export default function RequestsScreen({ navigation }) {
       marginBottom: spacing[6],
       fontWeight: typography.fontWeights.normal,
     },
-  });
+  }), [colors, typography, spacing, borderRadius, shadows, isDark]);
 
   // Render real-time status indicator
-  const renderRealTimeStatus = () => (
+  const renderRealTimeStatus = useCallback(() => (
     <View style={styles.realTimeStatus}>
-      <View style={styles.statusContainer}>
-        <View
-          style={[
-            styles.statusDot,
-            { backgroundColor: isRealTimeActive ? colors.success[500] : colors.neutral[500] },
-          ]}
-        />
-        <Text style={styles.statusText}>
-          {isRealTimeActive ? "Live updates" : "Manual refresh"}
-        </Text>
-        {lastUpdateTime && (
-          <Text style={styles.lastUpdateText}>
-            Last: {formatTimestamp(lastUpdateTime)}
-          </Text>
-        )}
-      </View>
+      <StatusIndicator
+        isActive={isRealTimeActive}
+        lastUpdate={lastUpdateTime}
+        colors={colors}
+        styles={styles}
+        formatTimestamp={formatTimestamp}
+      />
 
-      {newPrayersCount > 0 && (
-        <TouchableOpacity
-          style={styles.newPrayersNotification}
-          onPress={clearNewPrayersNotification}
-        >
-          <Text style={styles.newPrayersText}>
-            {newPrayersCount} new prayer{newPrayersCount !== 1 ? "s" : ""}
-          </Text>
-        </TouchableOpacity>
-      )}
+      <NewPrayersNotification
+        count={newPrayersCount}
+        onClear={clearNewPrayersNotification}
+        styles={styles}
+      />
     </View>
-  );
-
-  // Render individual prayer item
-  const renderPrayerItem = ({ item, index }) => {
-    const isRecent =
-      lastFetchTimeRef.current &&
-      new Date(item.createdAt || item.created_at) >
-        new Date(Date.now() - 5 * 60 * 1000);
-
-    const prayerText =
-      item.prayerText || item.prayer || item.text || "Prayer request";
-    const timestamp = item.createdAt || item.created_at;
-
-    return (
-      <TouchableOpacity
-        style={[styles.prayerItem, isRecent && styles.recentPrayerItem]}
-        onPress={() => handlePrayerPress(item)}
-        activeOpacity={0.7}
-      >
-        <View style={styles.prayerHeader}>
-          <View style={styles.userInfo}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>P</Text>
-            </View>
-            <View style={styles.userDetails}>
-              <Text style={styles.userName}>Community Member</Text>
-              <Text style={styles.timestamp}>
-                {formatTimestamp(timestamp)} • Zip {item.zip || userZip}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.badges}>
-            {isRecent && (
-              <View style={styles.newBadge}>
-                <Text style={styles.newBadgeText}>NEW</Text>
-              </View>
-            )}
-            <View style={styles.prayerBadge}>
-              <Text style={styles.prayerBadgeText}>Prayer Request</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.prayerContent}>
-          <Text style={styles.prayerText}>{truncateText(prayerText, 150)}</Text>
-          {prayerText.length > 150 && (
-            <Text style={styles.readMore}>Read more...</Text>
-          )}
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  // Render empty state
-  const renderEmptyState = () => (
-    <View style={styles.emptyState}>
-      <Text style={styles.emptyStateTitle}>No Prayer Requests Yet</Text>
-      <Text style={styles.emptyStateText}>
-        {userZip
-          ? `Be the first to share a prayer request in the ${userZip} area, or check back later for community updates.`
-          : "Set your zip code in Settings to view and connect with local prayer requests."}
-      </Text>
-      {!userZip && (
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={() => navigation.navigate("Settings")}
-        >
-          <Text style={styles.settingsButtonText}>Go to Settings</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-
-  // Render error state
-  const renderErrorState = () => (
-    <View style={styles.errorState}>
-      <Text style={styles.errorStateTitle}>Unable to Load Prayers</Text>
-      <Text style={styles.errorStateText}>{error}</Text>
-      <TouchableOpacity
-        style={styles.retryButton}
-        onPress={() => fetchPrayersFromDatabase(true, false)}
-      >
-        <Text style={styles.retryButtonText}>Try Again</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  // Cleanup on unmount
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      stopRealTimePolling();
-    };
-  }, [stopRealTimePolling]);
-
-  // Setup app state listener
-  useEffect(() => {
-    const subscription = AppState.addEventListener(
-      "change",
-      handleAppStateChange
-    );
-    return () => subscription?.remove();
-  }, [handleAppStateChange]);
-
-  // Initial load and start real-time updates
-  useEffect(() => {
-    fetchPrayersFromDatabase(true, false);
-
-    const startPollingTimer = setTimeout(() => {
-      if (mountedRef.current && isRealTimeActive) {
-        startRealTimePolling();
-      }
-    }, 2000);
-
-    return () => clearTimeout(startPollingTimer);
-  }, [startRealTimePolling, isRealTimeActive]);
-
-  // Handle navigation focus/blur for real-time updates
-  useEffect(() => {
-    const unsubscribeFocus = navigation.addListener("focus", () => {
-      console.log("[RealTime] Screen focused - starting updates");
-      setIsRealTimeActive(true);
-      fetchPrayersFromDatabase(false, false);
-    });
-
-    const unsubscribeBlur = navigation.addListener("blur", () => {
-      console.log("[RealTime] Screen blurred - stopping updates");
-      setIsRealTimeActive(false);
-      stopRealTimePolling();
-    });
-
-    return () => {
-      unsubscribeFocus();
-      unsubscribeBlur();
-    };
-  }, [navigation, stopRealTimePolling]);
+  ), [isRealTimeActive, lastUpdateTime, newPrayersCount, colors, styles, formatTimestamp, clearNewPrayersNotification]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -873,18 +1013,15 @@ export default function RequestsScreen({ navigation }) {
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Local Prayer Requests</Text>
           {userZip && (
-            <Text style={styles.subtitle}>Community prayers in {userZip}</Text>
+            <Text style={styles.subtitle}>{userZip}</Text>
           )}
         </View>
 
-        <TouchableOpacity
-          style={styles.realTimeToggle}
-          onPress={toggleRealTimeUpdates}
-        >
-          <Text style={styles.realTimeToggleText}>
-            {isRealTimeActive ? "LIVE" : "MANUAL"}
-          </Text>
-        </TouchableOpacity>
+        <RealTimeToggle
+          isActive={isRealTimeActive}
+          onToggle={toggleRealTimeUpdates}
+          styles={styles}
+        />
       </View>
 
       {/* Real-time Status */}
@@ -900,16 +1037,14 @@ export default function RequestsScreen({ navigation }) {
             </Text>
           </View>
         ) : error && prayers.length === 0 ? (
-          renderErrorState()
+          <ErrorState error={error} onRetry={handleRetry} styles={styles} />
         ) : prayers.length === 0 ? (
-          renderEmptyState()
+          <EmptyState userZip={userZip} navigation={navigation} styles={styles} />
         ) : (
           <FlatList
             data={prayers}
             renderItem={renderPrayerItem}
-            keyExtractor={(item, index) =>
-              `${item.id || item._id || index}-${item.timestamp || index}`
-            }
+            keyExtractor={keyExtractor}
             contentContainerStyle={styles.feedContainer}
             refreshControl={
               <RefreshControl
@@ -920,62 +1055,40 @@ export default function RequestsScreen({ navigation }) {
               />
             }
             showsVerticalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ItemSeparatorComponent={renderSeparator}
             onScrollBeginDrag={clearNewPrayersNotification}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+            initialNumToRender={5}
+            getItemLayout={(data, index) => ({
+              length: 200, // Approximate item height
+              offset: 200 * index,
+              index,
+            })}
           />
         )}
       </View>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomSection}>
-        <TouchableOpacity style={styles.backButton} onPress={backPressed}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackPressed}>
           <Text style={styles.backButtonText}>BACK TO HOME</Text>
         </TouchableOpacity>
       </View>
 
       {/* Prayer Detail Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
+      <PrayerModal
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Prayer Request</Text>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.closeButtonText}>✕</Text>
-              </TouchableOpacity>
-            </View>
-
-            {selectedPrayer && (
-              <ScrollView style={styles.modalBody}>
-                <View style={styles.modalPrayerHeader}>
-                  <Text style={styles.modalTimestamp}>
-                    {formatTimestamp(
-                      selectedPrayer.createdAt || selectedPrayer.created_at
-                    )}
-                  </Text>
-                  <Text style={styles.modalPrayerId}>
-                    Prayer ID: {selectedPrayer.id}
-                  </Text>
-                </View>
-
-                <Text style={styles.modalPrayerText}>
-                  {selectedPrayer.prayerText ||
-                    selectedPrayer.prayer ||
-                    selectedPrayer.text ||
-                    "Prayer request"}
-                </Text>
-              </ScrollView>
-            )}
-          </View>
-        </View>
-      </Modal>
+        prayer={selectedPrayer}
+        onClose={handleModalClose}
+        styles={styles}
+        formatTimestamp={formatTimestamp}
+      />
     </SafeAreaView>
   );
-}
+});
+
+RequestsScreen.displayName = 'RequestsScreen';
+
+export default RequestsScreen;

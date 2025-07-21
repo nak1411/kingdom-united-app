@@ -1,4 +1,4 @@
-// app/screens/SosScreen.js - Optimized with Content Filter Integration
+// app/screens/SosScreen.js - Enhanced Responsive Design with Better Android Support
 import React, {
   useState,
   useEffect,
@@ -20,6 +20,7 @@ import {
   TouchableWithoutFeedback,
   ScrollView,
   StyleSheet,
+  Dimensions,
 } from "react-native";
 
 import { useTheme } from "../context/ThemeContext";
@@ -31,6 +32,8 @@ import {
 } from "../config/api.js";
 import { userUtils } from "../utils/user.js";
 
+const { width, height } = Dimensions.get('window');
+
 // Memoized components for better performance
 const CharacterCounter = React.memo(
   ({ count, max, colors, typography, isWarning }) => (
@@ -40,7 +43,7 @@ const CharacterCounter = React.memo(
           color: colors.text.secondary,
           fontSize: typography.fontSizes.sm,
           fontWeight: typography.fontWeights.medium,
-        },
+          gap: spacing[4],
         isWarning && { color: colors.emergency[500] },
       ]}
     >
@@ -87,6 +90,10 @@ const SosScreen = React.memo(({ navigation }) => {
   const { colors, typography, spacing, borderRadius, shadows, isDark } =
     useTheme();
 
+  // Get screen dimensions directly
+  const screenWidth = width;
+  const screenHeight = height;
+
   // State management
   const [prayer, setPrayer] = useState("");
   const [savedPrayer, setSavedPrayer] = useState("");
@@ -97,13 +104,13 @@ const SosScreen = React.memo(({ navigation }) => {
   const [prayerError, setPrayerError] = useState("");
   const [prayerSuggestions, setPrayerSuggestions] = useState([]);
   const [userId, setUserId] = useState("");
-  const [contentWarning, setContentWarning] = useState(""); // For real-time feedback
+  const [contentWarning, setContentWarning] = useState("");
 
   // Refs for cleanup
   const isMountedRef = useRef(true);
   const validationTimeoutRef = useRef(null);
 
-  // Constants
+  // Responsive constants
   const MAX_CHARACTERS = 125;
   const MIN_CHARACTERS = 5;
 
@@ -288,7 +295,6 @@ const SosScreen = React.memo(({ navigation }) => {
         };
 
         // Submit to API
-
         const result = await prayerAPI.submit(apiData);
 
         return {
@@ -329,7 +335,7 @@ const SosScreen = React.memo(({ navigation }) => {
     console.log("User zip:", userZip);
     console.log("User ID:", userId);
 
-    const validationResult = await validatePrayer(prayer); // Add await here
+    const validationResult = await validatePrayer(prayer);
     console.log("Frontend validation result:", validationResult);
 
     if (validationResult.error) {
@@ -349,6 +355,109 @@ const SosScreen = React.memo(({ navigation }) => {
             text: "Go to Settings",
             onPress: () => navigation.navigate("Settings"),
           },
+
+        clearButton: {
+          backgroundColor: colors.background.glassMedium,
+          borderWidth: 1,
+          borderColor: colors.border.light,
+          paddingVertical: spacing[3],
+          paddingHorizontal: spacing[6],
+          borderRadius: borderRadius.md,
+          alignItems: "center",
+          ...shadows.base,
+        },
+
+        clearButtonText: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.semibold,
+          letterSpacing: typography.letterSpacing.wide,
+        },
+
+        sendButton: {
+          backgroundColor: colors.emergency[500],
+          paddingVertical: width < 360 ? spacing[5] : spacing[6],
+          paddingHorizontal: spacing[8],
+          borderRadius: borderRadius.lg,
+          alignItems: "center",
+          ...shadows.xl,
+          shadowColor: colors.emergency[500],
+          shadowOpacity: 0.4,
+        },
+
+        sendButtonDisabled: {
+          backgroundColor: colors.neutral[400],
+          ...shadows.sm,
+        },
+
+        sendingContainer: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+
+        sendingText: {
+          color: "#ffffff",
+          fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
+          fontWeight: typography.fontWeights.bold,
+          marginLeft: spacing[3],
+          letterSpacing: typography.letterSpacing.wide,
+        },
+
+        sendButtonText: {
+          color: "#ffffff",
+          fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
+          fontWeight: typography.fontWeights.bold,
+          letterSpacing: typography.letterSpacing.wide,
+          textShadowColor: "rgba(0, 0, 0, 0.3)",
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: 2,
+        },
+
+        sendButtonTextDisabled: {
+          color: colors.text.disabled,
+        },
+
+        backButton: {
+          backgroundColor: colors.background.glassMedium,
+          borderWidth: 1,
+          borderColor: colors.border.light,
+          paddingVertical: spacing[4],
+          paddingHorizontal: spacing[6],
+          borderRadius: borderRadius.md,
+          alignItems: "center",
+        },
+
+        backButtonText: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.semibold,
+          letterSpacing: typography.letterSpacing.wide,
+        },
+
+        tipsSection: {
+          backgroundColor: isDark
+            ? `${colors.primary[500]}20`
+            : `${colors.primary[100]}`,
+          borderRadius: borderRadius.md,
+          padding: spacing[5],
+          marginBottom: spacing[6],
+          borderLeftWidth: 4,
+          borderLeftColor: colors.primary[500],
+        },
+
+        tipsTitle: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.semibold,
+          marginBottom: spacing[2],
+        },
+
+        tipsText: {
+          color: colors.text.secondary,
+          fontSize: typography.fontSizes.sm,
+          lineHeight: typography.lineHeights.normal,
+        },
         ]
       );
       return;
@@ -515,7 +624,7 @@ const SosScreen = React.memo(({ navigation }) => {
     };
   }, [readPrayer, readUserData]);
 
-  // Memoized styles for performance
+  // Responsive styles with enhanced bottom padding
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -530,7 +639,7 @@ const SosScreen = React.memo(({ navigation }) => {
         },
 
         scrollContent: {
-          padding: spacing[6],
+          padding: width < 360 ? spacing[4] : spacing[6],
           paddingBottom: spacing[4],
         },
 
@@ -550,13 +659,13 @@ const SosScreen = React.memo(({ navigation }) => {
 
         header: {
           alignItems: "center",
-          marginBottom: spacing[10],
-          paddingTop: spacing[6],
+          marginBottom: width < 360 ? spacing[8] : spacing[10],
+          paddingTop: width < 360 ? spacing[4] : spacing[6],
         },
 
         title: {
           color: colors.text.primary,
-          fontSize: typography.fontSizes["4xl"],
+          fontSize: width < 360 ? typography.fontSizes['3xl'] : typography.fontSizes["4xl"],
           fontWeight: typography.fontWeights.bold,
           textAlign: "center",
           marginBottom: spacing[3],
@@ -567,7 +676,7 @@ const SosScreen = React.memo(({ navigation }) => {
 
         subtitle: {
           color: colors.text.secondary,
-          fontSize: typography.fontSizes.lg,
+          fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
           textAlign: "center",
           lineHeight: typography.lineHeights.relaxed,
           paddingHorizontal: spacing[4],
@@ -590,7 +699,7 @@ const SosScreen = React.memo(({ navigation }) => {
         inputCard: {
           backgroundColor: colors.background.card,
           borderRadius: borderRadius.xl,
-          padding: spacing[6],
+          padding: width < 360 ? spacing[4] : spacing[6],
           ...shadows.lg,
           borderWidth: 1,
           borderColor: colors.border.light,
@@ -605,7 +714,7 @@ const SosScreen = React.memo(({ navigation }) => {
 
         inputLabel: {
           color: colors.text.primary,
-          fontSize: typography.fontSizes.lg,
+          fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
           fontWeight: typography.fontWeights.semibold,
         },
 
@@ -617,7 +726,7 @@ const SosScreen = React.memo(({ navigation }) => {
           padding: spacing[4],
           fontSize: typography.fontSizes.base,
           lineHeight: typography.lineHeights.normal,
-          minHeight: 160,
+          minHeight: width < 360 ? 140 : 160,
           textAlignVertical: "top",
           color: colors.text.primary,
           ...shadows.sm,
@@ -705,7 +814,7 @@ const SosScreen = React.memo(({ navigation }) => {
 
         guidelinesTitle: {
           color: colors.text.primary,
-          fontSize: typography.fontSizes.lg,
+          fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
           fontWeight: typography.fontWeights.semibold,
           marginBottom: spacing[3],
         },
@@ -716,13 +825,14 @@ const SosScreen = React.memo(({ navigation }) => {
           lineHeight: typography.lineHeights.normal,
         },
 
+        // Enhanced button section with better spacing for different Android devices
         buttonSection: {
-          padding: spacing[6],
+          padding: width < 360 ? spacing[4] : spacing[6],
           paddingTop: spacing[4],
-          gap: spacing[4],
+          paddingBottom: height > 800 ? spacing[12] : spacing[8],
         },
 
-        clearButton: {
+        },
           backgroundColor: colors.background.glassMedium,
           borderWidth: 1,
           borderColor: colors.border.light,
@@ -742,7 +852,7 @@ const SosScreen = React.memo(({ navigation }) => {
 
         sendButton: {
           backgroundColor: colors.emergency[500],
-          paddingVertical: spacing[6],
+          paddingVertical: width < 360 ? spacing[5] : spacing[6],
           paddingHorizontal: spacing[8],
           borderRadius: borderRadius.lg,
           alignItems: "center",
@@ -764,7 +874,7 @@ const SosScreen = React.memo(({ navigation }) => {
 
         sendingText: {
           color: "#ffffff",
-          fontSize: typography.fontSizes.lg,
+          fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
           fontWeight: typography.fontWeights.bold,
           marginLeft: spacing[3],
           letterSpacing: typography.letterSpacing.wide,
@@ -772,7 +882,7 @@ const SosScreen = React.memo(({ navigation }) => {
 
         sendButtonText: {
           color: "#ffffff",
-          fontSize: typography.fontSizes.lg,
+          fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
           fontWeight: typography.fontWeights.bold,
           letterSpacing: typography.letterSpacing.wide,
           textShadowColor: "rgba(0, 0, 0, 0.3)",

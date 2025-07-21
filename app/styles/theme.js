@@ -1,15 +1,32 @@
-// app/styles/theme.js - Optimized Theme System with Better Performance
+// app/styles/theme.js - Enhanced Theme System with Better Android Device Support
 import { Dimensions } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
-// Cached dimension calculations
+// Enhanced dimension calculations for better Android device support
 const dimensionCache = {
   width,
   height,
-  isSmallScreen: width < 375,
-  isMediumScreen: width >= 375 && width < 414,
-  isLargeScreen: width >= 414,
+  
+  // More granular screen size detection for Android devices
+  isSmallScreen: width < 360 || height < 640,
+  isMediumScreen: width >= 360 && width < 400,
+  isLargeScreen: width >= 400 && width < 450,
+  isExtraLargeScreen: width >= 450,
+  
+  // Aspect ratio detection for modern Android devices
+  aspectRatio: height / width,
+  isTallScreen: (height / width) > 2.0, // Modern phones like S22
+  isTablet: width > 600,
+  
+  // Screen category for easier responsive design
+  screenCategory: width < 360 ? 'small' : 
+                 width < 400 ? 'medium' : 
+                 width < 450 ? 'large' : 'xlarge',
+                 
+  // Safe area calculations for different Android devices
+  safeBottomPadding: height > 800 ? 48 : height > 700 ? 32 : 24,
+  safeHorizontalPadding: width < 360 ? 12 : width > 400 ? 32 : 24,
 };
 
 // Base color palette - optimized structure
@@ -185,21 +202,21 @@ const createThemeColors = (isDark) => {
   };
 };
 
-// Shared theme properties (cached for performance)
+// Shared theme properties with enhanced responsive design
 const sharedTheme = {
   typography: {
     fontSizes: {
-      xs: 12,
-      sm: 14,
-      base: 16,
-      lg: 18,
-      xl: 20,
-      '2xl': 24,
-      '3xl': 28,
-      '4xl': 32,
-      '5xl': 36,
-      '6xl': 48,
-      '7xl': 60,
+      xs: dimensionCache.width < 360 ? 10 : 12,
+      sm: dimensionCache.width < 360 ? 12 : 14,
+      base: dimensionCache.width < 360 ? 14 : 16,
+      lg: dimensionCache.width < 360 ? 16 : 18,
+      xl: dimensionCache.width < 360 ? 18 : 20,
+      '2xl': dimensionCache.width < 360 ? 20 : 24,
+      '3xl': dimensionCache.width < 360 ? 24 : 28,
+      '4xl': dimensionCache.width < 360 ? 28 : 32,
+      '5xl': dimensionCache.width < 360 ? 32 : 36,
+      '6xl': dimensionCache.width < 360 ? 40 : 48,
+      '7xl': dimensionCache.width < 360 ? 50 : 60,
     },
     fontWeights: {
       thin: '100',
@@ -212,10 +229,10 @@ const sharedTheme = {
       black: '900',
     },
     lineHeights: {
-      tight: 20,
-      normal: 24,
-      relaxed: 28,
-      loose: 32,
+      tight: dimensionCache.width < 360 ? 18 : 20,
+      normal: dimensionCache.width < 360 ? 22 : 24,
+      relaxed: dimensionCache.width < 360 ? 26 : 28,
+      loose: dimensionCache.width < 360 ? 30 : 32,
     },
     letterSpacing: {
       tight: -0.5,
@@ -226,22 +243,22 @@ const sharedTheme = {
     },
   },
   
-  // Spacing scale (4px base unit)
+  // Responsive spacing scale
   spacing: {
     0: 0,
-    1: 4,
-    2: 8,
-    3: 12,
-    4: 16,
-    5: 20,
-    6: 24,
-    8: 32,
-    10: 40,
-    12: 48,
-    16: 64,
-    20: 80,
-    24: 96,
-    32: 128,
+    1: dimensionCache.width < 360 ? 3 : 4,
+    2: dimensionCache.width < 360 ? 6 : 8,
+    3: dimensionCache.width < 360 ? 9 : 12,
+    4: dimensionCache.width < 360 ? 12 : 16,
+    5: dimensionCache.width < 360 ? 15 : 20,
+    6: dimensionCache.width < 360 ? 18 : 24,
+    8: dimensionCache.width < 360 ? 24 : 32,
+    10: dimensionCache.width < 360 ? 30 : 40,
+    12: dimensionCache.width < 360 ? 36 : 48,
+    16: dimensionCache.width < 360 ? 48 : 64,
+    20: dimensionCache.width < 360 ? 60 : 80,
+    24: dimensionCache.width < 360 ? 72 : 96,
+    32: dimensionCache.width < 360 ? 96 : 128,
   },
   
   // Border radius
@@ -256,7 +273,7 @@ const sharedTheme = {
     full: 9999,
   },
   
-  // Consistent shadows
+  // Responsive shadows
   shadows: {
     sm: {
       shadowColor: '#000',
@@ -295,7 +312,7 @@ const sharedTheme = {
     },
   },
   
-  // Cached screen dimensions
+  // Enhanced responsive dimensions
   dimensions: dimensionCache,
 };
 
@@ -333,18 +350,20 @@ export const themes = {
 // Default theme (dark) - cached
 export const theme = themes.dark;
 
-// Common component styles creator - optimized with memoization
+// Enhanced common component styles with better responsive design
 const styleCache = new Map();
 
 export const createCommonStyles = (currentTheme) => {
-  const cacheKey = `${currentTheme.isDark ? 'dark' : 'light'}_common`;
+  const cacheKey = `${currentTheme.isDark ? 'dark' : 'light'}_common_${currentTheme.dimensions.width}`;
   
   if (styleCache.has(cacheKey)) {
     return styleCache.get(cacheKey);
   }
   
+  const { width, height, safeBottomPadding, safeHorizontalPadding, isSmallScreen } = currentTheme.dimensions;
+  
   const commonStyles = {
-    // Container styles
+    // Enhanced container styles
     container: {
       flex: 1,
       backgroundColor: currentTheme.colors.background.dark,
@@ -357,12 +376,12 @@ export const createCommonStyles = (currentTheme) => {
     
     content: {
       flex: 1,
-      paddingHorizontal: currentTheme.spacing[6],
+      paddingHorizontal: safeHorizontalPadding,
     },
     
-    // Header styles
+    // Enhanced header styles
     header: {
-      paddingHorizontal: currentTheme.spacing[6],
+      paddingHorizontal: safeHorizontalPadding,
       paddingVertical: currentTheme.spacing[5],
       alignItems: 'center',
     },
@@ -395,7 +414,7 @@ export const createCommonStyles = (currentTheme) => {
       paddingHorizontal: currentTheme.spacing[2],
     },
     
-    // Card styles
+    // Enhanced card styles
     card: {
       backgroundColor: currentTheme.colors.background.card,
       borderRadius: currentTheme.borderRadius.lg,
@@ -419,14 +438,14 @@ export const createCommonStyles = (currentTheme) => {
       fontWeight: currentTheme.typography.fontWeights.medium,
     },
     
-    // Button styles
+    // Enhanced button styles
     button: {
       borderRadius: currentTheme.borderRadius.md,
       paddingVertical: currentTheme.spacing[4],
       paddingHorizontal: currentTheme.spacing[6],
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: 56,
+      minHeight: width < 360 ? 48 : 56,
       ...currentTheme.shadows.base,
     },
     
@@ -489,7 +508,7 @@ export const createCommonStyles = (currentTheme) => {
       color: currentTheme.colors.text.disabled,
     },
     
-    // Input styles
+    // Enhanced input styles
     input: {
       backgroundColor: currentTheme.colors.background.secondary,
       borderWidth: 2,
@@ -595,7 +614,7 @@ export const createCommonStyles = (currentTheme) => {
       marginTop: currentTheme.spacing[4],
     },
     
-    // Modal styles
+    // Enhanced modal styles
     modalOverlay: {
       flex: 1,
       backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -605,10 +624,10 @@ export const createCommonStyles = (currentTheme) => {
     
     modalContent: {
       backgroundColor: currentTheme.colors.background.card,
-      marginHorizontal: currentTheme.spacing[6],
+      marginHorizontal: safeHorizontalPadding,
       borderRadius: currentTheme.borderRadius.xl,
       maxHeight: '85%',
-      width: '90%',
+      width: width > 600 ? '70%' : '90%', // Tablet support
       ...currentTheme.shadows.xl,
     },
     
@@ -643,10 +662,15 @@ export const createCommonStyles = (currentTheme) => {
       fontWeight: currentTheme.typography.fontWeights.bold,
     },
     
-    // Bottom section
+    // Enhanced bottom section with better padding for different Android devices
     bottomSection: {
-      padding: currentTheme.spacing[6],
+      padding: safeHorizontalPadding,
       paddingTop: currentTheme.spacing[4],
+      paddingBottom: safeBottomPadding,
+      // Extra padding for tall screens like S22
+      ...(height > 800 && {
+        paddingBottom: safeBottomPadding + currentTheme.spacing[4],
+      }),
     },
     
     backButton: {
@@ -665,6 +689,19 @@ export const createCommonStyles = (currentTheme) => {
       fontSize: currentTheme.typography.fontSizes.base,
       fontWeight: currentTheme.typography.fontWeights.semibold,
       letterSpacing: currentTheme.typography.letterSpacing.wide,
+    },
+    
+    // Responsive container for different screen sizes
+    responsiveContainer: {
+      paddingHorizontal: safeHorizontalPadding,
+      paddingBottom: safeBottomPadding,
+    },
+    
+    // Safe area container that adapts to different Android devices
+    safeContainer: {
+      flex: 1,
+      backgroundColor: currentTheme.colors.background.dark,
+      paddingBottom: height > 800 ? safeBottomPadding + currentTheme.spacing[2] : safeBottomPadding,
     },
   };
   

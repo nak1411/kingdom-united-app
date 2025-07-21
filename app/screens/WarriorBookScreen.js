@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { useState, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
+import { Dimensions } from "react-native";
+const { width, height } = Dimensions.get("window");
 
 export default function WarriorBookScreen({ navigation }) {
   const { colors, typography, spacing, borderRadius, shadows, isDark } =
@@ -242,7 +244,7 @@ export default function WarriorBookScreen({ navigation }) {
     },
 
     header: {
-      paddingHorizontal: spacing[6],
+      paddingHorizontal: dimensions.safeHorizontalPadding || spacing[6],
       paddingVertical: spacing[6],
       borderBottomWidth: 1,
       borderBottomColor: colors.border.light,
@@ -256,8 +258,10 @@ export default function WarriorBookScreen({ navigation }) {
     title: {
       color: colors.text.primary,
       fontWeight: typography.fontWeights.bold,
-      fontSize: typography.fontSizes["4xl"],
+      fontSize:
+        width < 360 ? typography.fontSizes["3xl"] : typography.fontSizes["4xl"],
       marginBottom: spacing[2],
+      textAlign: "center",
       textShadowColor: isDark ? "rgba(0, 0, 0, 0.5)" : "transparent",
       textShadowOffset: { width: 0, height: 2 },
       textShadowRadius: 4,
@@ -271,7 +275,7 @@ export default function WarriorBookScreen({ navigation }) {
     },
 
     searchContainer: {
-      paddingHorizontal: spacing[6],
+      paddingHorizontal: dimensions.safeHorizontalPadding || spacing[6],
       paddingVertical: spacing[4],
       backgroundColor: colors.background.glassDark,
     },
@@ -351,8 +355,14 @@ export default function WarriorBookScreen({ navigation }) {
     },
 
     bottomSection: {
-      padding: spacing[6],
+      padding: dimensions.safeHorizontalPadding || spacing[6],
       paddingTop: spacing[4],
+      paddingBottom: dimensions.safeBottomPadding || spacing[8],
+      // Extra padding for tall screens like S22
+      ...(height > 800 && {
+        paddingBottom:
+          (dimensions.safeBottomPadding || spacing[8]) + spacing[4],
+      }),
     },
 
     backButton: {
@@ -368,7 +378,8 @@ export default function WarriorBookScreen({ navigation }) {
 
     backButtonText: {
       color: colors.text.primary,
-      fontSize: typography.fontSizes.base,
+      fontSize:
+        width < 360 ? typography.fontSizes.sm : typography.fontSizes.base,
       fontWeight: typography.fontWeights.semibold,
       letterSpacing: typography.letterSpacing.wide,
     },

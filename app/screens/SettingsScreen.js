@@ -1,4 +1,4 @@
-// app/screens/SettingsScreen.js - Updated with Zip Code Modal
+// app/screens/SettingsScreen.js - Enhanced Responsive Design for All Android Devices
 import { StatusBar, Alert, Keyboard, BackHandler, Switch } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect, useCallback } from "react";
@@ -13,11 +13,14 @@ import {
   ScrollView,
   Modal,
   StyleSheet,
+  Dimensions,
 } from "react-native";
 
 import { useTheme } from "../context/ThemeContext";
 import { userUtils } from "../utils/user.js";
 import { validation } from "../config/api.js";
+
+const { width, height } = Dimensions.get('window');
 
 export default function SettingsScreen({ navigation }) {
   const {
@@ -229,7 +232,7 @@ export default function SettingsScreen({ navigation }) {
     loadUserData();
   }, []);
 
-  // Create dynamic styles based on current theme
+  // Create dynamic styles with enhanced responsive design
   const styles = StyleSheet.create({
     container: {
       ...commonStyles.container,
@@ -241,7 +244,7 @@ export default function SettingsScreen({ navigation }) {
     },
 
     scrollContent: {
-      padding: spacing[6],
+      padding: width < 360 ? spacing[4] : spacing[6],
       paddingBottom: spacing[4],
     },
 
@@ -261,14 +264,14 @@ export default function SettingsScreen({ navigation }) {
 
     header: {
       alignItems: "center",
-      marginBottom: spacing[12],
-      paddingTop: spacing[6],
+      marginBottom: width < 360 ? spacing[10] : spacing[12],
+      paddingTop: width < 360 ? spacing[4] : spacing[6],
     },
 
     title: {
       color: colors.text.primary,
       fontWeight: typography.fontWeights.bold,
-      fontSize: typography.fontSizes["5xl"],
+      fontSize: width < 360 ? typography.fontSizes['4xl'] : typography.fontSizes["5xl"],
       marginBottom: spacing[3],
       textShadowColor: colors.background.overlay,
       textShadowOffset: { width: 0, height: 2 },
@@ -277,7 +280,7 @@ export default function SettingsScreen({ navigation }) {
 
     subtitle: {
       color: colors.text.secondary,
-      fontSize: typography.fontSizes.lg,
+      fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
       textAlign: "center",
       lineHeight: typography.lineHeights.relaxed,
       fontWeight: typography.fontWeights.medium,
@@ -289,7 +292,7 @@ export default function SettingsScreen({ navigation }) {
 
     sectionTitle: {
       color: colors.text.primary,
-      fontSize: typography.fontSizes.xl,
+      fontSize: width < 360 ? typography.fontSizes.lg : typography.fontSizes.xl,
       fontWeight: typography.fontWeights.semibold,
       marginBottom: spacing[5],
       paddingHorizontal: spacing[2],
@@ -299,7 +302,7 @@ export default function SettingsScreen({ navigation }) {
     themeSection: {
       backgroundColor: colors.background.card,
       borderRadius: borderRadius.lg,
-      padding: spacing[6],
+      padding: width < 360 ? spacing[4] : spacing[6],
       marginBottom: spacing[5],
       ...shadows.lg,
       borderWidth: 1,
@@ -315,7 +318,7 @@ export default function SettingsScreen({ navigation }) {
 
     themeTitle: {
       color: colors.text.primary,
-      fontSize: typography.fontSizes.lg,
+      fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
       fontWeight: typography.fontWeights.semibold,
       marginBottom: spacing[1],
     },
@@ -330,11 +333,11 @@ export default function SettingsScreen({ navigation }) {
       marginLeft: spacing[4],
     },
 
-    // Current location card - Now tappable
+    // Current location card - Now tappable with responsive sizing
     currentLocationCard: {
       backgroundColor: colors.background.card,
       borderRadius: borderRadius.lg,
-      padding: spacing[6],
+      padding: width < 360 ? spacing[4] : spacing[6],
       marginBottom: spacing[5],
       ...shadows.lg,
       borderWidth: 1,
@@ -357,7 +360,7 @@ export default function SettingsScreen({ navigation }) {
     },
 
     currentLocationValue: {
-      fontSize: typography.fontSizes["5xl"],
+      fontSize: width < 360 ? typography.fontSizes['4xl'] : typography.fontSizes["5xl"],
       fontWeight: typography.fontWeights.bold,
       color: colors.text.primary,
       marginBottom: spacing[3],
@@ -381,11 +384,11 @@ export default function SettingsScreen({ navigation }) {
       letterSpacing: typography.letterSpacing.wide,
     },
 
-    // Action cards
+    // Action cards with responsive padding
     actionCard: {
       backgroundColor: colors.background.card,
       borderRadius: borderRadius.lg,
-      padding: spacing[6],
+      padding: width < 360 ? spacing[4] : spacing[6],
       marginBottom: spacing[4],
       ...shadows.md,
       borderWidth: 1,
@@ -410,7 +413,7 @@ export default function SettingsScreen({ navigation }) {
     },
 
     actionTitle: {
-      fontSize: typography.fontSizes.lg,
+      fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
       fontWeight: typography.fontWeights.semibold,
       color: colors.text.primary,
       marginBottom: spacing[1],
@@ -448,10 +451,11 @@ export default function SettingsScreen({ navigation }) {
       fontWeight: typography.fontWeights.medium,
     },
 
-    // Bottom section
+    // Enhanced bottom section with better responsive padding
     bottomSection: {
-      padding: spacing[6],
+      padding: width < 360 ? spacing[4] : spacing[6],
       paddingTop: spacing[4],
+      paddingBottom: height > 800 ? spacing[12] : spacing[8],
     },
 
     backButton: {
@@ -472,7 +476,7 @@ export default function SettingsScreen({ navigation }) {
       letterSpacing: typography.letterSpacing.wide,
     },
 
-    // Modal styles
+    // Modal styles with responsive sizing
     modalOverlay: {
       flex: 1,
       backgroundColor: "rgba(0, 0, 0, 0.7)",
@@ -482,9 +486,9 @@ export default function SettingsScreen({ navigation }) {
 
     modalContent: {
       backgroundColor: colors.background.card,
-      marginHorizontal: spacing[6],
+      marginHorizontal: width < 360 ? spacing[4] : spacing[6],
       borderRadius: borderRadius.xl,
-      width: "90%",
+      width: width > 600 ? "70%" : "90%", // Tablet support
       ...shadows.xl,
     },
 
@@ -498,7 +502,7 @@ export default function SettingsScreen({ navigation }) {
     },
 
     modalTitle: {
-      fontSize: typography.fontSizes.xl,
+      fontSize: width < 360 ? typography.fontSizes.lg : typography.fontSizes.xl,
       fontWeight: typography.fontWeights.bold,
       color: colors.text.primary,
     },
@@ -549,17 +553,17 @@ export default function SettingsScreen({ navigation }) {
 
     modalInput: {
       backgroundColor: colors.background.primary,
-      fontSize: typography.fontSizes["3xl"],
+      fontSize: width < 360 ? typography.fontSizes['2xl'] : typography.fontSizes["3xl"],
       fontWeight: typography.fontWeights.bold,
       textAlign: "center",
-      paddingVertical: spacing[5],
+      paddingVertical: width < 360 ? spacing[4] : spacing[5],
       paddingHorizontal: spacing[6],
       borderRadius: borderRadius.lg,
       borderWidth: 2,
       borderColor: colors.border.light,
       marginBottom: spacing[3],
       letterSpacing: typography.letterSpacing.widest,
-      minHeight: 80,
+      minHeight: width < 360 ? 70 : 80,
       color: colors.text.primary,
       ...shadows.sm,
     },

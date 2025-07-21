@@ -15,6 +15,8 @@ import {
   ScrollView,
 } from "react-native";
 import { useTheme } from "../context/ThemeContext";
+import { Dimensions } from "react-native";
+const { width, height } = Dimensions.get("window");
 
 export default function OnboardingForm({ navigation }) {
   const { colors, typography, spacing, borderRadius, shadows, isDark } =
@@ -125,7 +127,8 @@ export default function OnboardingForm({ navigation }) {
     title: {
       color: colors.text.primary,
       fontWeight: typography.fontWeights.bold,
-      fontSize: typography.fontSizes["5xl"],
+      fontSize:
+        width < 360 ? typography.fontSizes["4xl"] : typography.fontSizes["5xl"],
       marginBottom: spacing[4],
       textAlign: "center",
       textShadowColor: isDark ? "rgba(0, 0, 0, 0.5)" : "transparent",
@@ -135,7 +138,8 @@ export default function OnboardingForm({ navigation }) {
 
     subtitle: {
       color: colors.text.secondary,
-      fontSize: typography.fontSizes.lg,
+      fontSize:
+        width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
       textAlign: "center",
       lineHeight: typography.lineHeights.relaxed,
       fontWeight: typography.fontWeights.medium,
@@ -174,17 +178,18 @@ export default function OnboardingForm({ navigation }) {
 
     input: {
       backgroundColor: colors.background.secondary,
-      fontSize: typography.fontSizes["3xl"],
+      fontSize:
+        width < 360 ? typography.fontSizes["2xl"] : typography.fontSizes["3xl"],
       fontWeight: typography.fontWeights.bold,
       textAlign: "center",
-      paddingVertical: spacing[5],
+      paddingVertical: width < 360 ? spacing[4] : spacing[5],
       paddingHorizontal: spacing[6],
       borderRadius: borderRadius.lg,
       borderWidth: 2,
       borderColor: colors.border.light,
       marginBottom: spacing[4],
       letterSpacing: typography.letterSpacing.widest,
-      minHeight: 80,
+      minHeight: width < 360 ? 70 : 80,
       color: colors.text.primary,
       ...shadows.sm,
     },
@@ -269,7 +274,8 @@ export default function OnboardingForm({ navigation }) {
       bottom: 0,
       left: 0,
       right: 0,
-      padding: spacing[6],
+      padding: width < 360 ? spacing[4] : spacing[6],
+      paddingBottom: height > 800 ? spacing[12] : spacing[8], // Extra padding for tall screens
       backgroundColor: colors.background.dark,
       borderTopWidth: 1,
       borderTopColor: colors.border.light,
@@ -277,7 +283,7 @@ export default function OnboardingForm({ navigation }) {
 
     finishButton: {
       backgroundColor: colors.success[500],
-      paddingVertical: spacing[5],
+      paddingVertical: width < 360 ? spacing[4] : spacing[5],
       paddingHorizontal: spacing[8],
       borderRadius: borderRadius.lg,
       alignItems: "center",
@@ -294,7 +300,8 @@ export default function OnboardingForm({ navigation }) {
 
     finishButtonText: {
       color: "#ffffff",
-      fontSize: typography.fontSizes.lg,
+      fontSize:
+        width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
       fontWeight: typography.fontWeights.bold,
       letterSpacing: typography.letterSpacing.wide,
       textShadowColor: "rgba(0, 0, 0, 0.3)",

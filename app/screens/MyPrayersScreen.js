@@ -25,6 +25,8 @@ import {
 import { useTheme } from "../context/ThemeContext";
 import { prayerAPI, validation, errorHandler } from "../config/api.js";
 import { userUtils } from "../utils/user.js";
+import { Dimensions } from "react-native";
+const { width, height } = Dimensions.get("window");
 
 // Memoized components for better performance
 const PrayerActions = React.memo(({ onEdit, onDelete, styles }) => (
@@ -631,7 +633,7 @@ const MyPrayersScreen = React.memo(({ navigation }) => {
         },
 
         header: {
-          paddingHorizontal: spacing[6],
+          paddingHorizontal: dimensions.safeHorizontalPadding || spacing[6],
           paddingVertical: spacing[5],
           backgroundColor: colors.background.glassDark,
           borderBottomWidth: 1,
@@ -641,7 +643,8 @@ const MyPrayersScreen = React.memo(({ navigation }) => {
         title: {
           color: colors.text.primary,
           fontWeight: typography.fontWeights.bold,
-          fontSize: typography.fontSizes["2xl"],
+          fontSize:
+            width < 360 ? typography.fontSizes.xl : typography.fontSizes["2xl"],
           textAlign: "center",
           textShadowColor: isDark ? "rgba(0, 0, 0, 0.5)" : "transparent",
           textShadowOffset: { width: 0, height: 1 },
@@ -857,8 +860,14 @@ const MyPrayersScreen = React.memo(({ navigation }) => {
         },
 
         bottomSection: {
-          padding: spacing[6],
+          padding: dimensions.safeHorizontalPadding || spacing[6],
           paddingTop: spacing[4],
+          paddingBottom: dimensions.safeBottomPadding || spacing[8],
+          // Extra padding for tall screens like S22
+          ...(height > 800 && {
+            paddingBottom:
+              (dimensions.safeBottomPadding || spacing[8]) + spacing[4],
+          }),
         },
 
         backButton: {
@@ -874,7 +883,8 @@ const MyPrayersScreen = React.memo(({ navigation }) => {
 
         backButtonText: {
           color: colors.text.primary,
-          fontSize: typography.fontSizes.base,
+          fontSize:
+            width < 360 ? typography.fontSizes.sm : typography.fontSizes.base,
           fontWeight: typography.fontWeights.semibold,
           letterSpacing: typography.letterSpacing.wide,
         },
@@ -889,10 +899,10 @@ const MyPrayersScreen = React.memo(({ navigation }) => {
 
         modalContent: {
           backgroundColor: colors.background.card,
-          marginHorizontal: spacing[6],
+          marginHorizontal: dimensions.safeHorizontalPadding || spacing[6],
           borderRadius: borderRadius.xl,
           maxHeight: "85%",
-          width: "90%",
+          width: width > 600 ? "70%" : "90%", // Better tablet support
           ...shadows.xl,
         },
 

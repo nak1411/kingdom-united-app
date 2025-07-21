@@ -1,4 +1,4 @@
-// app/screens/HomeScreen.js - Updated with Bigger, More Centered SOS Button
+// app/screens/HomeScreen.js - Fully Responsive with Better Android Support
 import React, { useEffect, useMemo, useCallback } from "react";
 import {
   StatusBar,
@@ -8,9 +8,12 @@ import {
   SafeAreaView,
   ImageBackground,
   StyleSheet,
+  Dimensions,
 } from "react-native";
 import logoimage from "../../assets/logo.png";
 import { useTheme } from "../context/ThemeContext";
+
+const { width, height } = Dimensions.get('window');
 
 // Memoized navigation button component
 const NavigationButton = React.memo(({ 
@@ -35,7 +38,7 @@ const NavigationButton = React.memo(({
 
 NavigationButton.displayName = 'NavigationButton';
 
-// Memoized SOS button component
+// Memoized SOS button component with responsive sizing
 const SOSButton = React.memo(({ onPress, styles }) => (
   <View style={styles.sosButtonContainer}>
     <TouchableOpacity
@@ -64,6 +67,10 @@ const HomeScreen = React.memo(({ navigation }) => {
     shadows,
     isDark,
   } = useTheme();
+
+  // Get screen dimensions directly from Dimensions for calculations
+  const screenWidth = width;
+  const screenHeight = height;
 
   // Memoized navigation handlers to prevent recreation on every render
   const handleSOSPress = useCallback(() => {
@@ -95,7 +102,31 @@ const HomeScreen = React.memo(({ navigation }) => {
     runOnboarding();
   }, [runOnboarding]);
 
-  // Memoized styles to prevent recreation on every render
+  // Calculate responsive sizes
+  const sosButtonSize = useMemo(() => {
+    // Scale SOS button based on screen width, with different sizing for different screen categories
+    if (width < 360) {
+      return Math.min(180, width * 0.5); // Smaller screens - 50% of width, max 180px
+    } else if (width < 400) {
+      return Math.min(220, width * 0.55); // Medium screens - 55% of width, max 220px
+    } else if (width < 450) {
+      return Math.min(260, width * 0.6); // Large screens - 60% of width, max 260px
+    } else {
+      return Math.min(280, width * 0.62); // Extra large screens - 62% of width, max 280px
+    }
+  }, []);
+
+  const sosButtonInnerSize = useMemo(() => {
+    return sosButtonSize * 0.9; // Inner button is 90% of outer button
+  }, [sosButtonSize]);
+
+  const sosButtonFontSize = useMemo(() => {
+    // Scale font size proportionally to button size
+    const baseRatio = 52 / 260; // Original ratio
+    return Math.min(52, Math.max(32, sosButtonSize * baseRatio));
+  }, [sosButtonSize]);
+
+  // Memoized styles with full responsive design
   const styles = useMemo(() => StyleSheet.create({
     container: {
       flex: 1,
@@ -104,11 +135,12 @@ const HomeScreen = React.memo(({ navigation }) => {
     },
 
     logoContainer: {
-      flex: 0.6, // Reduced from 0.8 to make more room for SOS button
+      flex: width < 360 ? 0.35 : width < 400 ? 0.4 : 0.45, // Responsive flex based on screen size
       justifyContent: "center",
       alignItems: "center",
-      paddingTop: spacing[4],
-      paddingBottom: spacing[2],
+      paddingTop: spacing[2],
+      paddingBottom: spacing[1],
+      maxHeight: height * 0.2, // Limit max height to 20% of screen
     },
 
     logoimage: {
@@ -122,75 +154,81 @@ const HomeScreen = React.memo(({ navigation }) => {
 
     mainContent: {
       flex: 1,
-      justifyContent: "center", // Changed from "space-between" to center content
+      justifyContent: "center",
       alignItems: "center",
-      paddingHorizontal: spacing[6],
-      paddingBottom: spacing[6],
+      paddingHorizontal: width < 360 ? spacing[3] : spacing[4],
+      paddingBottom: height > 800 ? spacing[12] : spacing[6],
     },
 
-    // Bigger, More Centered SOS Button
+    // Fully responsive SOS Button
     sosButtonContainer: {
       alignItems: "center",
       justifyContent: "center",
-      marginVertical: spacing[8], // Increased margin for better centering
+      marginVertical: width < 360 ? spacing[4] : spacing[6],
       position: "relative",
-      flex: 1, // Take up more space to center better
+      flex: width < 360 ? 0.5 : 0.6, // Less flex on small screens
     },
 
     sosButton: {
-      width: 260, // Increased from 200
-      height: 260, // Increased from 200
-      borderRadius: 130, // Half of width/height for perfect circle
-      backgroundColor: colors.emergency[500], // Always red
+      width: sosButtonSize,
+      height: sosButtonSize,
+      borderRadius: sosButtonSize / 2,
+      backgroundColor: colors.emergency[500],
       justifyContent: "center",
       alignItems: "center",
       shadowColor: colors.emergency[500],
-      shadowOffset: { width: 0, height: 8 }, // Increased shadow offset
-      shadowOpacity: 0.6, // Increased shadow opacity
-      shadowRadius: 20, // Increased shadow radius
-      elevation: 20, // Increased elevation for Android
-      borderWidth: 4, // Increased border width
+      shadowOffset: { 
+        width: 0, 
+        height: width < 360 ? 4 : 6 
+      },
+      shadowOpacity: width < 360 ? 0.4 : 0.5,
+      shadowRadius: width < 360 ? 12 : 15,
+      elevation: width < 360 ? 12 : 15,
+      borderWidth: width < 360 ? 2 : 3,
       borderColor: colors.emergency[400],
-      // Additional glow effect
-      transform: [{ scale: 1 }], // Base scale for animation
     },
 
     sosButtonInner: {
-      width: 235, // Increased from 180, maintaining proportion
-      height: 235, // Increased from 180, maintaining proportion
-      borderRadius: 117.5, // Half of width/height
+      width: sosButtonInnerSize,
+      height: sosButtonInnerSize,
+      borderRadius: sosButtonInnerSize / 2,
       backgroundColor: "rgba(255, 255, 255, 0.15)",
       justifyContent: "center",
       alignItems: "center",
-      borderWidth: 3, // Increased border width
+      borderWidth: width < 360 ? 1.5 : 2,
       borderColor: "rgba(255, 255, 255, 0.4)",
     },
 
     sosButtonText: {
-      color: "#ffffff", // Always white text
-      fontSize: 52, // Increased from 42
+      color: "#ffffff",
+      fontSize: sosButtonFontSize,
       fontWeight: typography.fontWeights.black,
       textShadowColor: "rgba(0, 0, 0, 0.5)",
-      textShadowOffset: { width: 0, height: 3 }, // Increased shadow offset
-      textShadowRadius: 6, // Increased shadow radius
-      letterSpacing: 3, // Increased letter spacing
+      textShadowOffset: { width: 0, height: 2 },
+      textShadowRadius: 4,
+      letterSpacing: width < 360 ? 1 : 2,
       textAlign: "center",
     },
 
-    // Navigation Section - Moved to bottom
+    // Navigation Section with better responsive spacing
     navigationSection: {
       width: "100%",
       alignItems: "center",
-      gap: spacing[3],
-      paddingBottom: spacing[4],
-      paddingTop: spacing[4], // Added top padding
+      gap: width < 360 ? spacing[2] : spacing[3],
+      paddingBottom: spacing[2],
+      paddingTop: spacing[2],
+      // Additional spacing for tall screens
+      ...(height > 800 && {
+        gap: spacing[4],
+        paddingBottom: spacing[4],
+      }),
     },
 
-    // Base navigation button (adapts to theme)
+    // Responsive navigation buttons
     navButton: {
-      width: "90%",
-      maxWidth: 320,
-      height: 56,
+      width: width < 360 ? "90%" : width < 400 ? "85%" : "80%",
+      maxWidth: width < 360 ? 280 : width < 400 ? 300 : 350,
+      height: width < 360 ? 48 : width < 400 ? 52 : 56,
       borderRadius: borderRadius.md,
       justifyContent: "center",
       alignItems: "center",
@@ -198,48 +236,63 @@ const HomeScreen = React.memo(({ navigation }) => {
       ...shadows.base,
     },
 
-    // Prayer Requests Button (Blue theme) - Better contrast
+    // Theme-specific button styles with better contrast
     requestsButton: {
       backgroundColor: isDark
         ? `${colors.primary[500]}30`
-        : `${colors.primary[100]}`, // Lighter background for light theme
+        : `${colors.primary[100]}`,
       borderColor: isDark
         ? `${colors.primary[500]}60`
-        : `${colors.primary[400]}`, // Stronger border for light theme
+        : `${colors.primary[400]}`,
     },
 
-    // Warrior Book Button (Purple theme) - Better contrast
     warriorBookButton: {
       backgroundColor: isDark
         ? `${colors.warrior[500]}30`
-        : `${colors.warrior[100]}`, // Lighter background for light theme
+        : `${colors.warrior[100]}`,
       borderColor: isDark
         ? `${colors.warrior[500]}60`
-        : `${colors.warrior[400]}`, // Stronger border for light theme
+        : `${colors.warrior[400]}`,
     },
 
-    // Settings Button (Gray theme) - Better contrast
     settingsButton: {
       backgroundColor: isDark
         ? `${colors.neutral[500]}30`
-        : `${colors.neutral[200]}`, // Lighter background for light theme
+        : `${colors.neutral[200]}`,
       borderColor: isDark
         ? `${colors.neutral[500]}60`
-        : `${colors.neutral[400]}`, // Stronger border for light theme
+        : `${colors.neutral[400]}`,
     },
 
-    // Button text (better contrast for both themes)
+    // Responsive button text
     buttonText: {
-      color: colors.text.primary, // Adapts to theme
-      fontSize: typography.fontSizes.base,
+      color: colors.text.primary,
+      fontSize: width < 360 
+        ? typography.fontSizes.sm 
+        : width < 400 
+          ? typography.fontSizes.base 
+          : typography.fontSizes.lg,
       fontWeight: typography.fontWeights.semibold,
-      letterSpacing: typography.letterSpacing.wide,
+      letterSpacing: width < 360 
+        ? typography.letterSpacing.normal 
+        : typography.letterSpacing.wide,
       textAlign: "center",
-      textShadowColor: isDark ? "rgba(0, 0, 0, 0.3)" : "transparent", // Only shadow in dark theme
+      textShadowColor: isDark ? "rgba(0, 0, 0, 0.3)" : "transparent",
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 2,
     },
-  }), [colors, typography, spacing, borderRadius, shadows, isDark]);
+  }), [
+    colors, 
+    typography, 
+    spacing, 
+    borderRadius, 
+    shadows, 
+    isDark, 
+    dimensions,
+    sosButtonSize,
+    sosButtonInnerSize,
+    sosButtonFontSize
+  ]);
 
   // Memoized button styles to prevent recreation
   const buttonStyles = useMemo(() => ({
@@ -266,7 +319,7 @@ const HomeScreen = React.memo(({ navigation }) => {
 
       {/* Main Content */}
       <View style={styles.mainContent}>
-        {/* Big Red SOS Button - Now bigger and more centered */}
+        {/* Responsive SOS Button */}
         <SOSButton onPress={handleSOSPress} styles={styles} />
 
         {/* Navigation Buttons */}

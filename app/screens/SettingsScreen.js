@@ -1,4 +1,4 @@
-// app/screens/SettingsScreen.js - Updated with Theme Toggle
+// app/screens/SettingsScreen.js - Updated with Zip Code Modal
 import { StatusBar, Alert, Keyboard, BackHandler, Switch } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect, useCallback } from "react";
@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   TouchableWithoutFeedback,
   ScrollView,
+  Modal,
   StyleSheet,
 } from "react-native";
 
@@ -39,6 +40,9 @@ export default function SettingsScreen({ navigation }) {
   const [zipError, setZipError] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [userData, setUserData] = useState(null);
+  
+  // Modal state
+  const [zipModalVisible, setZipModalVisible] = useState(false);
 
   // Load current user data
   const loadUserData = async () => {
@@ -77,6 +81,23 @@ export default function SettingsScreen({ navigation }) {
     [zipError, currentZip]
   );
 
+  // Open zip code modal
+  const handleOpenZipModal = useCallback(() => {
+    setNewZip(currentZip); // Reset to current value
+    setZipError("");
+    setHasUnsavedChanges(false);
+    setZipModalVisible(true);
+  }, [currentZip]);
+
+  // Close zip code modal
+  const handleCloseZipModal = useCallback(() => {
+    setZipModalVisible(false);
+    setNewZip(currentZip); // Reset to current value
+    setZipError("");
+    setHasUnsavedChanges(false);
+    Keyboard.dismiss();
+  }, [currentZip]);
+
   // Save zip code changes
   const handleSaveZip = async () => {
     Keyboard.dismiss();
@@ -102,9 +123,10 @@ export default function SettingsScreen({ navigation }) {
       await userUtils.updateUserData({ zip: newZip });
       setCurrentZip(newZip);
       setHasUnsavedChanges(false);
+      setZipModalVisible(false);
 
       Alert.alert(
-        "Zip Code Updated! 📍",
+        "Location Updated! 📍",
         `Your location has been updated to ${newZip}. You'll now see prayer requests from your new area.`,
         [{ text: "OK" }]
       );
@@ -122,24 +144,10 @@ export default function SettingsScreen({ navigation }) {
     }
   };
 
-  // Cancel zip code changes
-  const handleCancelZipChange = () => {
-    setNewZip(currentZip);
-    setHasUnsavedChanges(false);
-    setZipError("");
-    Keyboard.dismiss();
-  };
-
   // Handle theme toggle
   const handleThemeToggle = async () => {
     try {
       await toggleTheme();
-      // Optional: Show confirmation
-      // Alert.alert(
-      //   "Theme Changed",
-      //   `Switched to ${isDark ? 'light' : 'dark'} mode`,
-      //   [{ text: "OK" }]
-      // );
     } catch (error) {
       console.error("Failed to toggle theme:", error);
       Alert.alert("Error", "Failed to change theme. Please try again.");
@@ -175,7 +183,7 @@ export default function SettingsScreen({ navigation }) {
         "prayer",
         "lastUpdateTime",
         "userPreferences",
-        "theme", // Also reset theme preference
+        "theme",
       ]);
 
       console.log("App data cleared successfully");
@@ -198,35 +206,9 @@ export default function SettingsScreen({ navigation }) {
     }
   };
 
-  // Handle back button with unsaved changes check
+  // Handle back button press
   const handleBackPressed = () => {
-    if (hasUnsavedChanges) {
-      Alert.alert(
-        "Unsaved Changes",
-        "You have unsaved changes to your zip code. Do you want to save before going back?",
-        [
-          {
-            text: "Don't Save",
-            style: "destructive",
-            onPress: () => {
-              handleCancelZipChange();
-              navigation.navigate("Home");
-            },
-          },
-          {
-            text: "Save",
-            onPress: async () => {
-              await handleSaveZip();
-              if (!zipError) {
-                navigation.navigate("Home");
-              }
-            },
-          },
-        ]
-      );
-    } else {
-      navigation.navigate("Home");
-    }
+    navigation.navigate("Home");
   };
 
   // Show app info
@@ -313,11 +295,7 @@ export default function SettingsScreen({ navigation }) {
       paddingHorizontal: spacing[2],
     },
 
-    card: {
-      ...commonStyles.card,
-    },
-
-    // Theme Toggle Section - Fixed for dark theme
+    // Theme Toggle Section
     themeSection: {
       backgroundColor: colors.background.card,
       borderRadius: borderRadius.lg,
@@ -352,7 +330,7 @@ export default function SettingsScreen({ navigation }) {
       marginLeft: spacing[4],
     },
 
-    // Current location card - Fixed for dark theme
+    // Current location card - Now tappable
     currentLocationCard: {
       backgroundColor: colors.background.card,
       borderRadius: borderRadius.lg,
@@ -362,6 +340,11 @@ export default function SettingsScreen({ navigation }) {
       borderWidth: 1,
       borderColor: colors.border.light,
       alignItems: "center",
+    },
+
+    currentLocationCardPressed: {
+      backgroundColor: colors.background.secondary,
+      transform: [{ scale: 0.98 }],
     },
 
     currentLocationLabel: {
@@ -387,112 +370,18 @@ export default function SettingsScreen({ navigation }) {
       textAlign: "center",
       fontStyle: "italic",
       lineHeight: typography.lineHeights.normal,
+      marginBottom: spacing[2],
     },
 
-    // Input section - Fixed for dark theme
-    inputCard: {
-      backgroundColor: colors.background.card,
-      borderRadius: borderRadius.lg,
-      padding: spacing[6],
-      marginBottom: spacing[5],
-      ...shadows.lg,
-      borderWidth: 1,
-      borderColor: colors.border.light,
-    },
-
-    inputLabel: {
-      fontSize: typography.fontSizes.base,
-      color: colors.text.secondary,
+    tapToEditText: {
+      fontSize: typography.fontSizes.xs,
+      color: colors.primary[500],
+      textAlign: "center",
       fontWeight: typography.fontWeights.semibold,
-      letterSpacing: typography.letterSpacing.wider,
-      marginBottom: spacing[4],
-      textAlign: "center",
-    },
-
-    input: {
-      ...commonStyles.input,
-      fontSize: typography.fontSizes["3xl"],
-      fontWeight: typography.fontWeights.bold,
-      textAlign: "center",
-      paddingVertical: spacing[5],
-      paddingHorizontal: spacing[6],
-      marginBottom: spacing[3],
       letterSpacing: typography.letterSpacing.wide,
     },
 
-    inputError: {
-      borderColor: colors.emergency[500],
-      backgroundColor: colors.emergency[50],
-    },
-
-    inputChanged: {
-      borderColor: colors.success[500],
-      backgroundColor: colors.success[50],
-    },
-
-    // Helper text
-    errorText: {
-      color: colors.emergency[600],
-      fontSize: typography.fontSizes.sm,
-      textAlign: "center",
-      marginTop: spacing[2],
-      fontWeight: typography.fontWeights.medium,
-    },
-
-    helperText: {
-      color: colors.text.secondary,
-      fontSize: typography.fontSizes.sm,
-      textAlign: "center",
-      marginTop: spacing[2],
-      fontWeight: typography.fontWeights.medium,
-    },
-
-    changedText: {
-      color: colors.success[600],
-      fontSize: typography.fontSizes.sm,
-      textAlign: "center",
-      marginTop: spacing[2],
-      fontWeight: typography.fontWeights.semibold,
-    },
-
-    // Zip actions
-    zipActions: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginTop: spacing[5],
-      gap: spacing[3],
-    },
-
-    cancelButton: {
-      flex: 1,
-      ...commonStyles.button,
-      backgroundColor: colors.neutral[500],
-    },
-
-    cancelButtonText: {
-      ...commonStyles.buttonText,
-    },
-
-    saveButton: {
-      flex: 1,
-      ...commonStyles.button,
-      backgroundColor: colors.primary[500],
-    },
-
-    saveButtonText: {
-      ...commonStyles.buttonText,
-    },
-
-    buttonDisabled: {
-      backgroundColor: colors.neutral[400],
-      ...shadows.sm,
-    },
-
-    buttonTextDisabled: {
-      color: colors.text.disabled,
-    },
-
-    // Action cards - Fixed for dark theme
+    // Action cards
     actionCard: {
       backgroundColor: colors.background.card,
       borderRadius: borderRadius.lg,
@@ -504,6 +393,11 @@ export default function SettingsScreen({ navigation }) {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
+    },
+
+    actionCardPressed: {
+      backgroundColor: colors.background.secondary,
+      transform: [{ scale: 0.98 }],
     },
 
     dangerCard: {
@@ -534,7 +428,7 @@ export default function SettingsScreen({ navigation }) {
       marginLeft: spacing[4],
     },
 
-    // Info section - Fixed for dark theme
+    // Info section
     infoSection: {
       backgroundColor: isDark
         ? colors.background.glassDark
@@ -576,6 +470,182 @@ export default function SettingsScreen({ navigation }) {
       fontSize: typography.fontSizes.base,
       fontWeight: typography.fontWeights.semibold,
       letterSpacing: typography.letterSpacing.wide,
+    },
+
+    // Modal styles
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.7)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+
+    modalContent: {
+      backgroundColor: colors.background.card,
+      marginHorizontal: spacing[6],
+      borderRadius: borderRadius.xl,
+      width: "90%",
+      ...shadows.xl,
+    },
+
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: spacing[6],
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border.light,
+    },
+
+    modalTitle: {
+      fontSize: typography.fontSizes.xl,
+      fontWeight: typography.fontWeights.bold,
+      color: colors.text.primary,
+    },
+
+    modalCloseButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.background.secondary,
+      justifyContent: "center",
+      alignItems: "center",
+      ...shadows.sm,
+    },
+
+    modalCloseText: {
+      fontSize: typography.fontSizes.base,
+      color: colors.text.secondary,
+      fontWeight: typography.fontWeights.bold,
+    },
+
+    modalBody: {
+      padding: spacing[6],
+    },
+
+    modalInputCard: {
+      backgroundColor: colors.background.secondary,
+      borderRadius: borderRadius.lg,
+      padding: spacing[5],
+      marginBottom: spacing[5],
+    },
+
+    modalInputLabel: {
+      fontSize: typography.fontSizes.base,
+      color: colors.text.primary,
+      fontWeight: typography.fontWeights.semibold,
+      letterSpacing: typography.letterSpacing.wider,
+      marginBottom: spacing[2],
+      textAlign: "center",
+    },
+
+    modalInputHelper: {
+      fontSize: typography.fontSizes.sm,
+      color: colors.text.secondary,
+      textAlign: "center",
+      marginBottom: spacing[4],
+      lineHeight: typography.lineHeights.normal,
+    },
+
+    modalInput: {
+      backgroundColor: colors.background.primary,
+      fontSize: typography.fontSizes["3xl"],
+      fontWeight: typography.fontWeights.bold,
+      textAlign: "center",
+      paddingVertical: spacing[5],
+      paddingHorizontal: spacing[6],
+      borderRadius: borderRadius.lg,
+      borderWidth: 2,
+      borderColor: colors.border.light,
+      marginBottom: spacing[3],
+      letterSpacing: typography.letterSpacing.widest,
+      minHeight: 80,
+      color: colors.text.primary,
+      ...shadows.sm,
+    },
+
+    modalInputError: {
+      borderColor: colors.emergency[500],
+      backgroundColor: isDark
+        ? `${colors.emergency[500]}20`
+        : colors.emergency[50],
+    },
+
+    modalInputSuccess: {
+      borderColor: colors.success[500],
+      backgroundColor: isDark
+        ? `${colors.success[500]}20`
+        : colors.success[50],
+    },
+
+    modalErrorText: {
+      color: colors.emergency[600],
+      fontSize: typography.fontSizes.sm,
+      textAlign: "center",
+      fontWeight: typography.fontWeights.medium,
+      marginTop: -spacing[1],
+    },
+
+    modalSuccessText: {
+      color: colors.success[600],
+      fontSize: typography.fontSizes.sm,
+      textAlign: "center",
+      fontWeight: typography.fontWeights.semibold,
+      marginTop: -spacing[1],
+    },
+
+    modalHelperText: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.sm,
+      textAlign: "center",
+      fontWeight: typography.fontWeights.medium,
+      marginTop: -spacing[1],
+    },
+
+    modalActions: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: spacing[2],
+      gap: spacing[3],
+    },
+
+    modalCancelButton: {
+      flex: 1,
+      backgroundColor: colors.neutral[500],
+      paddingVertical: spacing[4],
+      borderRadius: borderRadius.md,
+      alignItems: "center",
+      ...shadows.base,
+    },
+
+    modalCancelButtonText: {
+      color: "#ffffff",
+      fontSize: typography.fontSizes.base,
+      fontWeight: typography.fontWeights.semibold,
+    },
+
+    modalSaveButton: {
+      flex: 1,
+      backgroundColor: colors.primary[500],
+      paddingVertical: spacing[4],
+      borderRadius: borderRadius.md,
+      alignItems: "center",
+      ...shadows.base,
+    },
+
+    modalSaveButtonDisabled: {
+      backgroundColor: colors.neutral[400],
+      ...shadows.sm,
+    },
+
+    modalSaveButtonText: {
+      color: "#ffffff",
+      fontSize: typography.fontSizes.base,
+      fontWeight: typography.fontWeights.semibold,
+    },
+
+    modalSaveButtonTextDisabled: {
+      color: colors.text.disabled,
     },
   });
 
@@ -645,7 +715,11 @@ export default function SettingsScreen({ navigation }) {
           {/* Current Location Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Current Location</Text>
-            <View style={styles.currentLocationCard}>
+            <TouchableOpacity
+              style={styles.currentLocationCard}
+              onPress={handleOpenZipModal}
+              activeOpacity={0.8}
+            >
               <Text style={styles.currentLocationLabel}>ZIP CODE</Text>
               <Text style={styles.currentLocationValue}>
                 {currentZip || "Not set"}
@@ -655,85 +729,8 @@ export default function SettingsScreen({ navigation }) {
                   You're seeing prayers from the {currentZip} area
                 </Text>
               )}
-            </View>
-          </View>
-
-          {/* Change Zip Code Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Update Location</Text>
-            <View style={styles.inputCard}>
-              <Text style={styles.inputLabel}>NEW ZIP CODE</Text>
-              <TextInput
-                value={newZip}
-                onChangeText={handleZipChange}
-                maxLength={5}
-                style={[
-                  styles.input,
-                  zipError ? styles.inputError : null,
-                  hasUnsavedChanges ? styles.inputChanged : null,
-                ]}
-                placeholder="Enter 5-digit zip code"
-                placeholderTextColor={colors.text.placeholder}
-                keyboardType="numeric"
-                returnKeyType="done"
-                onSubmitEditing={handleSaveZip}
-                editable={!isSaving}
-              />
-
-              {zipError ? (
-                <Text style={styles.errorText}>{zipError}</Text>
-              ) : null}
-
-              {newZip.length > 0 && newZip.length < 5 ? (
-                <Text style={styles.helperText}>
-                  {5 - newZip.length} more digit
-                  {5 - newZip.length !== 1 ? "s" : ""} needed
-                </Text>
-              ) : null}
-
-              {hasUnsavedChanges && validateZip(newZip) ? (
-                <Text style={styles.changedText}>
-                  Ready to save new location
-                </Text>
-              ) : null}
-
-              {/* Zip Code Action Buttons */}
-              {hasUnsavedChanges && (
-                <View style={styles.zipActions}>
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={handleCancelZipChange}
-                    disabled={isSaving}
-                  >
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.saveButton,
-                      (!newZip || !validateZip(newZip) || isSaving) &&
-                        styles.buttonDisabled,
-                    ]}
-                    onPress={handleSaveZip}
-                    disabled={!newZip || !validateZip(newZip) || isSaving}
-                  >
-                    {isSaving ? (
-                      <ActivityIndicator color="white" size="small" />
-                    ) : (
-                      <Text
-                        style={[
-                          styles.saveButtonText,
-                          (!newZip || !validateZip(newZip)) &&
-                            styles.buttonTextDisabled,
-                        ]}
-                      >
-                        Save Location
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
+              <Text style={styles.tapToEditText}>TAP TO CHANGE</Text>
+            </TouchableOpacity>
           </View>
 
           {/* App Management Section */}
@@ -782,11 +779,114 @@ export default function SettingsScreen({ navigation }) {
             onPress={handleBackPressed}
             disabled={isSaving || isResetting}
           >
-            <Text style={styles.backButtonText}>
-              {hasUnsavedChanges ? "BACK (UNSAVED CHANGES)" : "BACK TO HOME"}
-            </Text>
+            <Text style={styles.backButtonText}>BACK TO HOME</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Zip Code Update Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={zipModalVisible}
+          onRequestClose={handleCloseZipModal}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Update Location</Text>
+                  <TouchableOpacity
+                    style={styles.modalCloseButton}
+                    onPress={handleCloseZipModal}
+                  >
+                    <Text style={styles.modalCloseText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.modalBody}>
+                  <View style={styles.modalInputCard}>
+                    <Text style={styles.modalInputLabel}>NEW ZIP CODE</Text>
+                    <Text style={styles.modalInputHelper}>
+                      Enter your 5-digit ZIP code to update your location
+                    </Text>
+
+                    <TextInput
+                      value={newZip}
+                      onChangeText={handleZipChange}
+                      maxLength={5}
+                      style={[
+                        styles.modalInput,
+                        zipError ? styles.modalInputError : null,
+                        hasUnsavedChanges && validateZip(newZip) ? styles.modalInputSuccess : null,
+                      ]}
+                      placeholder="12345"
+                      placeholderTextColor={colors.text.placeholder}
+                      keyboardType="numeric"
+                      returnKeyType="done"
+                      onSubmitEditing={handleSaveZip}
+                      editable={!isSaving}
+                      textAlign="center"
+                      autoFocus={true}
+                    />
+
+                    {/* Validation Messages */}
+                    {zipError ? (
+                      <Text style={styles.modalErrorText}>{zipError}</Text>
+                    ) : null}
+
+                    {newZip.length > 0 && newZip.length < 5 ? (
+                      <Text style={styles.modalHelperText}>
+                        {5 - newZip.length} more digit
+                        {5 - newZip.length !== 1 ? "s" : ""} needed
+                      </Text>
+                    ) : null}
+
+                    {hasUnsavedChanges && validateZip(newZip) ? (
+                      <Text style={styles.modalSuccessText}>
+                        Ready to save new location
+                      </Text>
+                    ) : null}
+                  </View>
+
+                  {/* Modal Actions */}
+                  <View style={styles.modalActions}>
+                    <TouchableOpacity
+                      style={styles.modalCancelButton}
+                      onPress={handleCloseZipModal}
+                      disabled={isSaving}
+                    >
+                      <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[
+                        styles.modalSaveButton,
+                        (!newZip || !validateZip(newZip) || isSaving) &&
+                          styles.modalSaveButtonDisabled,
+                      ]}
+                      onPress={handleSaveZip}
+                      disabled={!newZip || !validateZip(newZip) || isSaving}
+                    >
+                      {isSaving ? (
+                        <ActivityIndicator color="white" size="small" />
+                      ) : (
+                        <Text
+                          style={[
+                            styles.modalSaveButtonText,
+                            (!newZip || !validateZip(newZip)) &&
+                              styles.modalSaveButtonTextDisabled,
+                          ]}
+                        >
+                          Save Location
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </SafeAreaView>
     </TouchableWithoutFeedback>
   );

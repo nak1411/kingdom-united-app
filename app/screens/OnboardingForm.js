@@ -17,14 +17,8 @@ import {
 import { useTheme } from "../context/ThemeContext";
 
 export default function OnboardingForm({ navigation }) {
-  const { 
-    colors, 
-    typography, 
-    spacing, 
-    borderRadius, 
-    shadows, 
-    isDark 
-  } = useTheme();
+  const { colors, typography, spacing, borderRadius, shadows, isDark } =
+    useTheme();
 
   const [zip, setZip] = useState("");
   const [isValid, setIsValid] = useState(false);
@@ -123,7 +117,7 @@ export default function OnboardingForm({ navigation }) {
     },
 
     header: {
-      alignItems: 'center',
+      alignItems: "center",
       marginBottom: spacing[10],
       paddingTop: spacing[5],
     },
@@ -131,10 +125,10 @@ export default function OnboardingForm({ navigation }) {
     title: {
       color: colors.text.primary,
       fontWeight: typography.fontWeights.bold,
-      fontSize: typography.fontSizes['5xl'],
+      fontSize: typography.fontSizes["5xl"],
       marginBottom: spacing[4],
-      textAlign: 'center',
-      textShadowColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'transparent',
+      textAlign: "center",
+      textShadowColor: isDark ? "rgba(0, 0, 0, 0.5)" : "transparent",
       textShadowOffset: { width: 0, height: 2 },
       textShadowRadius: 4,
     },
@@ -142,7 +136,7 @@ export default function OnboardingForm({ navigation }) {
     subtitle: {
       color: colors.text.secondary,
       fontSize: typography.fontSizes.lg,
-      textAlign: 'center',
+      textAlign: "center",
       lineHeight: typography.lineHeights.relaxed,
       fontWeight: typography.fontWeights.medium,
       paddingHorizontal: spacing[5],
@@ -167,22 +161,22 @@ export default function OnboardingForm({ navigation }) {
       fontWeight: typography.fontWeights.semibold,
       letterSpacing: typography.letterSpacing.wider,
       marginBottom: spacing[2],
-      textAlign: 'center',
+      textAlign: "center",
     },
 
     inputHelper: {
       fontSize: typography.fontSizes.sm,
       color: colors.text.secondary,
-      textAlign: 'center',
+      textAlign: "center",
       marginBottom: spacing[5],
       lineHeight: typography.lineHeights.normal,
     },
 
     input: {
       backgroundColor: colors.background.secondary,
-      fontSize: typography.fontSizes['3xl'],
+      fontSize: typography.fontSizes["3xl"],
       fontWeight: typography.fontWeights.bold,
-      textAlign: 'center',
+      textAlign: "center",
       paddingVertical: spacing[5],
       paddingHorizontal: spacing[6],
       borderRadius: borderRadius.lg,
@@ -197,7 +191,9 @@ export default function OnboardingForm({ navigation }) {
 
     inputError: {
       borderColor: colors.emergency[500],
-      backgroundColor: isDark ? `${colors.emergency[500]}20` : colors.emergency[50],
+      backgroundColor: isDark
+        ? `${colors.emergency[500]}20`
+        : colors.emergency[50],
     },
 
     inputSuccess: {
@@ -208,7 +204,7 @@ export default function OnboardingForm({ navigation }) {
     errorText: {
       color: colors.emergency[600],
       fontSize: typography.fontSizes.sm,
-      textAlign: 'center',
+      textAlign: "center",
       fontWeight: typography.fontWeights.medium,
       marginTop: -spacing[2],
     },
@@ -216,14 +212,14 @@ export default function OnboardingForm({ navigation }) {
     successText: {
       color: colors.success[600],
       fontSize: typography.fontSizes.sm,
-      textAlign: 'center',
+      textAlign: "center",
       fontWeight: typography.fontWeights.semibold,
       marginTop: -spacing[2],
     },
 
     infoSection: {
-      backgroundColor: isDark 
-        ? `${colors.primary[500]}20` 
+      backgroundColor: isDark
+        ? `${colors.primary[500]}20`
         : `${colors.primary[100]}`,
       borderRadius: borderRadius.lg,
       padding: spacing[5],
@@ -237,13 +233,13 @@ export default function OnboardingForm({ navigation }) {
       fontSize: typography.fontSizes.base,
       fontWeight: typography.fontWeights.semibold,
       marginBottom: spacing[2],
-      textAlign: 'center',
+      textAlign: "center",
     },
 
     infoText: {
       color: colors.text.secondary,
       fontSize: typography.fontSizes.sm,
-      textAlign: 'center',
+      textAlign: "center",
       lineHeight: typography.lineHeights.normal,
     },
 
@@ -258,18 +254,18 @@ export default function OnboardingForm({ navigation }) {
       marginBottom: spacing[3],
       borderWidth: 1,
       borderColor: colors.border.light,
-      alignItems: 'center',
+      alignItems: "center",
     },
 
     featureText: {
       color: colors.text.primary,
       fontSize: typography.fontSizes.base,
       fontWeight: typography.fontWeights.medium,
-      textAlign: 'center',
+      textAlign: "center",
     },
 
     buttonSection: {
-      position: 'absolute',
+      position: "absolute",
       bottom: 0,
       left: 0,
       right: 0,
@@ -284,7 +280,7 @@ export default function OnboardingForm({ navigation }) {
       paddingVertical: spacing[5],
       paddingHorizontal: spacing[8],
       borderRadius: borderRadius.lg,
-      alignItems: 'center',
+      alignItems: "center",
       ...shadows.lg,
       borderWidth: 2,
       borderColor: colors.success[600],
@@ -297,11 +293,11 @@ export default function OnboardingForm({ navigation }) {
     },
 
     finishButtonText: {
-      color: '#ffffff',
+      color: "#ffffff",
       fontSize: typography.fontSizes.lg,
       fontWeight: typography.fontWeights.bold,
       letterSpacing: typography.letterSpacing.wide,
-      textShadowColor: 'rgba(0, 0, 0, 0.3)',
+      textShadowColor: "rgba(0, 0, 0, 0.3)",
       textShadowOffset: { width: 0, height: 1 },
       textShadowRadius: 2,
     },
@@ -313,19 +309,19 @@ export default function OnboardingForm({ navigation }) {
     bottomHint: {
       color: colors.text.secondary,
       fontSize: typography.fontSizes.sm,
-      textAlign: 'center',
+      textAlign: "center",
       marginTop: spacing[3],
-      fontStyle: 'italic',
+      fontStyle: "italic",
     },
   });
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar 
-        barStyle={isDark ? "light-content" : "dark-content"} 
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
         backgroundColor={colors.background.dark}
       />
-      
+
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -334,12 +330,12 @@ export default function OnboardingForm({ navigation }) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>Welcome!</Text>
             <Text style={styles.subtitle}>
-              Let's set up your Kingdom United app to connect you with your local prayer community.
+              Let's set up your Kingdom United app to connect you with your
+              local prayer community.
             </Text>
           </View>
 
@@ -350,7 +346,7 @@ export default function OnboardingForm({ navigation }) {
               <Text style={styles.inputHelper}>
                 Enter your 5-digit ZIP code to find local prayer requests
               </Text>
-              
+
               <TextInput
                 value={zip}
                 onChangeText={handleZipChange}
@@ -372,10 +368,11 @@ export default function OnboardingForm({ navigation }) {
               {/* Validation Messages */}
               {zip.length > 0 && !isValid && (
                 <Text style={styles.errorText}>
-                  {zip.length < 5 
-                    ? `${5 - zip.length} more digit${5 - zip.length !== 1 ? 's' : ''} needed`
-                    : "Please enter a valid ZIP code"
-                  }
+                  {zip.length < 5
+                    ? `${5 - zip.length} more digit${
+                        5 - zip.length !== 1 ? "s" : ""
+                      } needed`
+                    : "Please enter a valid ZIP code"}
                 </Text>
               )}
 
@@ -391,24 +388,11 @@ export default function OnboardingForm({ navigation }) {
           <View style={styles.infoSection}>
             <Text style={styles.infoTitle}>Your Privacy Matters</Text>
             <Text style={styles.infoText}>
-              Your ZIP code helps us show you prayer requests from your local community. 
-              We never share your personal information and all prayers are anonymous.
+              Your ZIP code helps us show you prayer requests from your local
+              community. We never share your personal information and all
+              prayers are anonymous.
             </Text>
           </View>
-
-          {/* Features Section */}
-          <View style={styles.featuresSection}>
-            <View style={styles.featureItem}>
-              <Text style={styles.featureText}>Send emergency prayer requests</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Text style={styles.featureText}>Support your local community</Text>
-            </View>
-            <View style={styles.featureItem}>
-              <Text style={styles.featureText}>Access biblical guidance</Text>
-            </View>
-          </View>
-
         </ScrollView>
 
         {/* Bottom Button Section */}
@@ -438,7 +422,6 @@ export default function OnboardingForm({ navigation }) {
             </Text>
           )}
         </View>
-
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

@@ -36,32 +36,38 @@ const RealTimeToggle = React.memo(({ isActive, onToggle, styles }) => (
   </TouchableOpacity>
 ));
 
-RealTimeToggle.displayName = 'RealTimeToggle';
+RealTimeToggle.displayName = "RealTimeToggle";
 
-const StatusIndicator = React.memo(({ isActive, lastUpdate, colors, styles, formatTimestamp }) => (
-  <View style={styles.statusContainer}>
-    <View
-      style={[
-        styles.statusDot,
-        { backgroundColor: isActive ? colors.success[500] : colors.neutral[500] },
-      ]}
-    />
-    <Text style={styles.statusText}>
-      {isActive ? "Live updates" : "Manual refresh"}
-    </Text>
-    {lastUpdate && (
-      <Text style={styles.lastUpdateText}>
-        Last: {formatTimestamp(lastUpdate)}
+const StatusIndicator = React.memo(
+  ({ isActive, lastUpdate, colors, styles, formatTimestamp }) => (
+    <View style={styles.statusContainer}>
+      <View
+        style={[
+          styles.statusDot,
+          {
+            backgroundColor: isActive
+              ? colors.success[500]
+              : colors.neutral[500],
+          },
+        ]}
+      />
+      <Text style={styles.statusText}>
+        {isActive ? "Live updates" : "Manual refresh"}
       </Text>
-    )}
-  </View>
-));
+      {lastUpdate && (
+        <Text style={styles.lastUpdateText}>
+          Last: {formatTimestamp(lastUpdate)}
+        </Text>
+      )}
+    </View>
+  )
+);
 
-StatusIndicator.displayName = 'StatusIndicator';
+StatusIndicator.displayName = "StatusIndicator";
 
 const NewPrayersNotification = React.memo(({ count, onClear, styles }) => {
   if (count <= 0) return null;
-  
+
   return (
     <TouchableOpacity style={styles.newPrayersNotification} onPress={onClear}>
       <Text style={styles.newPrayersText}>
@@ -71,7 +77,7 @@ const NewPrayersNotification = React.memo(({ count, onClear, styles }) => {
   );
 });
 
-NewPrayersNotification.displayName = 'NewPrayersNotification';
+NewPrayersNotification.displayName = "NewPrayersNotification";
 
 const PrayerItemBadges = React.memo(({ isRecent, styles }) => (
   <View style={styles.badges}>
@@ -86,7 +92,7 @@ const PrayerItemBadges = React.memo(({ isRecent, styles }) => (
   </View>
 ));
 
-PrayerItemBadges.displayName = 'PrayerItemBadges';
+PrayerItemBadges.displayName = "PrayerItemBadges";
 
 const PrayerItemContent = React.memo(({ prayerText, onReadMore, styles }) => {
   const truncatedText = useMemo(() => {
@@ -108,14 +114,14 @@ const PrayerItemContent = React.memo(({ prayerText, onReadMore, styles }) => {
   );
 });
 
-PrayerItemContent.displayName = 'PrayerItemContent';
+PrayerItemContent.displayName = "PrayerItemContent";
 
 // Enhanced UserAvatar component with user ID display
 const UserAvatar = React.memo(({ userId, styles }) => {
   // Generate avatar initials from user ID
   const getAvatarInitials = (id) => {
     if (!id) return "??";
-    
+
     // For Reddit-style IDs like "AmazingWarrior1234"
     if (id.match(/^[A-Z][a-z]+[A-Z][a-z]+\d/)) {
       // Extract first letter of each word
@@ -124,21 +130,21 @@ const UserAvatar = React.memo(({ userId, styles }) => {
         return `${matches[0][0]}${matches[1][0]}`;
       }
     }
-    
+
     // For legacy IDs or fallback
     return id.substring(0, 2).toUpperCase();
   };
 
   // Generate consistent color from user ID
   const getAvatarColor = (id) => {
-    if (!id) return '#6b7280';
-    
+    if (!id) return "#6b7280";
+
     // Generate a hash from the user ID
     let hash = 0;
     for (let i = 0; i < id.length; i++) {
       hash = id.charCodeAt(i) + ((hash << 5) - hash);
     }
-    
+
     // Convert to a consistent hue
     const hue = Math.abs(hash) % 360;
     return `hsl(${hue}, 60%, 50%)`;
@@ -149,87 +155,88 @@ const UserAvatar = React.memo(({ userId, styles }) => {
 
   return (
     <View style={[styles.avatar, { backgroundColor }]}>
-      <Text style={[styles.avatarText, { color: '#ffffff' }]}>
-        {initials}
-      </Text>
+      <Text style={[styles.avatarText, { color: "#ffffff" }]}>{initials}</Text>
     </View>
   );
 });
 
-UserAvatar.displayName = 'UserAvatar';
+UserAvatar.displayName = "UserAvatar";
 
 // Updated PrayerItem component with user ID display
-const PrayerItem = React.memo(({ 
-  item, 
-  index, 
-  userZip, 
-  lastFetchTime, 
-  onPress, 
-  styles, 
-  formatTimestamp 
-}) => {
-  const isRecent = useMemo(() => {
-    if (!lastFetchTime) return false;
-    const prayerTime = new Date(item.createdAt || item.created_at);
-    return prayerTime > new Date(Date.now() - 5 * 60 * 1000);
-  }, [item, lastFetchTime]);
+const PrayerItem = React.memo(
+  ({
+    item,
+    index,
+    userZip,
+    lastFetchTime,
+    onPress,
+    styles,
+    formatTimestamp,
+  }) => {
+    const isRecent = useMemo(() => {
+      if (!lastFetchTime) return false;
+      const prayerTime = new Date(item.createdAt || item.created_at);
+      return prayerTime > new Date(Date.now() - 5 * 60 * 1000);
+    }, [item, lastFetchTime]);
 
-  const prayerText = item.prayerText || item.prayer || item.text || "Prayer request";
-  const timestamp = item.createdAt || item.created_at;
-  
-  // Extract user ID from prayer data
-  const userId = item.userId || item.user_id || "Anonymous";
-  
-  // Format user ID for display (truncate if too long)
-  const displayUserId = useMemo(() => {
-    if (!userId || userId === "Anonymous") return "Anonymous";
-    
-    // For Reddit-style IDs, show full ID if reasonable length
-    if (userId.length <= 20) {
-      return userId;
-    }
-    
-    // For very long IDs, truncate with ellipsis
-    return `${userId.substring(0, 17)}...`;
-  }, [userId]);
+    const prayerText =
+      item.prayerText || item.prayer || item.text || "Prayer request";
+    const timestamp = item.createdAt || item.created_at;
 
-  const handlePress = useCallback(() => {
-    onPress(item);
-  }, [item, onPress]);
+    // Extract user ID from prayer data
+    const userId = item.userId || item.user_id || "Anonymous";
 
-  const handleReadMore = useCallback(() => {
-    onPress(item);
-  }, [item, onPress]);
+    // Format user ID for display (truncate if too long)
+    const displayUserId = useMemo(() => {
+      if (!userId || userId === "Anonymous") return "Anonymous";
 
-  return (
-    <TouchableOpacity
-      style={[styles.prayerItem, isRecent && styles.recentPrayerItem]}
-      onPress={handlePress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.prayerHeader}>
-        <View style={styles.userInfo}>
-          <UserAvatar userId={userId} styles={styles} />
-          <View style={styles.userDetails}>
-            <Text style={styles.userName}>{displayUserId}</Text>
-            <Text style={styles.timestamp}>
-              {formatTimestamp(timestamp)} • Zip {item.zip || userZip}
-            </Text>
+      // For Reddit-style IDs, show full ID if reasonable length
+      if (userId.length <= 20) {
+        return userId;
+      }
+
+      // For very long IDs, truncate with ellipsis
+      return `${userId.substring(0, 17)}...`;
+    }, [userId]);
+
+    const handlePress = useCallback(() => {
+      onPress(item);
+    }, [item, onPress]);
+
+    const handleReadMore = useCallback(() => {
+      onPress(item);
+    }, [item, onPress]);
+
+    return (
+      <TouchableOpacity
+        style={[styles.prayerItem, isRecent && styles.recentPrayerItem]}
+        onPress={handlePress}
+        activeOpacity={0.7}
+      >
+        <View style={styles.prayerHeader}>
+          <View style={styles.userInfo}>
+            <UserAvatar userId={userId} styles={styles} />
+            <View style={styles.userDetails}>
+              <Text style={styles.userName}>{displayUserId}</Text>
+              <Text style={styles.timestamp}>
+                {formatTimestamp(timestamp)} • Zip {item.zip || userZip}
+              </Text>
+            </View>
           </View>
+          <PrayerItemBadges isRecent={isRecent} styles={styles} />
         </View>
-        <PrayerItemBadges isRecent={isRecent} styles={styles} />
-      </View>
 
-      <PrayerItemContent
-        prayerText={prayerText}
-        onReadMore={handleReadMore}
-        styles={styles}
-      />
-    </TouchableOpacity>
-  );
-});
+        <PrayerItemContent
+          prayerText={prayerText}
+          onReadMore={handleReadMore}
+          styles={styles}
+        />
+      </TouchableOpacity>
+    );
+  }
+);
 
-PrayerItem.displayName = 'PrayerItem';
+PrayerItem.displayName = "PrayerItem";
 
 const EmptyState = React.memo(({ userZip, navigation, styles }) => (
   <View style={styles.emptyState}>
@@ -250,7 +257,7 @@ const EmptyState = React.memo(({ userZip, navigation, styles }) => (
   </View>
 ));
 
-EmptyState.displayName = 'EmptyState';
+EmptyState.displayName = "EmptyState";
 
 const ErrorState = React.memo(({ error, onRetry, styles }) => (
   <View style={styles.errorState}>
@@ -262,65 +269,65 @@ const ErrorState = React.memo(({ error, onRetry, styles }) => (
   </View>
 ));
 
-ErrorState.displayName = 'ErrorState';
+ErrorState.displayName = "ErrorState";
 
 // Enhanced PrayerModal with user ID display
-const PrayerModal = React.memo(({ 
-  visible, 
-  prayer, 
-  onClose, 
-  styles, 
-  formatTimestamp 
-}) => {
-  if (!prayer) return null;
+const PrayerModal = React.memo(
+  ({ visible, prayer, onClose, styles, formatTimestamp }) => {
+    if (!prayer) return null;
 
-  const userId = prayer.userId || prayer.user_id || "Anonymous";
-  const displayUserId = userId === "Anonymous" ? "Anonymous User" : userId;
+    const userId = prayer.userId || prayer.user_id || "Anonymous";
+    const displayUserId = userId === "Anonymous" ? "Anonymous User" : userId;
 
-  return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Prayer Request</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.modalBody}>
-            <View style={styles.modalPrayerHeader}>
-              <View style={styles.modalUserInfo}>
-                <UserAvatar userId={userId} styles={styles} />
-                <View style={styles.modalUserDetails}>
-                  <Text style={styles.modalUserName}>{displayUserId}</Text>
-                  <Text style={styles.modalTimestamp}>
-                    {formatTimestamp(prayer.createdAt || prayer.created_at)}
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.modalPrayerId}>Prayer ID: {prayer.id}</Text>
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={visible}
+        onRequestClose={onClose}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Prayer Request</Text>
+              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                <Text style={styles.closeButtonText}>✕</Text>
+              </TouchableOpacity>
             </View>
 
-            <Text style={styles.modalPrayerText}>
-              {prayer.prayerText || prayer.prayer || prayer.text || "Prayer request"}
-            </Text>
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
-  );
-});
+            <ScrollView style={styles.modalBody}>
+              <View style={styles.modalPrayerHeader}>
+                <View style={styles.modalUserInfo}>
+                  <UserAvatar userId={userId} styles={styles} />
+                  <View style={styles.modalUserDetails}>
+                    <Text style={styles.modalUserName}>{displayUserId}</Text>
+                    <Text style={styles.modalTimestamp}>
+                      {formatTimestamp(prayer.createdAt || prayer.created_at)}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.modalPrayerId}>Prayer ID: {prayer.id}</Text>
+              </View>
 
-PrayerModal.displayName = 'PrayerModal';
+              <Text style={styles.modalPrayerText}>
+                {prayer.prayerText ||
+                  prayer.prayer ||
+                  prayer.text ||
+                  "Prayer request"}
+              </Text>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+);
+
+PrayerModal.displayName = "PrayerModal";
 
 const RequestsScreen = React.memo(({ navigation }) => {
-  const { colors, typography, spacing, borderRadius, shadows, isDark } = useTheme();
+  const { colors, typography, spacing, borderRadius, shadows, isDark } =
+    useTheme();
 
   // State management
   const [prayers, setPrayers] = useState([]);
@@ -362,95 +369,97 @@ const RequestsScreen = React.memo(({ navigation }) => {
   }, []);
 
   // Fetch prayers from database with real-time capabilities
-  const fetchPrayersFromDatabase = useCallback(async (
-    showLoading = true,
-    isBackgroundFetch = false
-  ) => {
-    try {
-      if (showLoading && !isBackgroundFetch) setIsLoading(true);
-      if (!isBackgroundFetch) setError("");
-
-      console.log(
-        `[RealTime] Fetching prayers - Background: ${isBackgroundFetch}`
-      );
-
-      const userData = await userUtils.getUserData();
-
-      if (!userData.zip) {
-        if (!isBackgroundFetch) {
-          setError(
-            "Please set your zip code in Settings to view local prayers"
-          );
-        }
-        return;
-      }
-
-      setUserZip(userData.zip);
-
-      console.log(`[RealTime] Fetching prayers for zip: ${userData.zip}`);
-      const response = await prayerAPI.getByZip(userData.zip);
-
-      console.log(`[RealTime] API Response:`, response);
-
-      let prayersData = [];
-      if (Array.isArray(response)) {
-        prayersData = response;
-      } else if (response.data && Array.isArray(response.data)) {
-        prayersData = response.data;
-      } else if (response && typeof response === "object") {
-        prayersData = [response];
-      }
-
-      if (prayersData.length > 0) {
-        const currentTime = new Date().toISOString();
-
-        const sortedPrayers = prayersData.sort((a, b) => {
-          const timeA = new Date(a.createdAt || a.created_at || 0);
-          const timeB = new Date(b.createdAt || b.created_at || 0);
-          return timeB - timeA;
-        });
-
-        if (lastFetchTimeRef.current && isRealTimeActive) {
-          const newPrayers = sortedPrayers.filter((prayer) => {
-            const prayerTime = new Date(prayer.createdAt || prayer.created_at);
-            return prayerTime > new Date(lastFetchTimeRef.current);
-          });
-
-          if (newPrayers.length > 0 && !isBackgroundFetch) {
-            setNewPrayersCount((prev) => prev + newPrayers.length);
-            console.log(`[RealTime] Found ${newPrayers.length} new prayers`);
-          }
-        }
-
-        if (mountedRef.current) {
-          setPrayers(sortedPrayers);
-          setLastUpdateTime(currentTime);
-          lastFetchTimeRef.current = currentTime;
-        }
+  const fetchPrayersFromDatabase = useCallback(
+    async (showLoading = true, isBackgroundFetch = false) => {
+      try {
+        if (showLoading && !isBackgroundFetch) setIsLoading(true);
+        if (!isBackgroundFetch) setError("");
 
         console.log(
-          `[RealTime] Loaded ${sortedPrayers.length} prayers for zip ${userData.zip}`
+          `[RealTime] Fetching prayers - Background: ${isBackgroundFetch}`
         );
-      } else {
-        if (mountedRef.current) {
+
+        const userData = await userUtils.getUserData();
+
+        if (!userData.zip) {
+          if (!isBackgroundFetch) {
+            setError(
+              "Please set your zip code in Settings to view local prayers"
+            );
+          }
+          return;
+        }
+
+        setUserZip(userData.zip);
+
+        console.log(`[RealTime] Fetching prayers for zip: ${userData.zip}`);
+        const response = await prayerAPI.getByZip(userData.zip);
+
+        console.log(`[RealTime] API Response:`, response);
+
+        let prayersData = [];
+        if (Array.isArray(response)) {
+          prayersData = response;
+        } else if (response.data && Array.isArray(response.data)) {
+          prayersData = response.data;
+        } else if (response && typeof response === "object") {
+          prayersData = [response];
+        }
+
+        if (prayersData.length > 0) {
+          const currentTime = new Date().toISOString();
+
+          const sortedPrayers = prayersData.sort((a, b) => {
+            const timeA = new Date(a.createdAt || a.created_at || 0);
+            const timeB = new Date(b.createdAt || b.created_at || 0);
+            return timeB - timeA;
+          });
+
+          if (lastFetchTimeRef.current && isRealTimeActive) {
+            const newPrayers = sortedPrayers.filter((prayer) => {
+              const prayerTime = new Date(
+                prayer.createdAt || prayer.created_at
+              );
+              return prayerTime > new Date(lastFetchTimeRef.current);
+            });
+
+            if (newPrayers.length > 0 && !isBackgroundFetch) {
+              setNewPrayersCount((prev) => prev + newPrayers.length);
+              console.log(`[RealTime] Found ${newPrayers.length} new prayers`);
+            }
+          }
+
+          if (mountedRef.current) {
+            setPrayers(sortedPrayers);
+            setLastUpdateTime(currentTime);
+            lastFetchTimeRef.current = currentTime;
+          }
+
+          console.log(
+            `[RealTime] Loaded ${sortedPrayers.length} prayers for zip ${userData.zip}`
+          );
+        } else {
+          if (mountedRef.current) {
+            setPrayers([]);
+          }
+          console.log(`[RealTime] No prayers found for zip ${userData.zip}`);
+        }
+      } catch (error) {
+        console.error("[RealTime] Failed to fetch prayers:", error);
+
+        if (!isBackgroundFetch && mountedRef.current) {
+          setError(errorHandler.getErrorMessage(error));
           setPrayers([]);
         }
-        console.log(`[RealTime] No prayers found for zip ${userData.zip}`);
+      } finally {
+        if (!isBackgroundFetch && mountedRef.current) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
       }
-    } catch (error) {
-      console.error("[RealTime] Failed to fetch prayers:", error);
-
-      if (!isBackgroundFetch && mountedRef.current) {
-        setError(errorHandler.getErrorMessage(error));
-        setPrayers([]);
-      }
-    } finally {
-      if (!isBackgroundFetch && mountedRef.current) {
-        setIsLoading(false);
-        setIsRefreshing(false);
-      }
-    }
-  }, [isRealTimeActive]);
+    },
+    [isRealTimeActive]
+  );
 
   // Setup real-time polling
   const startRealTimePolling = useCallback(() => {
@@ -558,24 +567,31 @@ const RequestsScreen = React.memo(({ navigation }) => {
   }, []);
 
   // FlatList optimization callbacks
-  const renderPrayerItem = useCallback(({ item, index }) => (
-    <PrayerItem
-      item={item}
-      index={index}
-      userZip={userZip}
-      lastFetchTime={lastFetchTimeRef.current}
-      onPress={handlePrayerPress}
-      styles={styles}
-      formatTimestamp={formatTimestamp}
-    />
-  ), [userZip, handlePrayerPress, formatTimestamp]);
+  const renderPrayerItem = useCallback(
+    ({ item, index }) => (
+      <PrayerItem
+        item={item}
+        index={index}
+        userZip={userZip}
+        lastFetchTime={lastFetchTimeRef.current}
+        onPress={handlePrayerPress}
+        styles={styles}
+        formatTimestamp={formatTimestamp}
+      />
+    ),
+    [userZip, handlePrayerPress, formatTimestamp]
+  );
 
-  const keyExtractor = useCallback((item, index) =>
-    `${item.id || item._id || index}-${item.timestamp || index}`,
+  const keyExtractor = useCallback(
+    (item, index) =>
+      `${item.id || item._id || index}-${item.timestamp || index}`,
     []
   );
 
-  const renderSeparator = useCallback(() => <View style={styles.separator} />, []);
+  const renderSeparator = useCallback(
+    () => <View style={styles.separator} />,
+    []
+  );
 
   // Component mount and cleanup
   useEffect(() => {
@@ -629,474 +645,508 @@ const RequestsScreen = React.memo(({ navigation }) => {
   }, [navigation, stopRealTimePolling, fetchPrayersFromDatabase]);
 
   // Memoized styles for performance
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background.dark,
-      paddingTop: StatusBar.currentHeight || 0,
-    },
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: colors.background.dark,
+          paddingTop: StatusBar.currentHeight || 0,
+        },
 
-    header: {
-      paddingHorizontal: spacing[6],
-      paddingVertical: spacing[5],
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      backgroundColor: colors.background.glassDark,
-    },
+        header: {
+          paddingHorizontal: spacing[6],
+          paddingVertical: spacing[5],
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          backgroundColor: colors.background.glassDark,
+        },
 
-    titleContainer: {
-      flex: 1,
-    },
+        titleContainer: {
+          flex: 1,
+        },
 
-    title: {
-      color: colors.text.primary,
-      fontWeight: typography.fontWeights.bold,
-      fontSize: typography.fontSizes['2xl'],
-      marginBottom: spacing[1],
-      textShadowColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'transparent',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
-    },
+        title: {
+          color: colors.text.primary,
+          fontWeight: typography.fontWeights.bold,
+          fontSize: typography.fontSizes["2xl"],
+          marginBottom: spacing[1],
+          textShadowColor: isDark ? "rgba(0, 0, 0, 0.5)" : "transparent",
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: 2,
+        },
 
-    subtitle: {
-      color: colors.text.secondary,
-      fontSize: typography.fontSizes.base,
-      fontWeight: typography.fontWeights.medium,
-    },
+        subtitle: {
+          color: colors.text.secondary,
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.medium,
+        },
 
-    realTimeToggle: {
-      backgroundColor: colors.background.glassMedium,
-      borderWidth: 1,
-      borderColor: colors.border.light,
-      paddingHorizontal: spacing[3],
-      paddingVertical: spacing[2],
-      borderRadius: borderRadius.full,
-    },
+        realTimeToggle: {
+          backgroundColor: colors.background.glassMedium,
+          borderWidth: 1,
+          borderColor: colors.border.light,
+          paddingHorizontal: spacing[3],
+          paddingVertical: spacing[2],
+          borderRadius: borderRadius.full,
+        },
 
-    realTimeToggleText: {
-      color: colors.text.primary,
-      fontSize: typography.fontSizes.xs,
-      fontWeight: typography.fontWeights.bold,
-      letterSpacing: typography.letterSpacing.wide,
-    },
+        realTimeToggleText: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.xs,
+          fontWeight: typography.fontWeights.bold,
+          letterSpacing: typography.letterSpacing.wide,
+        },
 
-    realTimeStatus: {
-      paddingHorizontal: spacing[6],
-      paddingVertical: spacing[3],
-      backgroundColor: colors.background.glassDark,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border.light,
-    },
+        realTimeStatus: {
+          paddingHorizontal: spacing[6],
+          paddingVertical: spacing[3],
+          backgroundColor: colors.background.glassDark,
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border.light,
+        },
 
-    statusContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
+        statusContainer: {
+          flexDirection: "row",
+          alignItems: "center",
+        },
 
-    statusDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      marginRight: spacing[2],
-    },
+        statusDot: {
+          width: 8,
+          height: 8,
+          borderRadius: 4,
+          marginRight: spacing[2],
+        },
 
-    statusText: {
-      color: colors.text.secondary,
-      fontSize: typography.fontSizes.sm,
-      fontWeight: typography.fontWeights.medium,
-      marginRight: spacing[3],
-    },
+        statusText: {
+          color: colors.text.secondary,
+          fontSize: typography.fontSizes.sm,
+          fontWeight: typography.fontWeights.medium,
+          marginRight: spacing[3],
+        },
 
-    lastUpdateText: {
-      color: colors.text.secondary,
-      fontSize: typography.fontSizes.xs,
-      opacity: 0.8,
-    },
+        lastUpdateText: {
+          color: colors.text.secondary,
+          fontSize: typography.fontSizes.xs,
+          opacity: 0.8,
+        },
 
-    newPrayersNotification: {
-      backgroundColor: colors.emergency[500],
-      paddingHorizontal: spacing[3],
-      paddingVertical: spacing[1],
-      borderRadius: borderRadius.full,
-      ...shadows.base,
-    },
+        newPrayersNotification: {
+          backgroundColor: colors.emergency[500],
+          paddingHorizontal: spacing[3],
+          paddingVertical: spacing[1],
+          borderRadius: borderRadius.full,
+          ...shadows.base,
+        },
 
-    newPrayersText: {
-      color: '#ffffff',
-      fontSize: typography.fontSizes.xs,
-      fontWeight: typography.fontWeights.bold,
-    },
+        newPrayersText: {
+          color: "#ffffff",
+          fontSize: typography.fontSizes.xs,
+          fontWeight: typography.fontWeights.bold,
+        },
 
-    content: {
-      flex: 1,
-      marginHorizontal: spacing[3],
-    },
+        myPrayersButton: {
+          backgroundColor: colors.background.glassMedium,
+          borderWidth: 1,
+          borderColor: colors.border.light,
+          paddingVertical: spacing[4],
+          paddingHorizontal: spacing[8],
+          borderRadius: borderRadius.md,
+          alignItems: "center",
+          marginBottom: spacing[4],
+          ...shadows.base,
+        },
 
-    loadingContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingHorizontal: spacing[6],
-    },
+        myPrayersButtonText: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.semibold,
+          letterSpacing: typography.letterSpacing.wide,
+        },
 
-    loadingText: {
-      color: colors.text.primary,
-      marginTop: spacing[4],
-      fontSize: typography.fontSizes.lg,
-      fontWeight: typography.fontWeights.medium,
-      textAlign: 'center',
-    },
+        content: {
+          flex: 1,
+          marginHorizontal: spacing[3],
+        },
 
-    feedContainer: {
-      paddingBottom: spacing[6],
-    },
+        loadingContainer: {
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingHorizontal: spacing[6],
+        },
 
-    prayerItem: {
-      backgroundColor: colors.background.card,
-      marginHorizontal: spacing[3],
-      marginVertical: spacing[2],
-      borderRadius: borderRadius.lg,
-      padding: spacing[5],
-      ...shadows.md,
-      borderWidth: 1,
-      borderColor: colors.border.light,
-    },
+        loadingText: {
+          color: colors.text.primary,
+          marginTop: spacing[4],
+          fontSize: typography.fontSizes.lg,
+          fontWeight: typography.fontWeights.medium,
+          textAlign: "center",
+        },
 
-    recentPrayerItem: {
-      borderLeftWidth: 4,
-      borderLeftColor: colors.success[500],
-      backgroundColor: colors.background.card,
-      ...shadows.lg,
-    },
+        feedContainer: {
+          paddingBottom: spacing[6],
+        },
 
-    prayerHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      marginBottom: spacing[4],
-    },
+        prayerItem: {
+          backgroundColor: colors.background.card,
+          marginHorizontal: spacing[3],
+          marginVertical: spacing[2],
+          borderRadius: borderRadius.lg,
+          padding: spacing[5],
+          ...shadows.md,
+          borderWidth: 1,
+          borderColor: colors.border.light,
+        },
 
-    userInfo: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flex: 1,
-    },
+        recentPrayerItem: {
+          borderLeftWidth: 4,
+          borderLeftColor: colors.success[500],
+          backgroundColor: colors.background.card,
+          ...shadows.lg,
+        },
 
-    avatar: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: spacing[3],
-      ...shadows.sm,
-    },
+        prayerHeader: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: spacing[4],
+        },
 
-    avatarText: {
-      fontSize: typography.fontSizes.base,
-      fontWeight: typography.fontWeights.bold,
-    },
+        userInfo: {
+          flexDirection: "row",
+          alignItems: "center",
+          flex: 1,
+        },
 
-    userDetails: {
-      flex: 1,
-    },
+        avatar: {
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          justifyContent: "center",
+          alignItems: "center",
+          marginRight: spacing[3],
+          ...shadows.sm,
+        },
 
-    userName: {
-      fontWeight: typography.fontWeights.semibold,
-      fontSize: typography.fontSizes.base,
-      color: colors.text.primary,
-      marginBottom: spacing[1],
-    },
+        avatarText: {
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.bold,
+        },
 
-    timestamp: {
-      fontSize: typography.fontSizes.sm,
-      color: colors.text.secondary,
-      fontWeight: typography.fontWeights.medium,
-    },
+        userDetails: {
+          flex: 1,
+        },
 
-    badges: {
-      alignItems: 'flex-end',
-      gap: spacing[2],
-    },
+        userName: {
+          fontWeight: typography.fontWeights.semibold,
+          fontSize: typography.fontSizes.base,
+          color: colors.text.primary,
+          marginBottom: spacing[1],
+        },
 
-    newBadge: {
-      backgroundColor: colors.success[500],
-      paddingHorizontal: spacing[2],
-      paddingVertical: spacing[1],
-      borderRadius: borderRadius.sm,
-      ...shadows.sm,
-    },
+        timestamp: {
+          fontSize: typography.fontSizes.sm,
+          color: colors.text.secondary,
+          fontWeight: typography.fontWeights.medium,
+        },
 
-    newBadgeText: {
-      color: '#ffffff',
-      fontSize: typography.fontSizes.xs,
-      fontWeight: typography.fontWeights.bold,
-      letterSpacing: typography.letterSpacing.wide,
-    },
+        badges: {
+          alignItems: "flex-end",
+          gap: spacing[2],
+        },
 
-    prayerBadge: {
-      backgroundColor: colors.emergency[500],
-      paddingHorizontal: spacing[3],
-      paddingVertical: spacing[1],
-      borderRadius: borderRadius.full,
-      ...shadows.sm,
-    },
+        newBadge: {
+          backgroundColor: colors.success[500],
+          paddingHorizontal: spacing[2],
+          paddingVertical: spacing[1],
+          borderRadius: borderRadius.sm,
+          ...shadows.sm,
+        },
 
-    prayerBadgeText: {
-      color: '#ffffff',
-      fontSize: typography.fontSizes.xs,
-      fontWeight: typography.fontWeights.semibold,
-    },
+        newBadgeText: {
+          color: "#ffffff",
+          fontSize: typography.fontSizes.xs,
+          fontWeight: typography.fontWeights.bold,
+          letterSpacing: typography.letterSpacing.wide,
+        },
 
-    prayerContent: {
-      marginBottom: spacing[4],
-    },
+        prayerBadge: {
+          backgroundColor: colors.emergency[500],
+          paddingHorizontal: spacing[3],
+          paddingVertical: spacing[1],
+          borderRadius: borderRadius.full,
+          ...shadows.sm,
+        },
 
-    prayerText: {
-      fontSize: typography.fontSizes.base,
-      lineHeight: typography.lineHeights.normal,
-      color: colors.text.primary,
-      fontWeight: typography.fontWeights.normal,
-    },
+        prayerBadgeText: {
+          color: "#ffffff",
+          fontSize: typography.fontSizes.xs,
+          fontWeight: typography.fontWeights.semibold,
+        },
 
-    readMore: {
-      color: colors.primary[600],
-      fontSize: typography.fontSizes.sm,
-      marginTop: spacing[2],
-      fontWeight: typography.fontWeights.semibold,
-    },
+        prayerContent: {
+          marginBottom: spacing[4],
+        },
 
-    separator: {
-      height: 1,
-      backgroundColor: 'transparent',
-    },
+        prayerText: {
+          fontSize: typography.fontSizes.base,
+          lineHeight: typography.lineHeights.normal,
+          color: colors.text.primary,
+          fontWeight: typography.fontWeights.normal,
+        },
 
-    emptyState: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingHorizontal: spacing[10],
-    },
+        readMore: {
+          color: colors.primary[600],
+          fontSize: typography.fontSizes.sm,
+          marginTop: spacing[2],
+          fontWeight: typography.fontWeights.semibold,
+        },
 
-    emptyStateTitle: {
-      color: colors.text.primary,
-      fontSize: typography.fontSizes['2xl'],
-      fontWeight: typography.fontWeights.bold,
-      textAlign: 'center',
-      marginBottom: spacing[4],
-      textShadowColor: isDark ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
-    },
+        separator: {
+          height: 1,
+          backgroundColor: "transparent",
+        },
 
-    emptyStateText: {
-      color: colors.text.secondary,
-      fontSize: typography.fontSizes.base,
-      textAlign: 'center',
-      lineHeight: typography.lineHeights.normal,
-      marginBottom: spacing[6],
-      fontWeight: typography.fontWeights.medium,
-    },
+        emptyState: {
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingHorizontal: spacing[10],
+        },
 
-    settingsButton: {
-      backgroundColor: colors.primary[500],
-      paddingVertical: spacing[3],
-      paddingHorizontal: spacing[6],
-      borderRadius: borderRadius.md,
-      ...shadows.base,
-    },
+        emptyStateTitle: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes["2xl"],
+          fontWeight: typography.fontWeights.bold,
+          textAlign: "center",
+          marginBottom: spacing[4],
+          textShadowColor: isDark ? "rgba(0, 0, 0, 0.3)" : "transparent",
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: 2,
+        },
 
-    settingsButtonText: {
-      color: '#ffffff',
-      fontSize: typography.fontSizes.base,
-      fontWeight: typography.fontWeights.semibold,
-    },
+        emptyStateText: {
+          color: colors.text.secondary,
+          fontSize: typography.fontSizes.base,
+          textAlign: "center",
+          lineHeight: typography.lineHeights.normal,
+          marginBottom: spacing[6],
+          fontWeight: typography.fontWeights.medium,
+        },
 
-    errorState: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingHorizontal: spacing[10],
-    },
+        settingsButton: {
+          backgroundColor: colors.primary[500],
+          paddingVertical: spacing[3],
+          paddingHorizontal: spacing[6],
+          borderRadius: borderRadius.md,
+          ...shadows.base,
+        },
 
-    errorStateTitle: {
-      color: colors.text.primary,
-      fontSize: typography.fontSizes['2xl'],
-      fontWeight: typography.fontWeights.bold,
-      textAlign: 'center',
-      marginBottom: spacing[4],
-    },
+        settingsButtonText: {
+          color: "#ffffff",
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.semibold,
+        },
 
-    errorStateText: {
-      color: colors.text.secondary,
-      fontSize: typography.fontSizes.base,
-      textAlign: 'center',
-      lineHeight: typography.lineHeights.normal,
-      marginBottom: spacing[6],
-    },
+        errorState: {
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          paddingHorizontal: spacing[10],
+        },
 
-    retryButton: {
-      backgroundColor: colors.success[500],
-      paddingVertical: spacing[3],
-      paddingHorizontal: spacing[6],
-      borderRadius: borderRadius.md,
-      ...shadows.base,
-    },
+        errorStateTitle: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes["2xl"],
+          fontWeight: typography.fontWeights.bold,
+          textAlign: "center",
+          marginBottom: spacing[4],
+        },
 
-    retryButtonText: {
-      color: '#ffffff',
-      fontSize: typography.fontSizes.base,
-      fontWeight: typography.fontWeights.semibold,
-    },
+        errorStateText: {
+          color: colors.text.secondary,
+          fontSize: typography.fontSizes.base,
+          textAlign: "center",
+          lineHeight: typography.lineHeights.normal,
+          marginBottom: spacing[6],
+        },
 
-    bottomSection: {
-      padding: spacing[6],
-      paddingTop: spacing[4],
-    },
+        retryButton: {
+          backgroundColor: colors.success[500],
+          paddingVertical: spacing[3],
+          paddingHorizontal: spacing[6],
+          borderRadius: borderRadius.md,
+          ...shadows.base,
+        },
 
-    backButton: {
-      backgroundColor: colors.background.glassMedium,
-      borderWidth: 1,
-      borderColor: colors.border.light,
-      paddingVertical: spacing[4],
-      paddingHorizontal: spacing[8],
-      borderRadius: borderRadius.md,
-      alignItems: 'center',
-      ...shadows.base,
-    },
+        retryButtonText: {
+          color: "#ffffff",
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.semibold,
+        },
 
-    backButtonText: {
-      color: colors.text.primary,
-      fontSize: typography.fontSizes.base,
-      fontWeight: typography.fontWeights.semibold,
-      letterSpacing: typography.letterSpacing.wide,
-    },
+        bottomSection: {
+          padding: spacing[6],
+          paddingTop: spacing[4],
+        },
 
-    // Modal styles
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
+        backButton: {
+          backgroundColor: colors.background.glassMedium,
+          borderWidth: 1,
+          borderColor: colors.border.light,
+          paddingVertical: spacing[4],
+          paddingHorizontal: spacing[8],
+          borderRadius: borderRadius.md,
+          alignItems: "center",
+          ...shadows.base,
+        },
 
-    modalContent: {
-      backgroundColor: colors.background.card,
-      marginHorizontal: spacing[6],
-      borderRadius: borderRadius.xl,
-      maxHeight: '85%',
-      width: '90%',
-      ...shadows.xl,
-    },
+        backButtonText: {
+          color: colors.text.primary,
+          fontSize: typography.fontSizes.base,
+          fontWeight: typography.fontWeights.semibold,
+          letterSpacing: typography.letterSpacing.wide,
+        },
 
-    modalHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: spacing[6],
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border.light,
-    },
+        // Modal styles
+        modalOverlay: {
+          flex: 1,
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          justifyContent: "center",
+          alignItems: "center",
+        },
 
-    modalTitle: {
-      fontSize: typography.fontSizes.xl,
-      fontWeight: typography.fontWeights.bold,
-      color: colors.text.primary,
-    },
+        modalContent: {
+          backgroundColor: colors.background.card,
+          marginHorizontal: spacing[6],
+          borderRadius: borderRadius.xl,
+          maxHeight: "85%",
+          width: "90%",
+          ...shadows.xl,
+        },
 
-    closeButton: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: colors.background.secondary,
-      justifyContent: 'center',
-      alignItems: 'center',
-      ...shadows.sm,
-    },
+        modalHeader: {
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: spacing[6],
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border.light,
+        },
 
-    closeButtonText: {
-      fontSize: typography.fontSizes.lg,
-      color: colors.text.secondary,
-      fontWeight: typography.fontWeights.bold,
-    },
+        modalTitle: {
+          fontSize: typography.fontSizes.xl,
+          fontWeight: typography.fontWeights.bold,
+          color: colors.text.primary,
+        },
 
-    modalBody: {
-      padding: spacing[6],
-    },
+        closeButton: {
+          width: 36,
+          height: 36,
+          borderRadius: 18,
+          backgroundColor: colors.background.secondary,
+          justifyContent: "center",
+          alignItems: "center",
+          ...shadows.sm,
+        },
 
-    modalPrayerHeader: {
-      marginBottom: spacing[5],
-      paddingBottom: spacing[4],
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border.light,
-    },
+        closeButtonText: {
+          fontSize: typography.fontSizes.lg,
+          color: colors.text.secondary,
+          fontWeight: typography.fontWeights.bold,
+        },
 
-    modalUserInfo: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: spacing[3],
-    },
+        modalBody: {
+          padding: spacing[6],
+        },
 
-    modalUserDetails: {
-      marginLeft: spacing[3],
-      flex: 1,
-    },
+        modalPrayerHeader: {
+          marginBottom: spacing[5],
+          paddingBottom: spacing[4],
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border.light,
+        },
 
-    modalUserName: {
-      fontSize: typography.fontSizes.lg,
-      fontWeight: typography.fontWeights.semibold,
-      color: colors.text.primary,
-      marginBottom: spacing[1],
-    },
+        modalUserInfo: {
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: spacing[3],
+        },
 
-    modalTimestamp: {
-      fontSize: typography.fontSizes.base,
-      color: colors.text.secondary,
-      fontWeight: typography.fontWeights.medium,
-    },
+        modalUserDetails: {
+          marginLeft: spacing[3],
+          flex: 1,
+        },
 
-    modalPrayerId: {
-      fontSize: typography.fontSizes.sm,
-      color: colors.text.tertiary,
-      fontStyle: 'italic',
-    },
+        modalUserName: {
+          fontSize: typography.fontSizes.lg,
+          fontWeight: typography.fontWeights.semibold,
+          color: colors.text.primary,
+          marginBottom: spacing[1],
+        },
 
-    modalPrayerText: {
-      fontSize: typography.fontSizes.lg,
-      lineHeight: typography.lineHeights.relaxed,
-      color: colors.text.primary,
-      marginBottom: spacing[6],
-      fontWeight: typography.fontWeights.normal,
-    },
-  }), [colors, typography, spacing, borderRadius, shadows, isDark]);
+        modalTimestamp: {
+          fontSize: typography.fontSizes.base,
+          color: colors.text.secondary,
+          fontWeight: typography.fontWeights.medium,
+        },
+
+        modalPrayerId: {
+          fontSize: typography.fontSizes.sm,
+          color: colors.text.tertiary,
+          fontStyle: "italic",
+        },
+
+        modalPrayerText: {
+          fontSize: typography.fontSizes.lg,
+          lineHeight: typography.lineHeights.relaxed,
+          color: colors.text.primary,
+          marginBottom: spacing[6],
+          fontWeight: typography.fontWeights.normal,
+        },
+      }),
+    [colors, typography, spacing, borderRadius, shadows, isDark]
+  );
 
   // Render real-time status indicator
-  const renderRealTimeStatus = useCallback(() => (
-    <View style={styles.realTimeStatus}>
-      <StatusIndicator
-        isActive={isRealTimeActive}
-        lastUpdate={lastUpdateTime}
-        colors={colors}
-        styles={styles}
-        formatTimestamp={formatTimestamp}
-      />
+  const renderRealTimeStatus = useCallback(
+    () => (
+      <View style={styles.realTimeStatus}>
+        <StatusIndicator
+          isActive={isRealTimeActive}
+          lastUpdate={lastUpdateTime}
+          colors={colors}
+          styles={styles}
+          formatTimestamp={formatTimestamp}
+        />
 
-      <NewPrayersNotification
-        count={newPrayersCount}
-        onClear={clearNewPrayersNotification}
-        styles={styles}
-      />
-    </View>
-  ), [isRealTimeActive, lastUpdateTime, newPrayersCount, colors, styles, formatTimestamp, clearNewPrayersNotification]);
+        <NewPrayersNotification
+          count={newPrayersCount}
+          onClear={clearNewPrayersNotification}
+          styles={styles}
+        />
+      </View>
+    ),
+    [
+      isRealTimeActive,
+      lastUpdateTime,
+      newPrayersCount,
+      colors,
+      styles,
+      formatTimestamp,
+      clearNewPrayersNotification,
+    ]
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar 
-        barStyle={isDark ? "light-content" : "dark-content"} 
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
         backgroundColor={colors.background.dark}
       />
 
@@ -1104,11 +1154,10 @@ const RequestsScreen = React.memo(({ navigation }) => {
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Local Prayer Requests</Text>
-          {userZip && (
-            <Text style={styles.subtitle}>{userZip}</Text>
-          )}
+          {userZip && <Text style={styles.subtitle}>{userZip}</Text>}
         </View>
 
+        {/* Real-time Toggle */}
         <RealTimeToggle
           isActive={isRealTimeActive}
           onToggle={toggleRealTimeUpdates}
@@ -1131,7 +1180,11 @@ const RequestsScreen = React.memo(({ navigation }) => {
         ) : error && prayers.length === 0 ? (
           <ErrorState error={error} onRetry={handleRetry} styles={styles} />
         ) : prayers.length === 0 ? (
-          <EmptyState userZip={userZip} navigation={navigation} styles={styles} />
+          <EmptyState
+            userZip={userZip}
+            navigation={navigation}
+            styles={styles}
+          />
         ) : (
           <FlatList
             data={prayers}
@@ -1164,6 +1217,13 @@ const RequestsScreen = React.memo(({ navigation }) => {
 
       {/* Bottom Navigation */}
       <View style={styles.bottomSection}>
+        <TouchableOpacity
+          style={styles.myPrayersButton}
+          onPress={() => navigation.navigate("MyPrayers")}
+        >
+          <Text style={styles.myPrayersButtonText}>MY PRAYERS</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.backButton} onPress={handleBackPressed}>
           <Text style={styles.backButtonText}>BACK TO HOME</Text>
         </TouchableOpacity>
@@ -1181,6 +1241,6 @@ const RequestsScreen = React.memo(({ navigation }) => {
   );
 });
 
-RequestsScreen.displayName = 'RequestsScreen';
+RequestsScreen.displayName = "RequestsScreen";
 
 export default RequestsScreen;

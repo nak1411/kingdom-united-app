@@ -3,7 +3,13 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { View, ActivityIndicator, Text, StatusBar, AppState } from "react-native";
+import {
+  View,
+  ActivityIndicator,
+  Text,
+  StatusBar,
+  AppState,
+} from "react-native";
 
 // Import Theme Provider
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
@@ -15,30 +21,35 @@ import SosScreen from "./screens/SosScreen.js";
 import RequestsScreen from "./screens/RequestsScreen.js";
 import SettingsScreen from "./screens/SettingsScreen.js";
 import WarriorBookScreen from "./screens/WarriorBookScreen.js";
+import MyPrayersScreen from "./screens/MyPrayersScreen.js";
 
 const Stack = createNativeStackNavigator();
 
 // Memoized loading component to prevent unnecessary re-renders
 const LoadingScreen = React.memo(({ message = "Loading...", colors }) => (
-  <View style={{
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background.dark,
-  }}>
+  <View
+    style={{
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: colors.background.dark,
+    }}
+  >
     <ActivityIndicator size="large" color={colors.primary[500]} />
-    <Text style={{
-      marginTop: 16,
-      color: colors.text.primary,
-      fontSize: 16,
-      fontWeight: '500',
-    }}>
+    <Text
+      style={{
+        marginTop: 16,
+        color: colors.text.primary,
+        fontSize: 16,
+        fontWeight: "500",
+      }}
+    >
       {message}
     </Text>
   </View>
 ));
 
-LoadingScreen.displayName = 'LoadingScreen';
+LoadingScreen.displayName = "LoadingScreen";
 
 // Cache for onboarding status to reduce AsyncStorage calls
 let onboardingCache = null;
@@ -56,44 +67,51 @@ const AppContent = React.memo(() => {
   const checkOnboardingStatus = useCallback(async (forceRefresh = false) => {
     try {
       const now = Date.now();
-      
+
       // Use cache if available and not forced refresh
-      if (!forceRefresh && 
-          onboardingCache !== null && 
-          (now - cacheTimestamp) < CACHE_DURATION) {
+      if (
+        !forceRefresh &&
+        onboardingCache !== null &&
+        now - cacheTimestamp < CACHE_DURATION
+      ) {
         setIsOnboarded(onboardingCache);
         return;
       }
 
       const onboardedValue = await AsyncStorage.getItem("onboarded");
-      console.log('Onboarding status:', onboardedValue);
-      
+      console.log("Onboarding status:", onboardedValue);
+
       const isOnboardedValue = onboardedValue === "true";
       setIsOnboarded(isOnboardedValue);
-      
+
       // Update cache
       onboardingCache = isOnboardedValue;
       cacheTimestamp = now;
-      
     } catch (error) {
-      console.error('Failed to check onboarding status:', error);
+      console.error("Failed to check onboarding status:", error);
       setIsOnboarded(false);
       // Don't cache errors
     }
   }, []);
 
   // Handle app state changes for cache invalidation
-  const handleAppStateChange = useCallback((nextAppState) => {
-    if (appState.match(/inactive|background/) && nextAppState === 'active') {
-      // App came to foreground, check for changes
-      checkOnboardingStatus(true);
-    }
-    setAppState(nextAppState);
-  }, [appState, checkOnboardingStatus]);
+  const handleAppStateChange = useCallback(
+    (nextAppState) => {
+      if (appState.match(/inactive|background/) && nextAppState === "active") {
+        // App came to foreground, check for changes
+        checkOnboardingStatus(true);
+      }
+      setAppState(nextAppState);
+    },
+    [appState, checkOnboardingStatus]
+  );
 
   // Effect for app state listener
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
     return () => subscription?.remove();
   }, [handleAppStateChange]);
 
@@ -109,18 +127,21 @@ const AppContent = React.memo(() => {
   }, [checkOnboardingStatus]);
 
   // Memoized screen options
-  const defaultScreenOptions = useMemo(() => ({
-    headerShown: false,
-    animation: "fade_from_bottom",
-    contentStyle: { backgroundColor: colors.background.dark },
-  }), [colors.background.dark]);
+  const defaultScreenOptions = useMemo(
+    () => ({
+      headerShown: false,
+      animation: "fade_from_bottom",
+      contentStyle: { backgroundColor: colors.background.dark },
+    }),
+    [colors.background.dark]
+  );
 
   // Show loading screen
   if (isLoading) {
     return (
       <>
-        <StatusBar 
-          barStyle={isDark ? "light-content" : "dark-content"} 
+        <StatusBar
+          barStyle={isDark ? "light-content" : "dark-content"}
           backgroundColor={colors.background.dark}
         />
         <LoadingScreen message="Initializing app..." colors={colors} />
@@ -130,53 +151,58 @@ const AppContent = React.memo(() => {
 
   return (
     <NavigationContainer>
-      <StatusBar 
-        barStyle={isDark ? "light-content" : "dark-content"} 
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
         backgroundColor={colors.background.dark}
       />
       <Stack.Navigator screenOptions={defaultScreenOptions}>
-        {!isOnboarded ? (
-          // Show onboarding if user hasn't completed setup
-          <Stack.Screen
-            name="Onboarding"
-            component={OnboardingForm}
-            options={{
-              animation: "none",
-            }}
-          />
-        ) : null}
+  {!isOnboarded ? (
+    // Show onboarding if user hasn't completed setup
+    <Stack.Screen
+      name="Onboarding"
+      component={OnboardingForm}
+      options={{
+        animation: "none",
+      }}
+    />
+  ) : null}
 
-        {/* Main app screens */}
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-        />
+  {/* Main app screens */}
+  <Stack.Screen
+    name="Home"
+    component={HomeScreen}
+  />
 
-        <Stack.Screen
-          name="Sos"
-          component={SosScreen}
-        />
-        
-        <Stack.Screen
-          name="Requests"
-          component={RequestsScreen}
-        />
-        
-        <Stack.Screen
-          name="Settings"
-          component={SettingsScreen}
-        />
+  <Stack.Screen
+    name="Sos"
+    component={SosScreen}
+  />
+  
+  <Stack.Screen
+    name="Requests"
+    component={RequestsScreen}
+  />
+  
+  <Stack.Screen
+    name="Settings"
+    component={SettingsScreen}
+  />
 
-        <Stack.Screen
-          name="WarriorBook"
-          component={WarriorBookScreen}
-        />
-      </Stack.Navigator>
+  <Stack.Screen
+    name="WarriorBook"
+    component={WarriorBookScreen}
+  />
+
+  <Stack.Screen
+    name="MyPrayers"
+    component={MyPrayersScreen}
+  />
+</Stack.Navigator>
     </NavigationContainer>
   );
 });
 
-AppContent.displayName = 'AppContent';
+AppContent.displayName = "AppContent";
 
 // Error Boundary for better error handling
 class AppErrorBoundary extends React.Component {
@@ -190,11 +216,11 @@ class AppErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('App Error Boundary caught an error:', error, errorInfo);
-    
+    console.error("App Error Boundary caught an error:", error, errorInfo);
+
     // Log to crash reporting service if available
     if (__DEV__) {
-      console.error('Error details:', {
+      console.error("Error details:", {
         error: error.toString(),
         stack: error.stack,
         errorInfo,
@@ -205,37 +231,45 @@ class AppErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <View style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: '#2c3e50',
-          padding: 20,
-        }}>
-          <Text style={{
-            color: '#ffffff',
-            fontSize: 18,
-            fontWeight: 'bold',
-            marginBottom: 10,
-            textAlign: 'center',
-          }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#2c3e50",
+            padding: 20,
+          }}
+        >
+          <Text
+            style={{
+              color: "#ffffff",
+              fontSize: 18,
+              fontWeight: "bold",
+              marginBottom: 10,
+              textAlign: "center",
+            }}
+          >
             Something went wrong
           </Text>
-          <Text style={{
-            color: '#e5e7eb',
-            fontSize: 14,
-            textAlign: 'center',
-            marginBottom: 20,
-          }}>
+          <Text
+            style={{
+              color: "#e5e7eb",
+              fontSize: 14,
+              textAlign: "center",
+              marginBottom: 20,
+            }}
+          >
             Please restart the app to continue
           </Text>
           {__DEV__ && (
-            <Text style={{
-              color: '#ef4444',
-              fontSize: 12,
-              textAlign: 'center',
-              fontFamily: 'monospace',
-            }}>
+            <Text
+              style={{
+                color: "#ef4444",
+                fontSize: 12,
+                textAlign: "center",
+                fontFamily: "monospace",
+              }}
+            >
               {this.state.error?.toString()}
             </Text>
           )}
@@ -258,11 +292,11 @@ const App = React.memo(() => {
   );
 });
 
-App.displayName = 'App';
+App.displayName = "App";
 
 // Clear cache on app termination (cleanup)
-if (typeof window !== 'undefined' && window.addEventListener) {
-  window.addEventListener('beforeunload', () => {
+if (typeof window !== "undefined" && window.addEventListener) {
+  window.addEventListener("beforeunload", () => {
     onboardingCache = null;
     cacheTimestamp = 0;
   });

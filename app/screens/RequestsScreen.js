@@ -29,6 +29,12 @@ import { userUtils } from "../utils/user.js";
 import { Dimensions } from "react-native";
 const { width, height } = Dimensions.get("window");
 
+if (prayerAPI) {
+  console.log('prayerAPI.getByZip:', prayerAPI.getByZip);
+  console.log('prayerAPI keys:', Object.keys(prayerAPI));
+}
+console.log('================================');
+
 // Memoized components for better performance
 const RealTimeToggle = React.memo(({ isActive, onToggle, styles }) => (
   <TouchableOpacity style={styles.realTimeToggle} onPress={onToggle}>

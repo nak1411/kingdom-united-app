@@ -1,4 +1,5 @@
 // app/config/api.js - Production hardening updates
+import { Platform, Constants } from 'react-native';
 
 // Add environment detection
 const isProduction = !__DEV__;
@@ -35,7 +36,7 @@ export const API_CONFIG = Object.freeze({
   DEFAULT_HEADERS: Object.freeze({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'User-Agent': `KingdomUnited/${Constants.nativeAppVersion || '1.0.0'}`,
+    'User-Agent': `KingdomUnited/${'1.0.0'}`,
   }),
   
   // Enhanced retry for production

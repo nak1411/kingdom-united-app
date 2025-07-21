@@ -1,9 +1,14 @@
+// app/App.js - Updated with Theme Provider
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect } from "react";
-import { View, ActivityIndicator, Text } from "react-native";
+import { View, ActivityIndicator, Text, StatusBar } from "react-native";
 
+// Import Theme Provider
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
+
+// Import Screens
 import OnboardingForm from "./screens/OnboardingForm.js";
 import HomeScreen from "./screens/HomeScreen.js";
 import SosScreen from "./screens/SosScreen.js";
@@ -13,8 +18,10 @@ import WarriorBookScreen from "./screens/WarriorBookScreen.js";
 
 const Stack = createNativeStackNavigator();
 
-export default function App() {
-  const [isOnboarded, setIsOnboarded] = useState(null); // null = loading, false = not onboarded, true = onboarded
+// Main App Component (wrapped with theme)
+function AppContent() {
+  const { colors, isDark } = useTheme();
+  const [isOnboarded, setIsOnboarded] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const checkOnboardingStatus = async () => {
@@ -22,11 +29,9 @@ export default function App() {
       const onboardedValue = await AsyncStorage.getItem("onboarded");
       console.log('Onboarding status:', onboardedValue);
       
-      // Convert string to boolean
       setIsOnboarded(onboardedValue === "true");
     } catch (error) {
       console.error('Failed to check onboarding status:', error);
-      // Default to not onboarded if there's an error
       setIsOnboarded(false);
     } finally {
       setIsLoading(false);
@@ -37,22 +42,43 @@ export default function App() {
     checkOnboardingStatus();
   }, []);
 
-  // Show loading screen while checking onboarding status
+  // Loading screen with theme support
   if (isLoading) {
     return (
-      <View style={loadingStyles.container}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={loadingStyles.text}>Loading...</Text>
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colors.background.dark,
+      }}>
+        <StatusBar 
+          barStyle={isDark ? "light-content" : "dark-content"} 
+          backgroundColor={colors.background.dark}
+        />
+        <ActivityIndicator size="large" color={colors.primary[500]} />
+        <Text style={{
+          marginTop: 16,
+          color: colors.text.primary,
+          fontSize: 16,
+          fontWeight: '500',
+        }}>
+          Loading...
+        </Text>
       </View>
     );
   }
 
   return (
     <NavigationContainer>
+      <StatusBar 
+        barStyle={isDark ? "light-content" : "dark-content"} 
+        backgroundColor={colors.background.dark}
+      />
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
           animation: "fade_from_bottom",
+          contentStyle: { backgroundColor: colors.background.dark },
         }}
       >
         {!isOnboarded ? (
@@ -61,7 +87,7 @@ export default function App() {
             name="Onboarding"
             component={OnboardingForm}
             options={{
-              animation: "none", // No animation for initial screen
+              animation: "none",
             }}
           />
         ) : null}
@@ -96,16 +122,11 @@ export default function App() {
   );
 }
 
-const loadingStyles = {
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#3e3e3e',
-  },
-  text: {
-    marginTop: 16,
-    color: 'white',
-    fontSize: 16,
-  },
-};
+// Root App Component with Theme Provider
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
+  );
+}

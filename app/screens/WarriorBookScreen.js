@@ -5,24 +5,33 @@ import {
   TouchableOpacity,
   SafeAreaView,
   FlatList,
-  ActivityIndicator,
   Modal,
   ScrollView,
   TextInput,
+  StyleSheet,
 } from "react-native";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { useTheme } from "../context/ThemeContext";
 
 export default function WarriorBookScreen({ navigation }) {
+  const { 
+    colors, 
+    typography, 
+    spacing, 
+    borderRadius, 
+    shadows, 
+    isDark 
+  } = useTheme();
+
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [filteredCategories, setFilteredCategories] = useState([]);
 
-  // Biblical verses organized by life struggles from WarriorBook.rtf
+  // Biblical verses organized by life struggles
   const warriorBookData = {
     "Fear / Courage": {
-      icon: "⚔️",
-      color: "#dc3545",
+      color: colors.emergency[500],
       verses: [
         {
           reference: "Proverbs 29:25 ESV",
@@ -51,8 +60,7 @@ export default function WarriorBookScreen({ navigation }) {
       ]
     },
     "Pride / Humility": {
-      icon: "🙏",
-      color: "#6f42c1",
+      color: colors.warrior[500],
       verses: [
         {
           reference: "Proverbs 16:18 ESV",
@@ -81,8 +89,7 @@ export default function WarriorBookScreen({ navigation }) {
       ]
     },
     "Anger / Love": {
-      icon: "❤️",
-      color: "#e83e8c",
+      color: colors.emergency[600],
       verses: [
         {
           reference: "James 1:20 ESV",
@@ -111,8 +118,7 @@ export default function WarriorBookScreen({ navigation }) {
       ]
     },
     "Lust / Purity": {
-      icon: "✨",
-      color: "#20c997",
+      color: colors.success[500],
       verses: [
         {
           reference: "Matthew 5:28 ESV",
@@ -141,8 +147,7 @@ export default function WarriorBookScreen({ navigation }) {
       ]
     },
     "Discouragement / Hope": {
-      icon: "🌅",
-      color: "#fd7e14",
+      color: colors.warning[500],
       verses: [
         {
           reference: "Psalm 42:5 ESV",
@@ -171,8 +176,7 @@ export default function WarriorBookScreen({ navigation }) {
       ]
     },
     "Doubt / Faith": {
-      icon: "🛡️",
-      color: "#0ea5e9",
+      color: colors.primary[500],
       verses: [
         {
           reference: "Hebrews 3:12 ESV",
@@ -200,216 +204,6 @@ export default function WarriorBookScreen({ navigation }) {
         }
       ]
     },
-    "Weakness / Strength": {
-      icon: "💪",
-      color: "#198754",
-      verses: [
-        {
-          reference: "2 Corinthians 12:9 ESV",
-          text: "But he said to me, 'My grace is sufficient for you, for my power is made perfect in weakness.' Therefore I will boast all the more gladly of my weaknesses, so that the power of Christ may rest upon me."
-        },
-        {
-          reference: "Matthew 11:28 ESV",
-          text: "Come to me, all who labor and are heavy laden, and I will give you rest."
-        },
-        {
-          reference: "Jeremiah 31:25 ESV",
-          text: "For I will satisfy the weary soul, and every languishing soul I will replenish."
-        },
-        {
-          reference: "Isaiah 40:29 ESV",
-          text: "He gives power to the faint, and to him who has no might he increases strength."
-        },
-        {
-          reference: "Philippians 4:13 ESV",
-          text: "I can do all things through him who strengthens me."
-        },
-        {
-          reference: "Psalm 73:26 ESV",
-          text: "My flesh and my heart may fail, but God is the strength of my heart and my portion forever."
-        }
-      ]
-    },
-    "Confusion / Focus": {
-      icon: "🎯",
-      color: "#6610f2",
-      verses: [
-        {
-          reference: "1 Corinthians 14:33 ESV",
-          text: "For God is not a God of confusion but of peace."
-        },
-        {
-          reference: "Jeremiah 17:9 ESV",
-          text: "The heart is deceitful above all things, and desperately sick; who can understand it?"
-        },
-        {
-          reference: "2 Corinthians 2:11 ESV",
-          text: "So that we would not be outwitted by Satan; for we are not ignorant of his designs."
-        },
-        {
-          reference: "1 Peter 5:8 ESV",
-          text: "Be sober-minded; be watchful. Your adversary the devil prowls around like a roaring lion, seeking someone to devour."
-        },
-        {
-          reference: "Proverbs 4:25 ESV",
-          text: "Let your eyes look directly forward, and your gaze be straight before you."
-        },
-        {
-          reference: "Colossians 3:2 ESV",
-          text: "Set your minds on things that are above, not on things that are on earth."
-        }
-      ]
-    },
-    "Offense / Forgiveness": {
-      icon: "🕊️",
-      color: "#17a2b8",
-      verses: [
-        {
-          reference: "Proverbs 19:11 ESV",
-          text: "Good sense makes one slow to anger, and it is his glory to overlook an offense."
-        },
-        {
-          reference: "Proverbs 17:9 ESV",
-          text: "Whoever covers an offense seeks love, but he who repeats a matter separates close friends."
-        },
-        {
-          reference: "Proverbs 10:12 ESV",
-          text: "Hatred stirs up strife, but love covers all offenses."
-        },
-        {
-          reference: "Matthew 6:14-15 ESV",
-          text: "For if you forgive others their trespasses, your heavenly Father will also forgive you, but if you do not forgive others their trespasses, neither will your Father forgive your trespasses."
-        },
-        {
-          reference: "Colossians 3:13 ESV",
-          text: "Bearing with one another and, if one has a complaint against another, forgiving each other; as the Lord has forgiven you, so you also must forgive."
-        },
-        {
-          reference: "Ephesians 4:32 ESV",
-          text: "Be kind to one another, tenderhearted, forgiving one another, as God in Christ forgave you."
-        }
-      ]
-    },
-    "Condemnation / Redeemed": {
-      icon: "✝️",
-      color: "#ffc107",
-      verses: [
-        {
-          reference: "Romans 8:1 ESV",
-          text: "There is now therefore no condemnation for those who are in Christ Jesus."
-        },
-        {
-          reference: "1 John 3:20 ESV",
-          text: "For whenever our heart condemns us, God is greater than our heart, and he knows everything."
-        },
-        {
-          reference: "Psalm 34:22 ESV",
-          text: "The Lord redeems the life of his servants; none of those who take refuge in him will be condemned."
-        },
-        {
-          reference: "Ephesians 1:7 ESV",
-          text: "In him we have redemption through his blood, the forgiveness of our trespasses, according to the riches of his grace,"
-        },
-        {
-          reference: "Isaiah 44:22 ESV",
-          text: "I have blotted out your transgressions like a cloud and your sins like mist; return to me, for I have redeemed you."
-        },
-        {
-          reference: "Colossians 1:13-14 ESV",
-          text: "He has delivered us from the domain of darkness and transferred us to the kingdom of his beloved Son, in whom we have redemption, the forgiveness of sins."
-        }
-      ]
-    },
-    "Worry / Trust": {
-      icon: "🌿",
-      color: "#28a745",
-      verses: [
-        {
-          reference: "Philippians 4:6-7 ESV",
-          text: "Do not be anxious about anything, but in everything by prayer and supplication with thanksgiving let your requests be made known to God. And the peace of God, which surpasses all understanding, will guard your hearts and your minds in Christ Jesus."
-        },
-        {
-          reference: "Matthew 6:34 ESV",
-          text: "Therefore do not be anxious about tomorrow, for tomorrow will be anxious for itself. Sufficient for the day is its own trouble."
-        },
-        {
-          reference: "Proverbs 12:25 ESV",
-          text: "Anxiety in a man's heart weighs him down, but a good word makes him glad."
-        },
-        {
-          reference: "Proverbs 3:5-8 ESV",
-          text: "Trust in the Lord with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths. Be not wise in your own eyes; fear the Lord, and turn away from evil. It will be healing to your flesh and refreshment to your bones."
-        },
-        {
-          reference: "Jeremiah 29:11 ESV",
-          text: "For I know the plans I have for you, declares the Lord, plans for welfare and not for evil, to give you a future and a hope."
-        },
-        {
-          reference: "2 Thessalonians 3:3 ESV",
-          text: "But the Lord is faithful. He will establish you and guard you against the evil one."
-        }
-      ]
-    },
-    "Discontentment / Thankfulness": {
-      icon: "🙌",
-      color: "#fd7e14",
-      verses: [
-        {
-          reference: "Philippians 2:14-15 ESV",
-          text: "Do all things without grumbling or disputing, that you may be blameless and innocent, children of God without blemish in the midst of a crooked and twisted generation, among whom you shine as lights in the world,"
-        },
-        {
-          reference: "Luke 12:15 ESV",
-          text: "And he said to them, 'Take care, and be on your guard against all covetousness, for one's life does not consist in the abundance of his possessions.'"
-        },
-        {
-          reference: "1 Timothy 6:6-7 ESV",
-          text: "But godliness with contentment is great gain, for we brought nothing into the world, and we cannot take anything out of the world."
-        },
-        {
-          reference: "1 Thessalonians 5:18 ESV",
-          text: "Give thanks in all circumstances; for this is the will of God in Christ Jesus for you."
-        },
-        {
-          reference: "James 1:17 ESV",
-          text: "Every good gift and every perfect gift is from above, coming down from the Father of lights, with whom there is no variation or shadow due to change."
-        },
-        {
-          reference: "Psalm 100:4 ESV",
-          text: "Enter his gates with thanksgiving, and his courts with praise! Give thanks to him; bless his name!"
-        }
-      ]
-    },
-    "Judgment / Mercy": {
-      icon: "⚖️",
-      color: "#6c757d",
-      verses: [
-        {
-          reference: "Matthew 7:1-2 ESV",
-          text: "Judge not, that you be not judged. For with the judgment you pronounce you will be judged, and with the measure you use it will be measured to you."
-        },
-        {
-          reference: "Romans 14:12-13 ESV",
-          text: "So then each of us will give an account of himself to God. Therefore let us not pass judgment on one another any longer, but rather decide never to put a stumbling block or hindrance in the way of a brother."
-        },
-        {
-          reference: "John 7:24 ESV",
-          text: "Do not judge by appearances, but judge with right judgment."
-        },
-        {
-          reference: "Luke 6:36 ESV",
-          text: "Be merciful, even as your Father is merciful."
-        },
-        {
-          reference: "James 2:13 ESV",
-          text: "For judgment is without mercy to one who has shown no mercy. Mercy triumphs over judgment."
-        },
-        {
-          reference: "Psalm 103:8 ESV",
-          text: "The Lord is merciful and gracious, slow to anger and abounding in steadfast love."
-        }
-      ]
-    }
   };
 
   // Filter categories based on search
@@ -443,6 +237,228 @@ export default function WarriorBookScreen({ navigation }) {
     navigation.navigate("Home");
   };
 
+  // Dynamic styles based on current theme
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background.dark,
+      paddingTop: StatusBar.currentHeight || 0,
+    },
+
+    header: {
+      paddingHorizontal: spacing[6],
+      paddingVertical: spacing[6],
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border.light,
+      backgroundColor: colors.background.glassDark,
+    },
+
+    titleContainer: {
+      alignItems: 'center',
+    },
+
+    title: {
+      color: colors.text.primary,
+      fontWeight: typography.fontWeights.bold,
+      fontSize: typography.fontSizes['4xl'],
+      marginBottom: spacing[2],
+      textShadowColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'transparent',
+      textShadowOffset: { width: 0, height: 2 },
+      textShadowRadius: 4,
+    },
+
+    subtitle: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.base,
+      textAlign: 'center',
+      fontWeight: typography.fontWeights.medium,
+    },
+
+    searchContainer: {
+      paddingHorizontal: spacing[6],
+      paddingVertical: spacing[4],
+      backgroundColor: colors.background.glassDark,
+    },
+
+    searchInput: {
+      backgroundColor: colors.background.glassMedium,
+      borderColor: colors.border.light,
+      color: colors.text.primary,
+      fontSize: typography.fontSizes.base,
+      paddingVertical: spacing[3],
+      paddingHorizontal: spacing[4],
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+    },
+
+    content: {
+      flex: 1,
+      paddingHorizontal: spacing[3],
+    },
+
+    categoriesList: {
+      paddingBottom: spacing[6],
+    },
+
+    categoryCard: {
+      backgroundColor: colors.background.card,
+      marginHorizontal: spacing[3],
+      marginVertical: spacing[2],
+      borderRadius: borderRadius.md,
+      padding: spacing[4],
+      borderLeftWidth: 4,
+      ...shadows.md,
+      borderWidth: 1,
+      borderColor: colors.border.light,
+    },
+
+    categoryHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+
+    categoryIconContainer: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: colors.background.secondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: spacing[4],
+      ...shadows.sm,
+    },
+
+    categoryIcon: {
+      fontSize: typography.fontSizes['2xl'],
+    },
+
+    categoryInfo: {
+      flex: 1,
+    },
+
+    categoryTitle: {
+      fontSize: typography.fontSizes.lg,
+      fontWeight: typography.fontWeights.semibold,
+      color: colors.text.primary,
+      marginBottom: spacing[1],
+    },
+
+    categorySubtitle: {
+      fontSize: typography.fontSizes.sm,
+      color: colors.text.secondary,
+      fontWeight: typography.fontWeights.medium,
+    },
+
+    categoryArrow: {
+      fontSize: typography.fontSizes['2xl'],
+      color: colors.text.secondary,
+    },
+
+    bottomSection: {
+      padding: spacing[6],
+      paddingTop: spacing[4],
+    },
+
+    backButton: {
+      backgroundColor: colors.background.glassMedium,
+      borderWidth: 1,
+      borderColor: colors.border.light,
+      paddingVertical: spacing[4],
+      paddingHorizontal: spacing[8],
+      borderRadius: borderRadius.md,
+      alignItems: 'center',
+      ...shadows.base,
+    },
+
+    backButtonText: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes.base,
+      fontWeight: typography.fontWeights.semibold,
+      letterSpacing: typography.letterSpacing.wide,
+    },
+
+    // Modal styles
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      justifyContent: 'flex-end',
+    },
+
+    modalContent: {
+      backgroundColor: colors.background.card,
+      borderTopLeftRadius: borderRadius.xl,
+      borderTopRightRadius: borderRadius.xl,
+      maxHeight: '85%',
+      minHeight: '60%',
+      ...shadows.xl,
+    },
+
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: spacing[6],
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border.light,
+    },
+
+    modalTitleContainer: {
+      flex: 1,
+    },
+
+    modalTitle: {
+      fontSize: typography.fontSizes.xl,
+      fontWeight: typography.fontWeights.bold,
+      color: colors.text.primary,
+      flex: 1,
+    },
+
+    closeButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.background.secondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...shadows.sm,
+    },
+
+    closeButtonText: {
+      fontSize: typography.fontSizes.base,
+      color: colors.text.secondary,
+      fontWeight: typography.fontWeights.bold,
+    },
+
+    versesList: {
+      padding: spacing[6],
+    },
+
+    verseCard: {
+      backgroundColor: colors.background.secondary,
+      borderRadius: borderRadius.md,
+      padding: spacing[4],
+      marginBottom: spacing[4],
+      borderLeftWidth: 4,
+      borderLeftColor: colors.warrior[500],
+      ...shadows.sm,
+    },
+
+    verseReference: {
+      fontSize: typography.fontSizes.sm,
+      fontWeight: typography.fontWeights.semibold,
+      color: colors.warrior[600],
+      marginBottom: spacing[2],
+    },
+
+    verseText: {
+      fontSize: typography.fontSizes.base,
+      lineHeight: typography.lineHeights.normal,
+      color: colors.text.primary,
+      fontStyle: 'italic',
+      fontWeight: typography.fontWeights.normal,
+    },
+  });
+
   // Render category item
   const renderCategoryItem = ({ item }) => {
     const categoryData = warriorBookData[item];
@@ -454,7 +470,7 @@ export default function WarriorBookScreen({ navigation }) {
       >
         <View style={styles.categoryHeader}>
           <View style={styles.categoryIconContainer}>
-            <Text style={styles.categoryIcon}>{categoryData.icon}</Text>
+            <Text style={styles.categoryIcon}>{item.charAt(0)}</Text>
           </View>
           <View style={styles.categoryInfo}>
             <Text style={styles.categoryTitle}>{item}</Text>
@@ -478,12 +494,15 @@ export default function WarriorBookScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar 
+        barStyle={isDark ? "light-content" : "dark-content"} 
+        backgroundColor={colors.background.dark}
+      />
 
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>Warrior Book ⚔️</Text>
+          <Text style={styles.title}>Warrior Book</Text>
           <Text style={styles.subtitle}>Biblical verses for life's battles</Text>
         </View>
       </View>
@@ -493,7 +512,7 @@ export default function WarriorBookScreen({ navigation }) {
         <TextInput
           style={styles.searchInput}
           placeholder="Search struggles or verses..."
-          placeholderTextColor="rgba(255, 255, 255, 0.6)"
+          placeholderTextColor={colors.text.placeholder}
           value={searchText}
           onChangeText={setSearchText}
         />
@@ -528,9 +547,6 @@ export default function WarriorBookScreen({ navigation }) {
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <View style={styles.modalTitleContainer}>
-                <Text style={styles.modalIcon}>
-                  {selectedCategory ? warriorBookData[selectedCategory]?.icon : ""}
-                </Text>
                 <Text style={styles.modalTitle}>{selectedCategory}</Text>
               </View>
               <TouchableOpacity
@@ -556,190 +572,3 @@ export default function WarriorBookScreen({ navigation }) {
     </SafeAreaView>
   );
 }
-
-const styles = {
-  container: {
-    flex: 1,
-    backgroundColor: "#2c3e50",
-    paddingTop: StatusBar.currentHeight || 0,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.1)",
-  },
-  titleContainer: {
-    alignItems: "center",
-  },
-  title: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 28,
-    marginBottom: 5,
-  },
-  subtitle: {
-    color: "rgba(255, 255, 255, 0.8)",
-    fontSize: 16,
-    textAlign: "center",
-  },
-  searchContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
-  searchInput: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    color: "white",
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 10,
-  },
-  categoriesList: {
-    paddingBottom: 20,
-  },
-  categoryCard: {
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    marginHorizontal: 10,
-    marginVertical: 6,
-    borderRadius: 12,
-    padding: 15,
-    borderLeftWidth: 4,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  categoryHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  categoryIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "#f8f9fa",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 15,
-  },
-  categoryIcon: {
-    fontSize: 24,
-  },
-  categoryInfo: {
-    flex: 1,
-  },
-  categoryTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 2,
-  },
-  categorySubtitle: {
-    fontSize: 14,
-    color: "#666",
-  },
-  categoryArrow: {
-    fontSize: 24,
-    color: "#666",
-  },
-  bottomSection: {
-    padding: 20,
-    paddingTop: 10,
-  },
-  backButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.3)",
-  },
-  backButtonText: {
-    color: "rgba(255, 255, 255, 0.9)",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  // Modal styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.8)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "white",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: "85%",
-    minHeight: "60%",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  modalTitleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  modalIcon: {
-    fontSize: 24,
-    marginRight: 10,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-    flex: 1,
-  },
-  closeButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  closeButtonText: {
-    fontSize: 16,
-    color: "#666",
-  },
-  versesList: {
-    padding: 20,
-  },
-  verseCard: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
-    borderLeftWidth: 4,
-    borderLeftColor: "#007bff",
-  },
-  verseReference: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#007bff",
-    marginBottom: 8,
-  },
-  verseText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: "#333",
-    fontStyle: "italic",
-  },
-};

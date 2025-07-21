@@ -1,3 +1,4 @@
+// app/screens/SosScreen.js - Theme-Aware Version
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -7,15 +8,15 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
-  ImageBackground,
   Alert,
   ActivityIndicator,
   Keyboard,
   TouchableWithoutFeedback,
   ScrollView,
+  StyleSheet,
 } from "react-native";
 
-import backgroundimage from "../../assets/image_33.jpg";
+import { useTheme } from "../context/ThemeContext";
 import {
   prayerAPI,
   validation,
@@ -25,6 +26,15 @@ import {
 import { userUtils } from "../utils/user.js";
 
 export default function SosScreen({ navigation }) {
+  const { 
+    colors, 
+    typography, 
+    spacing, 
+    borderRadius, 
+    shadows, 
+    isDark 
+  } = useTheme();
+
   const [prayer, setPrayer] = useState("");
   const [savedPrayer, setSavedPrayer] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +44,7 @@ export default function SosScreen({ navigation }) {
   const [prayerError, setPrayerError] = useState("");
   const [userId, setUserId] = useState("");
 
-  const MAX_CHARACTERS = 125; // Increased from 120 for more detailed prayers
+  const MAX_CHARACTERS = 125;
   const MIN_CHARACTERS = 5;
 
   // Store prayer in AsyncStorage
@@ -73,7 +83,6 @@ export default function SosScreen({ navigation }) {
       }
     } catch (error) {
       console.error("Failed to read user data:", error);
-      // Set fallback values
       setUserId(`temp_${Date.now()}`);
     }
   };
@@ -86,7 +95,6 @@ export default function SosScreen({ navigation }) {
         setCharacterCount(text.length);
         storePrayer(text);
 
-        // Clear error when user starts typing
         if (prayerError) {
           setPrayerError("");
         }
@@ -119,10 +127,9 @@ export default function SosScreen({ navigation }) {
     return null;
   }, []);
 
-  // Submit prayer request to API using the prayerAPI utility
+  // Submit prayer request to API
   const submitPrayerRequest = async (prayerText, zipCode, userId) => {
     try {
-      // Validate inputs
       if (!validation.validateUserId(userId)) {
         throw new Error("Invalid user ID");
       }
@@ -140,7 +147,6 @@ export default function SosScreen({ navigation }) {
         throw new Error("Invalid prayer text length");
       }
 
-      // Submit to API
       const result = await prayerAPI.submit({
         userId: userId,
         zip: parseInt(zipCode),
@@ -158,7 +164,7 @@ export default function SosScreen({ navigation }) {
     }
   };
 
-  // Handle send button press with connection testing
+  // Handle send button press
   const handleSendPressed = async () => {
     Keyboard.dismiss();
 
@@ -168,7 +174,6 @@ export default function SosScreen({ navigation }) {
       return;
     }
 
-    // Check if user has zip code
     if (!userZip) {
       Alert.alert(
         "Setup Required",
@@ -187,7 +192,6 @@ export default function SosScreen({ navigation }) {
     setIsSending(true);
 
     try {
-      // First, debug the connection
       console.log("=== DEBUGGING CONNECTION BEFORE PRAYER SUBMISSION ===");
       const debugResult = await debugConnection();
       console.log("Debug result:", debugResult);
@@ -196,19 +200,14 @@ export default function SosScreen({ navigation }) {
         throw new Error(`Connection test failed: ${debugResult.error}`);
       }
 
-      // Submit prayer request to API
       const result = await submitPrayerRequest(prayer.trim(), userZip, userId);
 
       if (result.success) {
-        // Clear prayer after successful submission
         setPrayer("");
         setSavedPrayer("");
         setCharacterCount(0);
-
-        // Clear from storage
         await AsyncStorage.removeItem("prayer");
 
-        // Show success message
         Alert.alert(
           "Prayer Sent! 🙏",
           "Your prayer request has been sent to your local prayer community. You'll receive support soon.",
@@ -226,7 +225,6 @@ export default function SosScreen({ navigation }) {
       let errorMessage = errorHandler.getErrorMessage(error);
       let alertButtons = [{ text: "OK" }];
 
-      // Add debug option for network errors
       if (errorHandler.isNetworkError(error)) {
         errorMessage +=
           "\n\nTroubleshooting steps:\n• Check if your server is running\n• Verify your device/emulator network connection\n• Try the debug connection test";
@@ -311,19 +309,315 @@ export default function SosScreen({ navigation }) {
     );
   }, []);
 
+  // Dynamic styles based on current theme
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background.dark,
+      paddingTop: StatusBar.currentHeight || 0,
+    },
+
+    scrollView: {
+      flex: 1,
+    },
+
+    scrollContent: {
+      padding: spacing[6],
+      paddingBottom: spacing[4],
+    },
+
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.background.dark,
+    },
+
+    loadingText: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes.lg,
+      fontWeight: typography.fontWeights.medium,
+      marginTop: spacing[4],
+    },
+
+    header: {
+      alignItems: 'center',
+      marginBottom: spacing[10],
+      paddingTop: spacing[6],
+    },
+
+    title: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes['4xl'],
+      fontWeight: typography.fontWeights.bold,
+      textAlign: 'center',
+      marginBottom: spacing[3],
+      textShadowColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'transparent',
+      textShadowOffset: { width: 0, height: 2 },
+      textShadowRadius: 4,
+    },
+
+    subtitle: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.lg,
+      textAlign: 'center',
+      lineHeight: typography.lineHeights.relaxed,
+      paddingHorizontal: spacing[4],
+      fontWeight: typography.fontWeights.medium,
+    },
+
+    zipInfo: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.base,
+      textAlign: 'center',
+      marginTop: spacing[2],
+      fontStyle: 'italic',
+      opacity: 0.9,
+    },
+
+    inputSection: {
+      marginBottom: spacing[6],
+    },
+
+    inputCard: {
+      backgroundColor: colors.background.card,
+      borderRadius: borderRadius.xl,
+      padding: spacing[6],
+      ...shadows.lg,
+      borderWidth: 1,
+      borderColor: colors.border.light,
+    },
+
+    inputHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing[4],
+    },
+
+    inputLabel: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes.lg,
+      fontWeight: typography.fontWeights.semibold,
+    },
+
+    characterCount: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.sm,
+      fontWeight: typography.fontWeights.medium,
+    },
+
+    characterCountWarning: {
+      color: colors.emergency[500],
+    },
+
+    input: {
+      backgroundColor: colors.background.secondary,
+      borderWidth: 2,
+      borderColor: colors.border.light,
+      borderRadius: borderRadius.md,
+      padding: spacing[4],
+      fontSize: typography.fontSizes.base,
+      lineHeight: typography.lineHeights.normal,
+      minHeight: 160,
+      textAlignVertical: 'top',
+      color: colors.text.primary,
+      ...shadows.sm,
+    },
+
+    inputFocused: {
+      borderColor: colors.primary[500],
+      backgroundColor: colors.background.primary,
+      ...shadows.base,
+    },
+
+    inputError: {
+      borderColor: colors.emergency[500],
+      backgroundColor: isDark ? `${colors.emergency[500]}20` : colors.emergency[50],
+    },
+
+    errorText: {
+      color: colors.emergency[600],
+      fontSize: typography.fontSizes.sm,
+      fontWeight: typography.fontWeights.medium,
+      marginTop: spacing[2],
+      marginLeft: spacing[1],
+    },
+
+    helperText: {
+      color: colors.success[600],
+      fontSize: typography.fontSizes.sm,
+      fontWeight: typography.fontWeights.medium,
+      marginTop: spacing[2],
+      marginLeft: spacing[1],
+    },
+
+    guidelinesSection: {
+      backgroundColor: colors.background.glassMedium,
+      borderRadius: borderRadius.md,
+      padding: spacing[5],
+      marginBottom: spacing[6],
+      borderWidth: 1,
+      borderColor: colors.border.light,
+    },
+
+    guidelinesTitle: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes.lg,
+      fontWeight: typography.fontWeights.semibold,
+      marginBottom: spacing[3],
+    },
+
+    guidelinesText: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.base,
+      lineHeight: typography.lineHeights.normal,
+    },
+
+    buttonSection: {
+      padding: spacing[6],
+      paddingTop: spacing[4],
+      gap: spacing[4],
+    },
+
+    clearButton: {
+      backgroundColor: colors.background.glassMedium,
+      borderWidth: 1,
+      borderColor: colors.border.light,
+      paddingVertical: spacing[3],
+      paddingHorizontal: spacing[6],
+      borderRadius: borderRadius.md,
+      alignItems: 'center',
+      ...shadows.base,
+    },
+
+    clearButtonText: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes.base,
+      fontWeight: typography.fontWeights.semibold,
+      letterSpacing: typography.letterSpacing.wide,
+    },
+
+    sendButton: {
+      backgroundColor: colors.emergency[500],
+      paddingVertical: spacing[6],
+      paddingHorizontal: spacing[8],
+      borderRadius: borderRadius.lg,
+      alignItems: 'center',
+      ...shadows.xl,
+      shadowColor: colors.emergency[500],
+      shadowOpacity: 0.4,
+    },
+
+    sendButtonDisabled: {
+      backgroundColor: colors.neutral[400],
+      ...shadows.sm,
+    },
+
+    sendingContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+
+    sendingText: {
+      color: '#ffffff',
+      fontSize: typography.fontSizes.lg,
+      fontWeight: typography.fontWeights.bold,
+      marginLeft: spacing[3],
+      letterSpacing: typography.letterSpacing.wide,
+    },
+
+    sendButtonText: {
+      color: '#ffffff',
+      fontSize: typography.fontSizes.lg,
+      fontWeight: typography.fontWeights.bold,
+      letterSpacing: typography.letterSpacing.wide,
+      textShadowColor: 'rgba(0, 0, 0, 0.3)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+    },
+
+    sendButtonTextDisabled: {
+      color: colors.text.disabled,
+    },
+
+    backButton: {
+      backgroundColor: colors.background.glassMedium,
+      borderWidth: 1,
+      borderColor: colors.border.light,
+      paddingVertical: spacing[4],
+      paddingHorizontal: spacing[6],
+      borderRadius: borderRadius.md,
+      alignItems: 'center',
+    },
+
+    backButtonText: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes.base,
+      fontWeight: typography.fontWeights.semibold,
+      letterSpacing: typography.letterSpacing.wide,
+    },
+
+    emergencyIndicator: {
+      position: 'absolute',
+      top: spacing[4],
+      right: spacing[4],
+      backgroundColor: colors.emergency[500],
+      borderRadius: borderRadius.full,
+      paddingVertical: spacing[2],
+      paddingHorizontal: spacing[3],
+      flexDirection: 'row',
+      alignItems: 'center',
+      ...shadows.base,
+    },
+
+    emergencyDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: '#ffffff',
+      marginRight: spacing[2],
+    },
+
+    emergencyText: {
+      color: '#ffffff',
+      fontSize: typography.fontSizes.xs,
+      fontWeight: typography.fontWeights.bold,
+    },
+
+    tipsSection: {
+      backgroundColor: isDark 
+        ? `${colors.primary[500]}20` 
+        : `${colors.primary[100]}`,
+      borderRadius: borderRadius.md,
+      padding: spacing[5],
+      marginBottom: spacing[6],
+      borderLeftWidth: 4,
+      borderLeftColor: colors.primary[500],
+    },
+
+    tipsTitle: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes.base,
+      fontWeight: typography.fontWeights.semibold,
+      marginBottom: spacing[2],
+    },
+
+    tipsText: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.sm,
+      lineHeight: typography.lineHeights.normal,
+    },
+  });
+
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ImageBackground
-          source={backgroundimage}
-          resizeMode="stretch"
-          style={styles.backgroundimage}
-        >
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#fff" />
-            <Text style={styles.loadingText}>Loading...</Text>
-          </View>
-        </ImageBackground>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary[500]} />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
       </SafeAreaView>
     );
   }
@@ -331,16 +625,20 @@ export default function SosScreen({ navigation }) {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
-        <StatusBar style="light" />
+        <StatusBar 
+          barStyle={isDark ? "light-content" : "dark-content"} 
+          backgroundColor={colors.background.dark}
+        />
 
         <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
+          
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Emergency Prayer Request 🙏</Text>
+            <Text style={styles.title}>Emergency Prayer Request</Text>
             <Text style={styles.subtitle}>
               Share your prayer request with your local community
             </Text>
@@ -353,39 +651,41 @@ export default function SosScreen({ navigation }) {
 
           {/* Prayer Input Section */}
           <View style={styles.inputSection}>
-            <View style={styles.inputHeader}>
-              <Text style={styles.inputLabel}>Your Prayer Request</Text>
-              <Text
-                style={[
-                  styles.characterCount,
-                  characterCount > MAX_CHARACTERS * 0.9 &&
-                    styles.characterCountWarning,
-                ]}
-              >
-                {characterCount}/{MAX_CHARACTERS}
-              </Text>
+            <View style={styles.inputCard}>
+              <View style={styles.inputHeader}>
+                <Text style={styles.inputLabel}>Your Prayer Request</Text>
+                <Text
+                  style={[
+                    styles.characterCount,
+                    characterCount > MAX_CHARACTERS * 0.9 &&
+                      styles.characterCountWarning,
+                  ]}
+                >
+                  {characterCount}/{MAX_CHARACTERS}
+                </Text>
+              </View>
+
+              <TextInput
+                value={prayer}
+                onChangeText={handlePrayerChange}
+                multiline={true}
+                numberOfLines={6}
+                maxLength={MAX_CHARACTERS}
+                style={[styles.input, prayerError ? styles.inputError : null]}
+                placeholder="Please share what you need prayer for. Be as specific as you'd like - your community is here to support you."
+                placeholderTextColor={colors.text.placeholder}
+                textAlignVertical="top"
+                editable={!isSending}
+                accessibilityLabel="Prayer request input"
+                accessibilityHint="Enter your prayer request text"
+              />
+
+              {prayerError && <Text style={styles.errorText}>{prayerError}</Text>}
+
+              {characterCount >= MIN_CHARACTERS && !prayerError && (
+                <Text style={styles.helperText}>Ready to send</Text>
+              )}
             </View>
-
-            <TextInput
-              value={prayer}
-              onChangeText={handlePrayerChange}
-              multiline={true}
-              numberOfLines={6}
-              maxLength={MAX_CHARACTERS}
-              style={[styles.input, prayerError ? styles.inputError : null]}
-              placeholder="Please share what you need prayer for. Be as specific as you'd like - your community is here to support you."
-              placeholderTextColor="rgba(0, 0, 0, 0.5)"
-              textAlignVertical="top"
-              editable={!isSending}
-              accessibilityLabel="Prayer request input"
-              accessibilityHint="Enter your prayer request text"
-            />
-
-            {prayerError && <Text style={styles.errorText}>{prayerError}</Text>}
-
-            {characterCount >= MIN_CHARACTERS && !prayerError && (
-              <Text style={styles.helperText}>✓ Ready to send</Text>
-            )}
           </View>
 
           {/* Prayer Guidelines */}
@@ -394,8 +694,8 @@ export default function SosScreen({ navigation }) {
               Prayer Request Guidelines:
             </Text>
             <Text style={styles.guidelinesText}>
-              • Be respectful and honest{"\n"}• Share what kind of support you
-              need{"\n"}• Include any urgent timing if applicable{"\n"}• Your
+              Be respectful and honest{"\n"}Share what kind of support you
+              need{"\n"}Include any urgent timing if applicable{"\n"}Your
               request will be shared anonymously
             </Text>
           </View>
@@ -421,7 +721,7 @@ export default function SosScreen({ navigation }) {
               (!prayer.trim() ||
                 prayer.trim().length < MIN_CHARACTERS ||
                 isSending) &&
-                styles.buttonDisabled,
+                styles.sendButtonDisabled,
             ]}
             onPress={handleSendPressed}
             disabled={
@@ -442,7 +742,7 @@ export default function SosScreen({ navigation }) {
                 style={[
                   styles.sendButtonText,
                   (!prayer.trim() || prayer.trim().length < MIN_CHARACTERS) &&
-                    styles.buttonTextDisabled,
+                    styles.sendButtonTextDisabled,
                 ]}
               >
                 SEND PRAYER REQUEST
@@ -464,198 +764,3 @@ export default function SosScreen({ navigation }) {
     </TouchableWithoutFeedback>
   );
 }
-
-const styles = {
-  container: {
-    flex: 1,
-    backgroundColor: "#3e3e3e",
-    paddingTop: StatusBar.currentHeight || 0,
-  },
-  backgroundimage: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 10,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    color: "white",
-    marginTop: 10,
-    fontSize: 16,
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 30,
-  },
-  title: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 28,
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  subtitle: {
-    color: "rgba(255, 255, 255, 0.8)",
-    fontSize: 16,
-    textAlign: "center",
-    paddingHorizontal: 20,
-    lineHeight: 22,
-  },
-  zipInfo: {
-    color: "rgba(255, 255, 255, 0.7)",
-    fontSize: 14,
-    textAlign: "center",
-    marginTop: 5,
-    fontStyle: "italic",
-  },
-  inputSection: {
-    marginBottom: 20,
-  },
-  inputHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  inputLabel: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  characterCount: {
-    color: "rgba(255, 255, 255, 0.7)",
-    fontSize: 14,
-  },
-  characterCountWarning: {
-    color: "#ffaa00",
-  },
-  input: {
-    backgroundColor: "white",
-    fontSize: 16,
-    padding: 15,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "transparent",
-    minHeight: 150,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  inputError: {
-    borderColor: "#ff4444",
-    backgroundColor: "#ffe6e6",
-  },
-  errorText: {
-    color: "#ff4444",
-    fontSize: 14,
-    marginTop: 8,
-    fontWeight: "500",
-  },
-  helperText: {
-    color: "#4CAF50",
-    fontSize: 14,
-    marginTop: 8,
-    fontWeight: "500",
-  },
-  guidelinesSection: {
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 20,
-  },
-  guidelinesTitle: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  guidelinesText: {
-    color: "rgba(255, 255, 255, 0.8)",
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  buttonSection: {
-    padding: 20,
-    paddingTop: 10,
-  },
-  clearButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  clearButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  sendButton: {
-    backgroundColor: "#dc3545",
-    paddingVertical: 18,
-    paddingHorizontal: 30,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 15,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  buttonDisabled: {
-    backgroundColor: "#cccccc",
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  sendingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  sendingText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginLeft: 10,
-  },
-  sendButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-    letterSpacing: 1,
-  },
-  buttonTextDisabled: {
-    color: "#999999",
-  },
-  backButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.3)",
-  },
-  backButtonText: {
-    color: "rgba(255, 255, 255, 0.9)",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-};

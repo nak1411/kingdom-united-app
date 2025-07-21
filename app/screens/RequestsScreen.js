@@ -1,10 +1,10 @@
+// app/screens/RequestsScreen.js - Theme-Aware Version
 import {
   StatusBar,
   Text,
   View,
   TouchableOpacity,
   SafeAreaView,
-  ImageBackground,
   FlatList,
   ActivityIndicator,
   Alert,
@@ -12,16 +12,25 @@ import {
   Modal,
   ScrollView,
   AppState,
+  StyleSheet,
 } from "react-native";
 import { useState, useEffect, useCallback, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import backgroundimage from "../../assets/image_33.jpg";
+import { useTheme } from "../context/ThemeContext";
 import { prayerAPI, errorHandler } from "../config/api.js";
 import { userUtils } from "../utils/user.js";
-import { requestsscreenStyles } from "../styles/requestsscreen.styles.js";
 
 export default function RequestsScreen({ navigation }) {
+  const { 
+    colors, 
+    typography, 
+    spacing, 
+    borderRadius, 
+    shadows, 
+    isDark 
+  } = useTheme();
+
   const [prayers, setPrayers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -40,8 +49,8 @@ export default function RequestsScreen({ navigation }) {
   const mountedRef = useRef(true);
 
   // Real-time polling configuration
-  const POLL_INTERVAL = 15000; // Poll every 15 seconds
-  const BACKGROUND_POLL_INTERVAL = 60000; // Poll every minute in background
+  const POLL_INTERVAL = 15000;
+  const BACKGROUND_POLL_INTERVAL = 60000;
   const MAX_RETRIES = 3;
 
   // Fetch prayers from database with real-time capabilities
@@ -57,7 +66,6 @@ export default function RequestsScreen({ navigation }) {
         `[RealTime] Fetching prayers - Background: ${isBackgroundFetch}`
       );
 
-      // Get user's zip code
       const userData = await userUtils.getUserData();
 
       if (!userData.zip) {
@@ -71,13 +79,11 @@ export default function RequestsScreen({ navigation }) {
 
       setUserZip(userData.zip);
 
-      // Fetch prayers from database by zip code
       console.log(`[RealTime] Fetching prayers for zip: ${userData.zip}`);
       const response = await prayerAPI.getByZip(userData.zip);
 
       console.log(`[RealTime] API Response:`, response);
 
-      // Handle the response data properly
       let prayersData = [];
       if (Array.isArray(response)) {
         prayersData = response;
@@ -90,14 +96,12 @@ export default function RequestsScreen({ navigation }) {
       if (prayersData.length > 0) {
         const currentTime = new Date().toISOString();
 
-        // Sort prayers by timestamp (newest first) - using your database field names
         const sortedPrayers = prayersData.sort((a, b) => {
           const timeA = new Date(a.createdAt || a.created_at || 0);
           const timeB = new Date(b.createdAt || b.created_at || 0);
-          return timeB - timeA; // Newest first
+          return timeB - timeA;
         });
 
-        // Check for new prayers since last fetch
         if (lastFetchTimeRef.current && isRealTimeActive) {
           const newPrayers = sortedPrayers.filter((prayer) => {
             const prayerTime = new Date(prayer.createdAt || prayer.created_at);
@@ -110,7 +114,6 @@ export default function RequestsScreen({ navigation }) {
           }
         }
 
-        // Only update if component is still mounted
         if (mountedRef.current) {
           setPrayers(sortedPrayers);
           setLastUpdateTime(currentTime);
@@ -120,7 +123,6 @@ export default function RequestsScreen({ navigation }) {
         console.log(
           `[RealTime] Loaded ${sortedPrayers.length} prayers for zip ${userData.zip}`
         );
-        console.log(`[RealTime] Sample prayer:`, sortedPrayers[0]);
       } else {
         if (mountedRef.current) {
           setPrayers([]);
@@ -172,7 +174,7 @@ export default function RequestsScreen({ navigation }) {
     }
   }, []);
 
-  // Handle app state changes (background/foreground)
+  // Handle app state changes
   const handleAppStateChange = useCallback(
     (nextAppState) => {
       console.log(
@@ -183,7 +185,6 @@ export default function RequestsScreen({ navigation }) {
         appStateRef.current.match(/inactive|background/) &&
         nextAppState === "active"
       ) {
-        // App came to foreground - fetch immediately and restart polling
         console.log("[RealTime] App came to foreground - refreshing data");
         fetchPrayersFromDatabase(false, false);
         if (isRealTimeActive) {
@@ -193,7 +194,6 @@ export default function RequestsScreen({ navigation }) {
 
       appStateRef.current = nextAppState;
 
-      // Restart polling with appropriate interval
       if (isRealTimeActive) {
         startRealTimePolling();
       }
@@ -201,7 +201,7 @@ export default function RequestsScreen({ navigation }) {
     [startRealTimePolling, isRealTimeActive]
   );
 
-  // Handle manual refresh with real-time reset
+  // Handle manual refresh
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true);
     setNewPrayersCount(0);
@@ -221,7 +221,7 @@ export default function RequestsScreen({ navigation }) {
     });
   }, [startRealTimePolling, stopRealTimePolling]);
 
-  // Format timestamp for display with real-time awareness
+  // Format timestamp
   const formatTimestamp = (timestamp) => {
     if (!timestamp) return "Recently";
 
@@ -238,7 +238,7 @@ export default function RequestsScreen({ navigation }) {
     return date.toLocaleDateString();
   };
 
-  // Truncate long prayer text for feed display
+  // Truncate text
   const truncateText = (text, maxLength = 150) => {
     if (!text) return "";
     return text.length > maxLength
@@ -250,8 +250,6 @@ export default function RequestsScreen({ navigation }) {
   const handlePrayerPress = (prayer) => {
     setSelectedPrayer(prayer);
     setModalVisible(true);
-
-    // Mark as viewed (could be sent to analytics)
     console.log(`[RealTime] Prayer viewed: ${prayer.id || "unknown"}`);
   };
 
@@ -260,6 +258,440 @@ export default function RequestsScreen({ navigation }) {
     setNewPrayersCount(0);
   }, []);
 
+  // Back button handler
+  const backPressed = () => {
+    navigation.navigate("Home");
+  };
+
+  // Dynamic styles based on current theme
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background.dark,
+      paddingTop: StatusBar.currentHeight || 0,
+    },
+
+    header: {
+      paddingHorizontal: spacing[6],
+      paddingVertical: spacing[5],
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: colors.background.glassDark,
+    },
+
+    titleContainer: {
+      flex: 1,
+    },
+
+    title: {
+      color: colors.text.primary,
+      fontWeight: typography.fontWeights.bold,
+      fontSize: typography.fontSizes['2xl'],
+      marginBottom: spacing[1],
+      textShadowColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'transparent',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+    },
+
+    subtitle: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.base,
+      fontWeight: typography.fontWeights.medium,
+    },
+
+    realTimeToggle: {
+      backgroundColor: colors.background.glassMedium,
+      borderWidth: 1,
+      borderColor: colors.border.light,
+      paddingHorizontal: spacing[3],
+      paddingVertical: spacing[2],
+      borderRadius: borderRadius.full,
+    },
+
+    realTimeToggleText: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes.xs,
+      fontWeight: typography.fontWeights.bold,
+      letterSpacing: typography.letterSpacing.wide,
+    },
+
+    realTimeStatus: {
+      paddingHorizontal: spacing[6],
+      paddingVertical: spacing[3],
+      backgroundColor: colors.background.glassDark,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border.light,
+    },
+
+    statusContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+
+    statusDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      marginRight: spacing[2],
+    },
+
+    statusText: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.sm,
+      fontWeight: typography.fontWeights.medium,
+      marginRight: spacing[3],
+    },
+
+    lastUpdateText: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.xs,
+      opacity: 0.8,
+    },
+
+    newPrayersNotification: {
+      backgroundColor: colors.emergency[500],
+      paddingHorizontal: spacing[3],
+      paddingVertical: spacing[1],
+      borderRadius: borderRadius.full,
+      ...shadows.base,
+    },
+
+    newPrayersText: {
+      color: '#ffffff',
+      fontSize: typography.fontSizes.xs,
+      fontWeight: typography.fontWeights.bold,
+    },
+
+    content: {
+      flex: 1,
+      marginHorizontal: spacing[3],
+    },
+
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: spacing[6],
+    },
+
+    loadingText: {
+      color: colors.text.primary,
+      marginTop: spacing[4],
+      fontSize: typography.fontSizes.lg,
+      fontWeight: typography.fontWeights.medium,
+      textAlign: 'center',
+    },
+
+    feedContainer: {
+      paddingBottom: spacing[6],
+    },
+
+    prayerItem: {
+      backgroundColor: colors.background.card,
+      marginHorizontal: spacing[3],
+      marginVertical: spacing[2],
+      borderRadius: borderRadius.lg,
+      padding: spacing[5],
+      ...shadows.md,
+      borderWidth: 1,
+      borderColor: colors.border.light,
+    },
+
+    recentPrayerItem: {
+      borderLeftWidth: 4,
+      borderLeftColor: colors.success[500],
+      backgroundColor: colors.background.card,
+      ...shadows.lg,
+    },
+
+    prayerHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: spacing[4],
+    },
+
+    userInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+    },
+
+    avatar: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: colors.background.secondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: spacing[3],
+      ...shadows.sm,
+    },
+
+    avatarText: {
+      fontSize: typography.fontSizes.lg,
+    },
+
+    userDetails: {
+      flex: 1,
+    },
+
+    userName: {
+      fontWeight: typography.fontWeights.semibold,
+      fontSize: typography.fontSizes.base,
+      color: colors.text.primary,
+      marginBottom: spacing[1],
+    },
+
+    timestamp: {
+      fontSize: typography.fontSizes.sm,
+      color: colors.text.secondary,
+      fontWeight: typography.fontWeights.medium,
+    },
+
+    badges: {
+      alignItems: 'flex-end',
+      gap: spacing[2],
+    },
+
+    newBadge: {
+      backgroundColor: colors.success[500],
+      paddingHorizontal: spacing[2],
+      paddingVertical: spacing[1],
+      borderRadius: borderRadius.sm,
+      ...shadows.sm,
+    },
+
+    newBadgeText: {
+      color: '#ffffff',
+      fontSize: typography.fontSizes.xs,
+      fontWeight: typography.fontWeights.bold,
+      letterSpacing: typography.letterSpacing.wide,
+    },
+
+    prayerBadge: {
+      backgroundColor: colors.emergency[500],
+      paddingHorizontal: spacing[3],
+      paddingVertical: spacing[1],
+      borderRadius: borderRadius.full,
+      ...shadows.sm,
+    },
+
+    prayerBadgeText: {
+      color: '#ffffff',
+      fontSize: typography.fontSizes.xs,
+      fontWeight: typography.fontWeights.semibold,
+    },
+
+    prayerContent: {
+      marginBottom: spacing[4],
+    },
+
+    prayerText: {
+      fontSize: typography.fontSizes.base,
+      lineHeight: typography.lineHeights.normal,
+      color: colors.text.primary,
+      fontWeight: typography.fontWeights.normal,
+    },
+
+    readMore: {
+      color: colors.primary[600],
+      fontSize: typography.fontSizes.sm,
+      marginTop: spacing[2],
+      fontWeight: typography.fontWeights.semibold,
+    },
+
+    separator: {
+      height: 1,
+      backgroundColor: 'transparent',
+    },
+
+    emptyState: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: spacing[10],
+    },
+
+    emptyStateTitle: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes['2xl'],
+      fontWeight: typography.fontWeights.bold,
+      textAlign: 'center',
+      marginBottom: spacing[4],
+      textShadowColor: isDark ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
+    },
+
+    emptyStateText: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.base,
+      textAlign: 'center',
+      lineHeight: typography.lineHeights.normal,
+      marginBottom: spacing[6],
+      fontWeight: typography.fontWeights.medium,
+    },
+
+    settingsButton: {
+      backgroundColor: colors.primary[500],
+      paddingVertical: spacing[3],
+      paddingHorizontal: spacing[6],
+      borderRadius: borderRadius.md,
+      ...shadows.base,
+    },
+
+    settingsButtonText: {
+      color: '#ffffff',
+      fontSize: typography.fontSizes.base,
+      fontWeight: typography.fontWeights.semibold,
+    },
+
+    errorState: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: spacing[10],
+    },
+
+    errorStateTitle: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes['2xl'],
+      fontWeight: typography.fontWeights.bold,
+      textAlign: 'center',
+      marginBottom: spacing[4],
+    },
+
+    errorStateText: {
+      color: colors.text.secondary,
+      fontSize: typography.fontSizes.base,
+      textAlign: 'center',
+      lineHeight: typography.lineHeights.normal,
+      marginBottom: spacing[6],
+    },
+
+    retryButton: {
+      backgroundColor: colors.success[500],
+      paddingVertical: spacing[3],
+      paddingHorizontal: spacing[6],
+      borderRadius: borderRadius.md,
+      ...shadows.base,
+    },
+
+    retryButtonText: {
+      color: '#ffffff',
+      fontSize: typography.fontSizes.base,
+      fontWeight: typography.fontWeights.semibold,
+    },
+
+    bottomSection: {
+      padding: spacing[6],
+      paddingTop: spacing[4],
+    },
+
+    backButton: {
+      backgroundColor: colors.background.glassMedium,
+      borderWidth: 1,
+      borderColor: colors.border.light,
+      paddingVertical: spacing[4],
+      paddingHorizontal: spacing[8],
+      borderRadius: borderRadius.md,
+      alignItems: 'center',
+      ...shadows.base,
+    },
+
+    backButtonText: {
+      color: colors.text.primary,
+      fontSize: typography.fontSizes.base,
+      fontWeight: typography.fontWeights.semibold,
+      letterSpacing: typography.letterSpacing.wide,
+    },
+
+    // Modal styles
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+
+    modalContent: {
+      backgroundColor: colors.background.card,
+      marginHorizontal: spacing[6],
+      borderRadius: borderRadius.xl,
+      maxHeight: '85%',
+      width: '90%',
+      ...shadows.xl,
+    },
+
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: spacing[6],
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border.light,
+    },
+
+    modalTitle: {
+      fontSize: typography.fontSizes.xl,
+      fontWeight: typography.fontWeights.bold,
+      color: colors.text.primary,
+    },
+
+    closeButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.background.secondary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...shadows.sm,
+    },
+
+    closeButtonText: {
+      fontSize: typography.fontSizes.lg,
+      color: colors.text.secondary,
+      fontWeight: typography.fontWeights.bold,
+    },
+
+    modalBody: {
+      padding: spacing[6],
+    },
+
+    modalPrayerHeader: {
+      marginBottom: spacing[5],
+      paddingBottom: spacing[4],
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border.light,
+    },
+
+    modalTimestamp: {
+      fontSize: typography.fontSizes.base,
+      color: colors.text.secondary,
+      marginBottom: spacing[2],
+      fontWeight: typography.fontWeights.medium,
+    },
+
+    modalPrayerId: {
+      fontSize: typography.fontSizes.sm,
+      color: colors.text.tertiary,
+      fontStyle: 'italic',
+    },
+
+    modalPrayerText: {
+      fontSize: typography.fontSizes.lg,
+      lineHeight: typography.lineHeights.relaxed,
+      color: colors.text.primary,
+      marginBottom: spacing[6],
+      fontWeight: typography.fontWeights.normal,
+    },
+  });
+
   // Render real-time status indicator
   const renderRealTimeStatus = () => (
     <View style={styles.realTimeStatus}>
@@ -267,7 +699,7 @@ export default function RequestsScreen({ navigation }) {
         <View
           style={[
             styles.statusDot,
-            { backgroundColor: isRealTimeActive ? "#4CAF50" : "#999" },
+            { backgroundColor: isRealTimeActive ? colors.success[500] : colors.neutral[500] },
           ]}
         />
         <Text style={styles.statusText}>
@@ -293,14 +725,13 @@ export default function RequestsScreen({ navigation }) {
     </View>
   );
 
-  // Render individual prayer item with real-time indicators - Updated for database fields
+  // Render individual prayer item
   const renderPrayerItem = ({ item, index }) => {
     const isRecent =
       lastFetchTimeRef.current &&
       new Date(item.createdAt || item.created_at) >
-        new Date(Date.now() - 5 * 60 * 1000); // Less than 5 minutes old
+        new Date(Date.now() - 5 * 60 * 1000);
 
-    // Extract prayer text from your database field names
     const prayerText =
       item.prayerText || item.prayer || item.text || "Prayer request";
     const timestamp = item.createdAt || item.created_at;
@@ -314,7 +745,7 @@ export default function RequestsScreen({ navigation }) {
         <View style={styles.prayerHeader}>
           <View style={styles.userInfo}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>🙏</Text>
+              <Text style={styles.avatarText}>P</Text>
             </View>
             <View style={styles.userDetails}>
               <Text style={styles.userName}>Community Member</Text>
@@ -341,8 +772,6 @@ export default function RequestsScreen({ navigation }) {
             <Text style={styles.readMore}>Read more...</Text>
           )}
         </View>
-
-        {/* Removed prayer actions section */}
       </TouchableOpacity>
     );
   };
@@ -350,7 +779,6 @@ export default function RequestsScreen({ navigation }) {
   // Render empty state
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Text style={styles.emptyStateIcon}>🙏</Text>
       <Text style={styles.emptyStateTitle}>No Prayer Requests Yet</Text>
       <Text style={styles.emptyStateText}>
         {userZip
@@ -371,7 +799,6 @@ export default function RequestsScreen({ navigation }) {
   // Render error state
   const renderErrorState = () => (
     <View style={styles.errorState}>
-      <Text style={styles.errorStateIcon}>⚠️</Text>
       <Text style={styles.errorStateTitle}>Unable to Load Prayers</Text>
       <Text style={styles.errorStateText}>{error}</Text>
       <TouchableOpacity
@@ -383,15 +810,9 @@ export default function RequestsScreen({ navigation }) {
     </View>
   );
 
-  // Back button handler
-  const backPressed = () => {
-    navigation.navigate("Home");
-  };
-
   // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
-
     return () => {
       mountedRef.current = false;
       stopRealTimePolling();
@@ -409,15 +830,13 @@ export default function RequestsScreen({ navigation }) {
 
   // Initial load and start real-time updates
   useEffect(() => {
-    // Initial fetch
     fetchPrayersFromDatabase(true, false);
 
-    // Start real-time polling after initial load
     const startPollingTimer = setTimeout(() => {
       if (mountedRef.current && isRealTimeActive) {
         startRealTimePolling();
       }
-    }, 2000); // Wait 2 seconds after initial load
+    }, 2000);
 
     return () => clearTimeout(startPollingTimer);
   }, [startRealTimePolling, isRealTimeActive]);
@@ -444,8 +863,10 @@ export default function RequestsScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      
-      <StatusBar style="light" />
+      <StatusBar 
+        barStyle={isDark ? "light-content" : "dark-content"} 
+        backgroundColor={colors.background.dark}
+      />
 
       {/* Header */}
       <View style={styles.header}>
@@ -461,7 +882,7 @@ export default function RequestsScreen({ navigation }) {
           onPress={toggleRealTimeUpdates}
         >
           <Text style={styles.realTimeToggleText}>
-            {isRealTimeActive ? "🔴 LIVE" : "⚫ MANUAL"}
+            {isRealTimeActive ? "LIVE" : "MANUAL"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -473,7 +894,7 @@ export default function RequestsScreen({ navigation }) {
       <View style={styles.content}>
         {isLoading && !isRefreshing ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#fff" />
+            <ActivityIndicator size="large" color={colors.primary[500]} />
             <Text style={styles.loadingText}>
               Loading prayers from database...
             </Text>
@@ -494,8 +915,8 @@ export default function RequestsScreen({ navigation }) {
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={handleRefresh}
-                colors={["#fff"]}
-                tintColor="#fff"
+                colors={[colors.primary[500]]}
+                tintColor={colors.primary[500]}
               />
             }
             showsVerticalScrollIndicator={false}
@@ -550,8 +971,6 @@ export default function RequestsScreen({ navigation }) {
                     selectedPrayer.text ||
                     "Prayer request"}
                 </Text>
-
-                {/* Removed modal actions section */}
               </ScrollView>
             )}
           </View>
@@ -560,351 +979,3 @@ export default function RequestsScreen({ navigation }) {
     </SafeAreaView>
   );
 }
-
-const styles = {
-  container: {
-    flex: 1,
-    backgroundColor: "#3e3e3e",
-    paddingTop: StatusBar.currentHeight || 0,
-  },
-  backgroundimage: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  titleContainer: {
-    flex: 1,
-  },
-  title: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 24,
-    marginBottom: 2,
-  },
-  subtitle: {
-    color: "rgba(255, 255, 255, 0.8)",
-    fontSize: 14,
-  },
-  realTimeToggle: {
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-  },
-  realTimeToggleText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  realTimeStatus: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  statusContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  statusText: {
-    color: "rgba(255, 255, 255, 0.9)",
-    fontSize: 12,
-    marginRight: 10,
-  },
-  lastUpdateText: {
-    color: "rgba(255, 255, 255, 0.7)",
-    fontSize: 11,
-  },
-  newPrayersNotification: {
-    backgroundColor: "#ff6b6b",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  newPrayersText: {
-    color: "white",
-    fontSize: 11,
-    fontWeight: "bold",
-  },
-  content: {
-    flex: 1,
-    marginHorizontal: 10,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    color: "white",
-    marginTop: 10,
-    fontSize: 16,
-  },
-  feedContainer: {
-    paddingBottom: 20,
-  },
-  prayerItem: {
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    marginHorizontal: 10,
-    marginVertical: 5,
-    borderRadius: 12,
-    padding: 15,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  recentPrayerItem: {
-    borderLeftWidth: 4,
-    borderLeftColor: "#4CAF50",
-    backgroundColor: "rgba(255, 255, 255, 0.98)",
-  },
-  prayerHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 12,
-  },
-  userInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  avatarText: {
-    fontSize: 18,
-  },
-  userDetails: {
-    flex: 1,
-  },
-  userName: {
-    fontWeight: "600",
-    fontSize: 16,
-    color: "#333",
-  },
-  timestamp: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 2,
-  },
-  badges: {
-    alignItems: "flex-end",
-  },
-  newBadge: {
-    backgroundColor: "#4CAF50",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-    marginBottom: 4,
-  },
-  newBadgeText: {
-    color: "white",
-    fontSize: 9,
-    fontWeight: "bold",
-  },
-  prayerBadge: {
-    backgroundColor: "#dc3545",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  prayerBadgeText: {
-    color: "white",
-    fontSize: 10,
-    fontWeight: "600",
-  },
-  prayerContent: {
-    marginBottom: 12,
-  },
-  prayerText: {
-    fontSize: 16,
-    lineHeight: 22,
-    color: "#333",
-  },
-  readMore: {
-    color: "#007AFF",
-    fontSize: 14,
-    marginTop: 5,
-    fontWeight: "500",
-  },
-  separator: {
-    height: 1,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
-  },
-  emptyStateIcon: {
-    fontSize: 48,
-    marginBottom: 20,
-  },
-  emptyStateTitle: {
-    color: "white",
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 15,
-  },
-  emptyStateText: {
-    color: "rgba(255, 255, 255, 0.8)",
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 20,
-  },
-  settingsButton: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  settingsButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  errorState: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
-  },
-  errorStateIcon: {
-    fontSize: 48,
-    marginBottom: 20,
-  },
-  errorStateTitle: {
-    color: "white",
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 15,
-  },
-  errorStateText: {
-    color: "rgba(255, 255, 255, 0.8)",
-    fontSize: 16,
-    textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 20,
-  },
-  retryButton: {
-    backgroundColor: "#28a745",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  bottomSection: {
-    padding: 20,
-    paddingTop: 10,
-  },
-  backButton: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.3)",
-  },
-  backButtonText: {
-    color: "rgba(255, 255, 255, 0.9)",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  // Modal styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    backgroundColor: "white",
-    marginHorizontal: 20,
-    borderRadius: 12,
-    maxHeight: "80%",
-    width: "90%",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  closeButton: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  closeButtonText: {
-    fontSize: 16,
-    color: "#666",
-  },
-  modalBody: {
-    padding: 20,
-  },
-  modalPrayerHeader: {
-    marginBottom: 15,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  modalTimestamp: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 5,
-  },
-  modalPrayerId: {
-    fontSize: 12,
-    color: "#999",
-    fontStyle: "italic",
-  },
-  modalPrayerText: {
-    fontSize: 18,
-    lineHeight: 26,
-    color: "#333",
-    marginBottom: 20,
-  },
-};

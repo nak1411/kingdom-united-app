@@ -1,11 +1,44 @@
 // app/styles/homescreen.styles.js - Updated with Unified Theme
 import { StatusBar, StyleSheet } from "react-native";
-import { theme, commonStyles } from './theme';
+
+// For now, let's use inline theme values to avoid import issues
+const theme = {
+  colors: {
+    emergency: { 400: '#f87171', 500: '#ef4444' },
+    primary: { 500: '#0ea5e9' },
+    warrior: { 500: '#a855f7' },
+    neutral: { 500: '#737373' },
+    text: { inverse: '#ffffff', light: 'rgba(255, 255, 255, 0.9)' },
+    background: { 
+      dark: '#2c3e50',
+      glassMedium: 'rgba(255, 255, 255, 0.15)',
+    },
+    border: { inverse: 'rgba(255, 255, 255, 0.3)' }
+  },
+  spacing: { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32 },
+  typography: {
+    fontSizes: { xs: 12, sm: 14, base: 16, lg: 18, xl: 20, '2xl': 24 },
+    fontWeights: { medium: '500', semibold: '600', bold: '700', black: '900' }
+  },
+  borderRadius: { md: 12 },
+  dimensions: { width: 375, height: 812, isSmallScreen: false }
+};
+
+const shadows = {
+  base: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  }
+};
 
 export const homescreenStyles = StyleSheet.create({
   // Base container
   container: {
-    ...commonStyles.container,
+    flex: 1,
+    backgroundColor: theme.colors.background.dark,
     paddingTop: StatusBar.currentHeight,
   },
 
@@ -28,38 +61,20 @@ export const homescreenStyles = StyleSheet.create({
     resizeMode: 'center',
   },
 
-  brandText: {
-    fontSize: theme.typography.fontSizes['6xl'],
-    fontWeight: theme.typography.fontWeights.bold,
-    color: theme.colors.text.inverse,
-    textAlign: 'center',
-    textShadowColor: theme.colors.background.overlay,
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-  },
-
-  brandSubtext: {
-    fontSize: theme.typography.fontSizes.lg,
-    color: theme.colors.text.light,
-    textAlign: 'center',
-    marginTop: theme.spacing[2],
-    fontWeight: theme.typography.fontWeights.medium,
-  },
-
   // Main content layout
   mainContent: {
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: theme.spacing[6],
-    paddingBottom: theme.spacing[10],
+    paddingBottom: theme.spacing[6],
   },
 
   // SOS Button - Big Red Circle (Central focus)
   sosButtonContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: theme.spacing[20],
+    marginVertical: theme.spacing[6],
     position: 'relative',
   },
 
@@ -108,7 +123,7 @@ export const homescreenStyles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
-    letterSpacing: theme.typography.letterSpacing.widest,
+    letterSpacing: 2,
     textAlign: 'center',
   },
 
@@ -125,39 +140,6 @@ export const homescreenStyles = StyleSheet.create({
     textShadowRadius: 2,
   },
 
-  // Animated pulse rings for emergency effect
-  pulseContainer: {
-    position: 'absolute',
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: `${theme.colors.emergency[500]}40`,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-
-  pulseRing1: {
-    position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: `${theme.colors.emergency[500]}30`,
-  },
-
-  pulseRing2: {
-    position: 'absolute',
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: `${theme.colors.emergency[500]}20`,
-  },
-
   // Navigation buttons section
   navigationSection: {
     width: '100%',
@@ -168,20 +150,23 @@ export const homescreenStyles = StyleSheet.create({
 
   // Unified navigation button style
   navButton: {
-    ...commonStyles.button,
     backgroundColor: theme.colors.background.glassMedium,
     borderWidth: 1,
     borderColor: theme.colors.border.inverse,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing[4],
+    paddingHorizontal: theme.spacing[6],
     width: '90%',
     maxWidth: 320,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: theme.spacing[4],
+    alignItems: 'center',
     minHeight: 52,
+    ...shadows.base,
   },
 
   navButtonPressed: {
-    backgroundColor: theme.colors.background.glassLight,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     transform: [{ scale: 0.98 }],
   },
 
@@ -197,16 +182,17 @@ export const homescreenStyles = StyleSheet.create({
   },
 
   navButtonText: {
-    ...commonStyles.buttonText,
     color: theme.colors.text.inverse,
-    fontSize: theme.typography.fontSizes.lg,
+    fontSize: theme.typography.fontSizes.base,
+    fontWeight: theme.typography.fontWeights.semibold,
+    letterSpacing: 0.5,
     flex: 1,
   },
 
   navButtonArrow: {
     color: theme.colors.text.light,
     fontSize: theme.typography.fontSizes.xl,
-    fontWeight: theme.typography.fontWeights.light,
+    fontWeight: '300',
   },
 
   // Specific button variants
@@ -215,83 +201,14 @@ export const homescreenStyles = StyleSheet.create({
     borderColor: `${theme.colors.primary[500]}60`,
   },
 
-  requestsButtonIcon: {
-    color: theme.colors.primary[400],
-  },
-
   warriorBookButton: {
     backgroundColor: `${theme.colors.warrior[500]}30`,
     borderColor: `${theme.colors.warrior[500]}60`,
   },
 
-  warriorBookButtonIcon: {
-    color: theme.colors.warrior[400],
-  },
-
   settingsButton: {
     backgroundColor: `${theme.colors.neutral[500]}30`,
     borderColor: `${theme.colors.neutral[500]}60`,
-  },
-
-  settingsButtonIcon: {
-    color: theme.colors.neutral[400],
-  },
-
-  // Status indicators
-  statusIndicator: {
-    position: 'absolute',
-    top: theme.spacing[12],
-    right: theme.spacing[6],
-    backgroundColor: theme.colors.success[500],
-    borderRadius: theme.borderRadius.full,
-    paddingVertical: theme.spacing[2],
-    paddingHorizontal: theme.spacing[3],
-    flexDirection: 'row',
-    alignItems: 'center',
-    ...theme.shadows.base,
-  },
-
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: theme.colors.text.inverse,
-    marginRight: theme.spacing[2],
-  },
-
-  statusText: {
-    color: theme.colors.text.inverse,
-    fontSize: theme.typography.fontSizes.xs,
-    fontWeight: theme.typography.fontWeights.semibold,
-  },
-
-  // Quick stats (if needed)
-  quickStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: theme.spacing[6],
-    paddingVertical: theme.spacing[4],
-    backgroundColor: theme.colors.background.glassDark,
-    marginHorizontal: theme.spacing[4],
-    borderRadius: theme.borderRadius.md,
-    marginBottom: theme.spacing[6],
-  },
-
-  statItem: {
-    alignItems: 'center',
-  },
-
-  statNumber: {
-    color: theme.colors.text.inverse,
-    fontSize: theme.typography.fontSizes['2xl'],
-    fontWeight: theme.typography.fontWeights.bold,
-  },
-
-  statLabel: {
-    color: theme.colors.text.light,
-    fontSize: theme.typography.fontSizes.xs,
-    fontWeight: theme.typography.fontWeights.medium,
-    marginTop: theme.spacing[1],
   },
 
   // Legacy button styles for compatibility
@@ -306,7 +223,7 @@ export const homescreenStyles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     marginBottom: theme.spacing[4],
-    ...theme.shadows.base,
+    ...shadows.base,
   },
 
   warriorbookbutton: {
@@ -320,7 +237,7 @@ export const homescreenStyles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     marginBottom: theme.spacing[4],
-    ...theme.shadows.base,
+    ...shadows.base,
   },
 
   settingsbutton: {
@@ -333,67 +250,6 @@ export const homescreenStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     alignSelf: 'center',
-    ...theme.shadows.base,
+    ...shadows.base,
   },
-
-  // Bottom section
-  bottomSection: {
-    ...commonStyles.bottomSection,
-  },
-
-  // Responsive design adjustments
-  ...(theme.dimensions.isSmallScreen && {
-    logoContainer: {
-      flex: 0.6,
-      paddingTop: theme.spacing[2],
-      paddingBottom: theme.spacing[1],
-    },
-    
-    sosButtonContainer: {
-      marginVertical: theme.spacing[4],
-    },
-    
-    sosButton: {
-      width: 160,
-      height: 160,
-      borderRadius: 80,
-    },
-    sosButtonInner: {
-      width: 140,
-      height: 140,
-      borderRadius: 70,
-    },
-    sosButtonText: {
-      fontSize: 36,
-    },
-    sosButtonSubtext: {
-      bottom: -theme.spacing[5],
-      fontSize: theme.typography.fontSizes.xs,
-    },
-    pulseContainer: {
-      width: 200,
-      height: 200,
-      borderRadius: 100,
-    },
-    pulseRing1: {
-      width: 180,
-      height: 180,
-      borderRadius: 90,
-    },
-    pulseRing2: {
-      width: 220,
-      height: 220,
-      borderRadius: 110,
-    },
-    navigationSection: {
-      gap: theme.spacing[2],
-    },
-    navButton: {
-      paddingVertical: theme.spacing[3],
-      minHeight: 48,
-    },
-    navButtonText: {
-      fontSize: theme.typography.fontSizes.sm,
-    },
-  }),
 });

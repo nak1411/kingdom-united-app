@@ -1,4 +1,4 @@
-// app/screens/HomeScreen.js - Optimized with Memoization
+// app/screens/HomeScreen.js - Updated with Bigger, More Centered SOS Button
 import React, { useEffect, useMemo, useCallback } from "react";
 import {
   StatusBar,
@@ -104,7 +104,7 @@ const HomeScreen = React.memo(({ navigation }) => {
     },
 
     logoContainer: {
-      flex: 0.8,
+      flex: 0.6, // Reduced from 0.8 to make more room for SOS button
       justifyContent: "center",
       alignItems: "center",
       paddingTop: spacing[4],
@@ -122,64 +122,68 @@ const HomeScreen = React.memo(({ navigation }) => {
 
     mainContent: {
       flex: 1,
-      justifyContent: "space-between",
+      justifyContent: "center", // Changed from "space-between" to center content
       alignItems: "center",
       paddingHorizontal: spacing[6],
       paddingBottom: spacing[6],
     },
 
-    // Big Red SOS Button (always red regardless of theme)
+    // Bigger, More Centered SOS Button
     sosButtonContainer: {
       alignItems: "center",
       justifyContent: "center",
-      marginVertical: spacing[6],
+      marginVertical: spacing[8], // Increased margin for better centering
       position: "relative",
+      flex: 1, // Take up more space to center better
     },
 
     sosButton: {
-      width: 200,
-      height: 200,
-      borderRadius: 100,
+      width: 260, // Increased from 200
+      height: 260, // Increased from 200
+      borderRadius: 130, // Half of width/height for perfect circle
       backgroundColor: colors.emergency[500], // Always red
       justifyContent: "center",
       alignItems: "center",
       shadowColor: colors.emergency[500],
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.5,
-      shadowRadius: 15,
-      elevation: 15,
-      borderWidth: 3,
+      shadowOffset: { width: 0, height: 8 }, // Increased shadow offset
+      shadowOpacity: 0.6, // Increased shadow opacity
+      shadowRadius: 20, // Increased shadow radius
+      elevation: 20, // Increased elevation for Android
+      borderWidth: 4, // Increased border width
       borderColor: colors.emergency[400],
+      // Additional glow effect
+      transform: [{ scale: 1 }], // Base scale for animation
     },
 
     sosButtonInner: {
-      width: 180,
-      height: 180,
-      borderRadius: 90,
+      width: 235, // Increased from 180, maintaining proportion
+      height: 235, // Increased from 180, maintaining proportion
+      borderRadius: 117.5, // Half of width/height
       backgroundColor: "rgba(255, 255, 255, 0.15)",
       justifyContent: "center",
       alignItems: "center",
-      borderWidth: 2,
+      borderWidth: 3, // Increased border width
       borderColor: "rgba(255, 255, 255, 0.4)",
     },
 
     sosButtonText: {
       color: "#ffffff", // Always white text
-      fontSize: 42,
+      fontSize: 52, // Increased from 42
       fontWeight: typography.fontWeights.black,
       textShadowColor: "rgba(0, 0, 0, 0.5)",
-      textShadowOffset: { width: 0, height: 2 },
-      textShadowRadius: 4,
-      letterSpacing: 2,
+      textShadowOffset: { width: 0, height: 3 }, // Increased shadow offset
+      textShadowRadius: 6, // Increased shadow radius
+      letterSpacing: 3, // Increased letter spacing
       textAlign: "center",
     },
 
-    // Navigation Section
+    // Navigation Section - Moved to bottom
     navigationSection: {
       width: "100%",
       alignItems: "center",
       gap: spacing[3],
       paddingBottom: spacing[4],
+      paddingTop: spacing[4], // Added top padding
     },
 
     // Base navigation button (adapts to theme)
@@ -262,7 +266,7 @@ const HomeScreen = React.memo(({ navigation }) => {
 
       {/* Main Content */}
       <View style={styles.mainContent}>
-        {/* Big Red SOS Button */}
+        {/* Big Red SOS Button - Now bigger and more centered */}
         <SOSButton onPress={handleSOSPress} styles={styles} />
 
         {/* Navigation Buttons */}

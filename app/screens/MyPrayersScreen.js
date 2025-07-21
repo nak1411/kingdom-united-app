@@ -633,7 +633,7 @@ const MyPrayersScreen = React.memo(({ navigation }) => {
         },
 
         header: {
-          paddingHorizontal: dimensions.safeHorizontalPadding || spacing[6],
+          paddingHorizontal: spacing[6],
           paddingVertical: spacing[5],
           backgroundColor: colors.background.glassDark,
           borderBottomWidth: 1,
@@ -860,14 +860,9 @@ const MyPrayersScreen = React.memo(({ navigation }) => {
         },
 
         bottomSection: {
-          padding: dimensions.safeHorizontalPadding || spacing[6],
+          padding: spacing[6],
           paddingTop: spacing[4],
-          paddingBottom: dimensions.safeBottomPadding || spacing[8],
-          // Extra padding for tall screens like S22
-          ...(height > 800 && {
-            paddingBottom:
-              (dimensions.safeBottomPadding || spacing[8]) + spacing[4],
-          }),
+          paddingBottom: height > 800 ? spacing[12] : spacing[8],
         },
 
         backButton: {
@@ -899,7 +894,7 @@ const MyPrayersScreen = React.memo(({ navigation }) => {
 
         modalContent: {
           backgroundColor: colors.background.card,
-          marginHorizontal: dimensions.safeHorizontalPadding || spacing[6],
+          marginHorizontal: spacing[6],
           borderRadius: borderRadius.xl,
           maxHeight: "85%",
           width: width > 600 ? "70%" : "90%", // Better tablet support

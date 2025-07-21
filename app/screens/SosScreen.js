@@ -36,14 +36,14 @@ const { width, height } = Dimensions.get('window');
 
 // Memoized components for better performance
 const CharacterCounter = React.memo(
-  ({ count, max, colors, typography, isWarning }) => (
+  ({ count, max, colors, typography, spacing, isWarning }) => (
     <Text
       style={[
         {
           color: colors.text.secondary,
           fontSize: typography.fontSizes.sm,
           fontWeight: typography.fontWeights.medium,
-          gap: spacing[4],
+        },
         isWarning && { color: colors.emergency[500] },
       ]}
     >
@@ -355,109 +355,6 @@ const SosScreen = React.memo(({ navigation }) => {
             text: "Go to Settings",
             onPress: () => navigation.navigate("Settings"),
           },
-
-        clearButton: {
-          backgroundColor: colors.background.glassMedium,
-          borderWidth: 1,
-          borderColor: colors.border.light,
-          paddingVertical: spacing[3],
-          paddingHorizontal: spacing[6],
-          borderRadius: borderRadius.md,
-          alignItems: "center",
-          ...shadows.base,
-        },
-
-        clearButtonText: {
-          color: colors.text.primary,
-          fontSize: typography.fontSizes.base,
-          fontWeight: typography.fontWeights.semibold,
-          letterSpacing: typography.letterSpacing.wide,
-        },
-
-        sendButton: {
-          backgroundColor: colors.emergency[500],
-          paddingVertical: width < 360 ? spacing[5] : spacing[6],
-          paddingHorizontal: spacing[8],
-          borderRadius: borderRadius.lg,
-          alignItems: "center",
-          ...shadows.xl,
-          shadowColor: colors.emergency[500],
-          shadowOpacity: 0.4,
-        },
-
-        sendButtonDisabled: {
-          backgroundColor: colors.neutral[400],
-          ...shadows.sm,
-        },
-
-        sendingContainer: {
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-        },
-
-        sendingText: {
-          color: "#ffffff",
-          fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
-          fontWeight: typography.fontWeights.bold,
-          marginLeft: spacing[3],
-          letterSpacing: typography.letterSpacing.wide,
-        },
-
-        sendButtonText: {
-          color: "#ffffff",
-          fontSize: width < 360 ? typography.fontSizes.base : typography.fontSizes.lg,
-          fontWeight: typography.fontWeights.bold,
-          letterSpacing: typography.letterSpacing.wide,
-          textShadowColor: "rgba(0, 0, 0, 0.3)",
-          textShadowOffset: { width: 0, height: 1 },
-          textShadowRadius: 2,
-        },
-
-        sendButtonTextDisabled: {
-          color: colors.text.disabled,
-        },
-
-        backButton: {
-          backgroundColor: colors.background.glassMedium,
-          borderWidth: 1,
-          borderColor: colors.border.light,
-          paddingVertical: spacing[4],
-          paddingHorizontal: spacing[6],
-          borderRadius: borderRadius.md,
-          alignItems: "center",
-        },
-
-        backButtonText: {
-          color: colors.text.primary,
-          fontSize: typography.fontSizes.base,
-          fontWeight: typography.fontWeights.semibold,
-          letterSpacing: typography.letterSpacing.wide,
-        },
-
-        tipsSection: {
-          backgroundColor: isDark
-            ? `${colors.primary[500]}20`
-            : `${colors.primary[100]}`,
-          borderRadius: borderRadius.md,
-          padding: spacing[5],
-          marginBottom: spacing[6],
-          borderLeftWidth: 4,
-          borderLeftColor: colors.primary[500],
-        },
-
-        tipsTitle: {
-          color: colors.text.primary,
-          fontSize: typography.fontSizes.base,
-          fontWeight: typography.fontWeights.semibold,
-          marginBottom: spacing[2],
-        },
-
-        tipsText: {
-          color: colors.text.secondary,
-          fontSize: typography.fontSizes.sm,
-          lineHeight: typography.lineHeights.normal,
-        },
         ]
       );
       return;
@@ -832,7 +729,7 @@ const SosScreen = React.memo(({ navigation }) => {
           paddingBottom: height > 800 ? spacing[12] : spacing[8],
         },
 
-        },
+        clearButton: {
           backgroundColor: colors.background.glassMedium,
           borderWidth: 1,
           borderColor: colors.border.light,
@@ -840,6 +737,7 @@ const SosScreen = React.memo(({ navigation }) => {
           paddingHorizontal: spacing[6],
           borderRadius: borderRadius.md,
           alignItems: "center",
+          marginBottom: spacing[4],
           ...shadows.base,
         },
 
@@ -856,6 +754,7 @@ const SosScreen = React.memo(({ navigation }) => {
           paddingHorizontal: spacing[8],
           borderRadius: borderRadius.lg,
           alignItems: "center",
+          marginBottom: spacing[4],
           ...shadows.xl,
           shadowColor: colors.emergency[500],
           shadowOpacity: 0.4,
@@ -902,6 +801,7 @@ const SosScreen = React.memo(({ navigation }) => {
           paddingHorizontal: spacing[6],
           borderRadius: borderRadius.md,
           alignItems: "center",
+          ...shadows.base,
         },
 
         backButtonText: {
@@ -993,6 +893,7 @@ const SosScreen = React.memo(({ navigation }) => {
                   max={MAX_CHARACTERS}
                   colors={colors}
                   typography={typography}
+                  spacing={spacing}
                   isWarning={isCharacterWarning}
                 />
               </View>

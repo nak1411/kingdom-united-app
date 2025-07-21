@@ -568,84 +568,6 @@ const RequestsScreen = React.memo(({ navigation }) => {
     setSelectedPrayer(null);
   }, []);
 
-  // FlatList optimization callbacks
-  const renderPrayerItem = useCallback(
-    ({ item, index }) => (
-      <PrayerItem
-        item={item}
-        index={index}
-        userZip={userZip}
-        lastFetchTime={lastFetchTimeRef.current}
-        onPress={handlePrayerPress}
-        styles={styles}
-        formatTimestamp={formatTimestamp}
-      />
-    ),
-    [userZip, handlePrayerPress, formatTimestamp]
-  );
-
-  const keyExtractor = useCallback(
-    (item, index) =>
-      `${item.id || item._id || index}-${item.timestamp || index}`,
-    []
-  );
-
-  const renderSeparator = useCallback(
-    () => <View style={styles.separator} />,
-    []
-  );
-
-  // Component mount and cleanup
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      stopRealTimePolling();
-    };
-  }, [stopRealTimePolling]);
-
-  // Setup app state listener
-  useEffect(() => {
-    const subscription = AppState.addEventListener(
-      "change",
-      handleAppStateChange
-    );
-    return () => subscription?.remove();
-  }, [handleAppStateChange]);
-
-  // Initial load and start real-time updates
-  useEffect(() => {
-    fetchPrayersFromDatabase(true, false);
-
-    const startPollingTimer = setTimeout(() => {
-      if (mountedRef.current && isRealTimeActive) {
-        startRealTimePolling();
-      }
-    }, 2000);
-
-    return () => clearTimeout(startPollingTimer);
-  }, [fetchPrayersFromDatabase, startRealTimePolling, isRealTimeActive]);
-
-  // Handle navigation focus/blur for real-time updates
-  useEffect(() => {
-    const unsubscribeFocus = navigation.addListener("focus", () => {
-      console.log("[RealTime] Screen focused - starting updates");
-      setIsRealTimeActive(true);
-      fetchPrayersFromDatabase(false, false);
-    });
-
-    const unsubscribeBlur = navigation.addListener("blur", () => {
-      console.log("[RealTime] Screen blurred - stopping updates");
-      setIsRealTimeActive(false);
-      stopRealTimePolling();
-    });
-
-    return () => {
-      unsubscribeFocus();
-      unsubscribeBlur();
-    };
-  }, [navigation, stopRealTimePolling, fetchPrayersFromDatabase]);
-
   // Memoized styles for performance
   const styles = useMemo(
     () =>
@@ -657,7 +579,7 @@ const RequestsScreen = React.memo(({ navigation }) => {
         },
 
         header: {
-          paddingHorizontal: dimensions.safeHorizontalPadding || spacing[6],
+          paddingHorizontal: spacing[6],
           paddingVertical: spacing[5],
           flexDirection: "row",
           justifyContent: "space-between",
@@ -994,14 +916,9 @@ const RequestsScreen = React.memo(({ navigation }) => {
         },
 
         bottomSection: {
-          padding: dimensions.safeHorizontalPadding || spacing[6],
+          padding: spacing[6],
           paddingTop: spacing[4],
-          paddingBottom: dimensions.safeBottomPadding || spacing[8],
-          // Extra padding for tall screens like S22
-          ...(height > 800 && {
-            paddingBottom:
-              (dimensions.safeBottomPadding || spacing[8]) + spacing[4],
-          }),
+          paddingBottom: height > 800 ? spacing[12] : spacing[8],
         },
 
         backButton: {
@@ -1122,6 +1039,84 @@ const RequestsScreen = React.memo(({ navigation }) => {
       }),
     [colors, typography, spacing, borderRadius, shadows, isDark]
   );
+
+  // FlatList optimization callbacks - defined after styles
+  const renderPrayerItem = useCallback(
+    ({ item, index }) => (
+      <PrayerItem
+        item={item}
+        index={index}
+        userZip={userZip}
+        lastFetchTime={lastFetchTimeRef.current}
+        onPress={handlePrayerPress}
+        styles={styles}
+        formatTimestamp={formatTimestamp}
+      />
+    ),
+    [userZip, handlePrayerPress, formatTimestamp, styles]
+  );
+
+  const keyExtractor = useCallback(
+    (item, index) =>
+      `${item.id || item._id || index}-${item.timestamp || index}`,
+    []
+  );
+
+  const renderSeparator = useCallback(
+    () => <View style={styles.separator} />,
+    [styles]
+  );
+
+  // Component mount and cleanup
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      stopRealTimePolling();
+    };
+  }, [stopRealTimePolling]);
+
+  // Setup app state listener
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
+    return () => subscription?.remove();
+  }, [handleAppStateChange]);
+
+  // Initial load and start real-time updates
+  useEffect(() => {
+    fetchPrayersFromDatabase(true, false);
+
+    const startPollingTimer = setTimeout(() => {
+      if (mountedRef.current && isRealTimeActive) {
+        startRealTimePolling();
+      }
+    }, 2000);
+
+    return () => clearTimeout(startPollingTimer);
+  }, [fetchPrayersFromDatabase, startRealTimePolling, isRealTimeActive]);
+
+  // Handle navigation focus/blur for real-time updates
+  useEffect(() => {
+    const unsubscribeFocus = navigation.addListener("focus", () => {
+      console.log("[RealTime] Screen focused - starting updates");
+      setIsRealTimeActive(true);
+      fetchPrayersFromDatabase(false, false);
+    });
+
+    const unsubscribeBlur = navigation.addListener("blur", () => {
+      console.log("[RealTime] Screen blurred - stopping updates");
+      setIsRealTimeActive(false);
+      stopRealTimePolling();
+    });
+
+    return () => {
+      unsubscribeFocus();
+      unsubscribeBlur();
+    };
+  }, [navigation, stopRealTimePolling, fetchPrayersFromDatabase]);
 
   // Render real-time status indicator
   const renderRealTimeStatus = useCallback(

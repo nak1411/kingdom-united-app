@@ -244,7 +244,7 @@ export default function WarriorBookScreen({ navigation }) {
     },
 
     header: {
-      paddingHorizontal: dimensions.safeHorizontalPadding || spacing[6],
+      paddingHorizontal: spacing[6],
       paddingVertical: spacing[6],
       borderBottomWidth: 1,
       borderBottomColor: colors.border.light,
@@ -275,7 +275,7 @@ export default function WarriorBookScreen({ navigation }) {
     },
 
     searchContainer: {
-      paddingHorizontal: dimensions.safeHorizontalPadding || spacing[6],
+      paddingHorizontal: spacing[6],
       paddingVertical: spacing[4],
       backgroundColor: colors.background.glassDark,
     },
@@ -355,14 +355,9 @@ export default function WarriorBookScreen({ navigation }) {
     },
 
     bottomSection: {
-      padding: dimensions.safeHorizontalPadding || spacing[6],
+      padding: spacing[6],
       paddingTop: spacing[4],
-      paddingBottom: dimensions.safeBottomPadding || spacing[8],
-      // Extra padding for tall screens like S22
-      ...(height > 800 && {
-        paddingBottom:
-          (dimensions.safeBottomPadding || spacing[8]) + spacing[4],
-      }),
+      paddingBottom: height > 800 ? spacing[12] : spacing[8],
     },
 
     backButton: {

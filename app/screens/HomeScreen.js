@@ -287,8 +287,7 @@ const HomeScreen = React.memo(({ navigation }) => {
     spacing, 
     borderRadius, 
     shadows, 
-    isDark, 
-    dimensions,
+    isDark,
     sosButtonSize,
     sosButtonInnerSize,
     sosButtonFontSize
